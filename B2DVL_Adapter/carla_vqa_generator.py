@@ -366,8 +366,8 @@ class QAsGenerator():
         # print(f"[debug] image_path = {image_path}")
 
         if self.in_carla:
-            scenario_name = data['scenario_type']
-            # print(f"[debug] scenario_name = {scenario_name}")
+            scenario_name = data.get('scenario_type') or scenario_name  # keep the passed-in scenario_name as fallback
+            print(f"[debug] scenario_name = {scenario_name}")
         
         data['junction_exit_wp_x'], data['junction_exit_wp_y'] = find_last_non_junction_waypoint(self.map,
                                                                                                  x=data['x_command_far'],

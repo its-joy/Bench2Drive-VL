@@ -1,4 +1,15 @@
 #!/bin/bash
+export HOME=/workspace
+export XDG_CACHE_HOME=/workspace/.cache
+export XDG_CONFIG_HOME=/workspace/.config
+
+export PYTHON_EGG_CACHE=/workspace/.python-eggs
+mkdir -p $PYTHON_EGG_CACHE
+
+export PYTHONPATH=$PYTHONPATH:/workspace/scenario_runner
+export PYTHONPATH=$PYTHONPATH:/workspace/leaderboard
+export PYTHONPATH=$PYTHONPATH:/workspace/B2DVL_Adapter
+
 BASE_PORT=20217 # CARLA port
 BASE_TM_PORT=50000 # CARLA traffic manager port
 BASE_ROUTES=./leaderboard/data/drivetransformer_bench2drive_dev10 # path to your route xml
