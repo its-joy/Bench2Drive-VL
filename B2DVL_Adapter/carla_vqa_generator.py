@@ -304,12 +304,14 @@ class QAsGenerator():
             'pedestrian': 0,
             'behaviour': 0,
             'ego': 0,
+            'post_action': 0,
         }
         self.stats_p3 = {'perception': 0, 'planning': 0, 'prediction': 0, 'behaviour': 0}
 
         self.frame_num = 0
         self.skipped_frames = 0
-    
+        self.prev_measurements = None
+
     def process_single_frame(self, path, data, scenario_name, route_number, frame_number, output_graph_directory):
         self.current_measurement_index = int(frame_number)
         self.strict_mode = os.environ.get('STRICT_MODE', 1)
@@ -610,6 +612,7 @@ class QAsGenerator():
         with open(save_dir + '/' + image_number + '.json', 'w', encoding='utf-8') as f:
             json.dump(tick_data, f, indent=4, default=str)
 
+        self.prev_measurements = data
         return tick_data
 
     def create_qa_pairs(self, output_graph_directory):
@@ -700,7 +703,7 @@ class QAsGenerator():
                 # print("analysing path") # debug
                 route_dir = '/'.join(path.split('/')[:-2])
                 scenario_name = route_dir.split('/')[-1]
-                town_name = route_dir.split('/')[-1].split('_')[1]
+                town_name = route_dir.split('/')[-1].split('_')[3]
                 route_number = route_dir.split('/')[-1].split('_')[0] + '_' + route_dir.split('/')[-1].split('_')[1] + '_' + route_dir.split('/')[-1].split('_')[2]
 
                 self.current_measurement_path = path
@@ -1449,6 +1452,9 @@ class QAsGenerator():
                                               final_stop_flag=final_stop_flag)
         qas_conversation_behaviour, final_dir_cmd, final_spd_cmd, waiting_for_red_light, is_trivial_case = res
 
+        res = generate_post_action_questions(self, ego, measurements, important_objects, key_object_infos)
+        qas_conversation_post_action, important_objects, key_object_infos = res
+
         ego['not_passed_circumvent_obstacles'] = self.not_passed_circumvent_obstacles
         ego['distance_to_circumvent_obstacle'] = self.distance_to_circumvent_obstacle
         
@@ -1474,7 +1480,7 @@ class QAsGenerator():
         num_questions = len(qas_conversation_vehicle) + len(qas_conversation_roadlayout) + \
                         len(qas_conversation_trafficsign) + len(qas_conversation_trafficlight) + \
                         len(qas_conversation_ego) + len(qas_conversation_environment) + \
-                        len(qas_conversation_behaviour)
+                        len(qas_conversation_behaviour) + len(qas_conversation_post_action)
         num_questions = num_questions // 2 # Because we have two entries per question
         num_questions += 1 # Because we have the question about the important objects
 
@@ -1487,6 +1493,7 @@ class QAsGenerator():
             'environment': len(qas_conversation_environment) // 2,
             'behaviour': len(qas_conversation_behaviour) // 2,
             'ego': len(qas_conversation_ego) // 2,
+            'post_action': len(qas_conversation_post_action) // 2,
         }
 
         qas_conversation_objects = []
@@ -1911,6 +1918,7 @@ class QAsGenerator():
             'environment': qas_conversation_environment,
             'behaviour': qas_conversation_behaviour,
             'ego': qas_conversation_ego,
+            'post_action': qas_conversation_post_action,
         }
 
         # if 'InvadingTurn' in scenario_name:

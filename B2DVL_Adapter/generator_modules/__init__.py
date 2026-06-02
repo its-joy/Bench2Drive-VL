@@ -1,5 +1,6 @@
 from .behaviour import *
 from .ego_actions import *
+from .post_actions import *
 from .environment_info import *
 from .pedestrian_info import *
 from .road_layout import *

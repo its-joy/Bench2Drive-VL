@@ -889,7 +889,8 @@ def generate_vehicle_information(self, other_vehicles, ego_vehicle, important_ob
     
         return pointing_towards_junction, position_str
 
-    scenario = scenario.split('_')[0]
+    
+    scenario = scenario.split('_')[0] if scenario is not None else ''
     # main contents of this function starts here 
     qas_conversation_vehicle = []
 

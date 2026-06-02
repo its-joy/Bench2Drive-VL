@@ -14,11 +14,11 @@ export SCENARIO_RUNNER_ROOT=/workspace/scenario_runner
 
 BASE_PORT=20082
 BASE_TM_PORT=50000
-BASE_ROUTES=./leaderboard/data/bench2drive220
+BASE_ROUTES=./leaderboard/data/routes_devtest
 TEAM_AGENT=leaderboard/team_code/data_agent.py
 BASE_CHECKPOINT_ENDPOINT=./my_checkpoint
 SAVE_PATH=./eval_v1/
-GPU_RANK=0
+GPU_RANK=1
 VLM_CONFIG=/workspace/config/vlm_config.json
 
 PORT=$BASE_PORT
