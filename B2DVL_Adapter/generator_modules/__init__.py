@@ -1,6 +1,7 @@
 from .behaviour import *
 from .ego_actions import *
 from .post_actions import *
+from .llm_gt_client import LLMGTClient
 from .environment_info import *
 from .pedestrian_info import *
 from .road_layout import *

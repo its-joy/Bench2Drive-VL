@@ -311,6 +311,15 @@ class QAsGenerator():
         self.frame_num = 0
         self.skipped_frames = 0
         self.prev_measurements = None
+        self.llm_client = LLMGTClient()
+
+        # Sequence tracking for post-action QAs (51/52/53)
+        self.current_sequence_scenario = None
+        self.sequence_start_frame = -1
+        self.sequence_qid50_history = []
+        self.sequence_pre_state = None
+        self.current_dir_cmd = "FOLLOW_LANE"
+        self.current_spd_cmd = "KEEP"
 
     def process_single_frame(self, path, data, scenario_name, route_number, frame_number, output_graph_directory):
         self.current_measurement_index = int(frame_number)
@@ -1451,6 +1460,10 @@ class QAsGenerator():
                                               final_brake_flag=final_brake_flag,
                                               final_stop_flag=final_stop_flag)
         qas_conversation_behaviour, final_dir_cmd, final_spd_cmd, waiting_for_red_light, is_trivial_case = res
+
+        # Expose for post_actions sequence history
+        self.current_dir_cmd = str(final_dir_cmd)
+        self.current_spd_cmd = str(final_spd_cmd)
 
         res = generate_post_action_questions(self, ego, measurements, important_objects, key_object_infos)
         qas_conversation_post_action, important_objects, key_object_infos = res

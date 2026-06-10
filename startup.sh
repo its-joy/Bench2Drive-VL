@@ -9,12 +9,15 @@ mkdir -p $PYTHON_EGG_CACHE
 export PYTHONPATH=$PYTHONPATH:/workspace/scenario_runner
 export PYTHONPATH=$PYTHONPATH:/workspace/leaderboard
 export PYTHONPATH=$PYTHONPATH:/workspace/B2DVL_Adapter
+export PYTHONPATH=$PYTHONPATH:/home/carla/PythonAPI
+export PYTHONPATH=$PYTHONPATH:/home/carla/PythonAPI/carla
+export PYTHONPATH=$PYTHONPATH:/home/carla/PythonAPI/carla/dist/carla-0.9.15-py3.7-linux-x86_64.egg
 export SCENARIO_RUNNER_ROOT=/workspace/scenario_runner
 
 
 BASE_PORT=20082
 BASE_TM_PORT=50000
-BASE_ROUTES=./leaderboard/data/routes_devtest
+BASE_ROUTES=./leaderboard/data/routes_post_action
 TEAM_AGENT=leaderboard/team_code/data_agent.py
 BASE_CHECKPOINT_ENDPOINT=./my_checkpoint
 SAVE_PATH=./eval_v1/
@@ -27,7 +30,7 @@ ROUTES="${BASE_ROUTES}.xml"
 CHECKPOINT_ENDPOINT="${BASE_CHECKPOINT_ENDPOINT}.json"
 
 export MINIMAL=0
-export EARLY_STOP=80
+# export EARLY_STOP=100
 
 mkdir -p $SAVE_PATH
 

@@ -1175,8 +1175,20 @@ def generate_ego_vehicle_actions(self, ego_vehicle_data, pedestrians, ego_data, 
             final_brake_flag = True
             final_stop_flag = True
 
+        # Improve QID 8 answer text with LLM when available
+        llm_client = getattr(self, "llm_client", None)
+        if llm_client is not None:
+            prompt = llm_client.brake_reason_prompt(
+                measurements=self.current_measurement_dict,
+                rule_answer=answer,
+                final_brake=final_brake_flag,
+                final_stop=final_stop_flag,
+                hazardous_walkers=hazardous_walkers,
+            )
+            answer = llm_client.generate(prompt) or answer
+
         self.answer43_brake = answer
-        
+
         self.add_qas_questions(qa_list=qas_conversation_ego,
                             qid=8, 
                             chain=6,

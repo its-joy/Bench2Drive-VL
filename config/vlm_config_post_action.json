@@ -10,31 +10,21 @@
 "NO_HISTORY_MODE": false
     },
 "CHAIN": {
-"NODE": [19, 15, 7, 24, 13, 47, 8, 43,50],
+"NODE": [51, 52, 53],
 "EDGE": {
-"19": [24, 13, 8],
-"15": [7, 8],
-"7": [8],
-"24": [13, 47],
-"13": [47, 8, 43],
-"47": [8],
-"8": [43],
-"43": [50],
-"50": []
+"51": [52, 53],
+"52": [53],
+"53": []
         },
-"INHERIT": {
-"19": [43, 7],
-"15": [7]
-        },
-"USE_GT": [24]
+"INHERIT": {},
+"USE_GT": []
     },
-"CONTROL_RATE": 2,
+"CONTROL_RATE": 1,
 "MODEL_NAME": "Qwen2.5VL",
 "MODEL_PATH": "/models/Qwen2.5-VL-3B-Instruct",
 "GPU_ID": 1,
 "PORT": 7023,
-"IN_CARLA": true,
+"IN_CARLA": false,
 "USE_BASE64": true,
 "NO_PERC_INFO": false
 }
-
