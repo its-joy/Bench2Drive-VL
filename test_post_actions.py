@@ -22,9 +22,12 @@ Usage:
 
     # point at a specific eval directory:
     python3 test_post_actions.py --eval-dir eval_v1/gt+front_cam
+
+    LLM_GT_ENABLED=1 python3 test_post_actions.py   --eval-dir "eval_v1/Qwen2.5VL+front_cam/RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_06_11_07_50_56"   --max-routes 1 --checkpoint my_checkpoint.json
 """
 
 import argparse
+import csv
 import gzip
 import json
 import math
@@ -112,6 +115,28 @@ def load_checkpoint_record(checkpoint_path, save_name):
 
 # ── Stub agent class ──────────────────────────────────────────────────────────
 
+class PromptCapturingClient:
+    """Wraps LLMGTClient to capture and print prompts."""
+    def __init__(self, client, show_prompts=False):
+        self.client = client
+        self.show_prompts = show_prompts
+        self._prompt_counter = 0
+
+    def __getattr__(self, name):
+        return getattr(self.client, name)
+
+    def generate(self, prompt):
+        if self.show_prompts:
+            self._prompt_counter += 1
+            sep = '═' * 100
+            print(f'\n{sep}')
+            print(f'PROMPT #{self._prompt_counter}')
+            print(f'{sep}')
+            print(prompt)
+            print(f'{sep}\n')
+        return self.client.generate(prompt)
+
+
 class StubAgent:
     """
     Minimal stub that holds the instance state post_actions.py reads/writes
@@ -121,6 +146,7 @@ class StubAgent:
         self.llm_client  = llm_client
         self.frame_rate  = 10
         self._qa_output  = []   # collects all emitted QAs
+        self.show_prompts = False
 
     def add_qas_questions(self, qa_list, qid, chain, layer, qa_type,
                           connection_up, connection_down, question, answer):
@@ -140,7 +166,7 @@ class StubAgent:
 
 # ── Per-route runner ──────────────────────────────────────────────────────────
 
-def run_route(route_dir: Path, llm_client, checkpoint_path=None, verbose=False):
+def run_route(route_dir: Path, llm_client, checkpoint_path=None, verbose=False, show_prompts=False):
     folder_name   = route_dir.name
     scenario_type = parse_scenario_type_from_path(folder_name)
 
@@ -149,13 +175,35 @@ def run_route(route_dir: Path, llm_client, checkpoint_path=None, verbose=False):
         print(f'  [SKIP] no anno files in {folder_name}')
         return None
 
-    agent        = StubAgent(llm_client)
+    # Load checkpoint first so infractions are available during QA generation
+    cp_record = load_checkpoint_record(checkpoint_path,
+                                       folder_name[:40] if checkpoint_path else '')
+
+    # Wrap llm_client to capture prompts if requested
+    if show_prompts:
+        wrapped_client = PromptCapturingClient(llm_client, show_prompts=True)
+    else:
+        wrapped_client = llm_client
+
+    agent        = StubAgent(wrapped_client)
+    agent.checkpoint_record = cp_record or {}   # attached so post_actions can read it
+    agent.show_prompts = show_prompts  # pass flag to agent for prompt capture
     total_frames = len(anno_files)
     prev_speed   = 0.0
     all_qas      = []
 
+    meas_dir = route_dir / 'measurements'
+
     for frame_idx, anno_path in enumerate(anno_files):
         measurements = load_json_gz(anno_path)
+
+        # Merge richer fields from the measurements/ folder (junction flag, speed_limit, ego_matrix)
+        meas_path = meas_dir / anno_path.name
+        if meas_path.exists():
+            meas_extra = load_json_gz(meas_path)
+            for key in ('junction', 'speed_limit', 'ego_matrix', 'angle'):
+                if key in meas_extra:
+                    measurements[key] = meas_extra[key]
 
         # Inject scenario_type and frame command fields that the leaderboard sets
         measurements['scenario_type']           = scenario_type_at_frame(
@@ -184,42 +232,86 @@ def run_route(route_dir: Path, llm_client, checkpoint_path=None, verbose=False):
     flush_qas, _, _ = flush_post_action_questions(agent, measurements, [], {})
     all_qas.extend(flush_qas)
 
-    # Load checkpoint record for this route
-    cp_record = load_checkpoint_record(checkpoint_path,
-                                       folder_name[:40] if checkpoint_path else '')
-
     return {
-        'folder':        folder_name,
-        'scenario_type': scenario_type,
-        'num_frames':    total_frames,
-        'qas':           all_qas,
-        'checkpoint':    cp_record,
+        'folder':          folder_name,
+        'scenario_type':   scenario_type,
+        'num_frames':      total_frames,
+        'qas':             all_qas,
+        'checkpoint':      cp_record,
+        'event_log':          getattr(agent, 'last_event_log', ''),
+        'event_log_rows':     getattr(agent, 'last_event_log_rows', []),
+        'completion_status':  getattr(agent, 'last_completion_status', 'unknown'),
     }
 
 
 # ── Output formatter ──────────────────────────────────────────────────────────
 
+def write_event_log_csv(result, out_dir: Path):
+    """Write the event log rows for a route to a CSV file."""
+    rows = result.get('event_log_rows', [])
+    if not rows:
+        return
+    out_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = out_dir / f"{result['folder'][:60]}.csv"
+    status = result.get('completion_status', 'unknown')
+    frame_rate        = 10
+    total_frames      = result['num_frames']
+    total_duration_s  = round(total_frames / frame_rate, 1)
+    rows_sorted       = sorted(rows, key=lambda x: x[0])
+    scenario_start_s  = rows_sorted[0][0]  if rows_sorted else 0.0
+    last_row          = rows_sorted[-1]     if rows_sorted else (0, '', '')
+    scenario_end_s    = round(last_row[0] + float(
+        next((p.split('for ')[1].rstrip('s') for p in last_row[2].split(' | ')
+              if 'for ' in p and p.split('for ')[1].rstrip('s').replace('.','').isdigit()), '0')
+    ), 1) if rows_sorted else 0.0
+
+    with open(csv_path, 'w', newline='') as f:
+        writer = csv.writer(f)
+        # Metadata header rows
+        writer.writerow(['# route',              result['folder']])
+        writer.writerow(['# scenario',           result['scenario_type']])
+        writer.writerow(['# completion_status',  status])
+        writer.writerow(['# total_frames',       total_frames])
+        writer.writerow(['# total_duration_s',   f'{total_duration_s:.1f}'])
+        writer.writerow(['# scenario_window_s',  f'{scenario_start_s:.1f}–{scenario_end_s:.1f}'])
+        writer.writerow([])
+        writer.writerow(['t_s', 'event_type', 'body'])
+        for t, tag, body in rows:
+            writer.writerow([f'{t:.1f}', tag.strip(), body])
+    print(f'  [CSV] {status} → {csv_path}')
+
+
 def print_result(result, show_checkpoint=True):
     sep = '─' * 80
     print(f'\n{sep}')
-    print(f'Route : {result["folder"]}')
-    print(f'Type  : {result["scenario_type"]}   Frames: {result["num_frames"]}')
+    total_s = round(result['num_frames'] / 10, 1)
+    print(f'Route    : {result["folder"]}')
+    print(f'Type     : {result["scenario_type"]}')
+    print(f'Duration : {total_s:.1f}s  ({result["num_frames"]} frames @ 10 fps)')
+    print(f'Status   : {result.get("completion_status", "unknown")}')
 
-    if show_checkpoint and result['checkpoint']:
-        cp = result['checkpoint']
-        scores = cp.get('scores', {})
-        print(f'\nCheckpoint result:')
-        print(f'  Status   : {cp.get("status", "?")}')
-        print(f'  Score    : route={scores.get("score_route", 0):.1f}  '
-              f'penalty={scores.get("score_penalty", 0):.4f}  '
-              f'composed={scores.get("score_composed", 0):.2f}')
-        infr = cp.get('infractions', {})
-        total_i = sum(len(v) for v in infr.values() if isinstance(v, list))
-        if total_i:
-            print(f'  Infractions ({total_i} total):')
-            for k, v in infr.items():
-                if isinstance(v, list) and v:
-                    print(f'    {k}: {len(v)}')
+    # # ── Event log (uncomment to print) ──────────────────────────────────
+    # if result.get('event_log'):
+    #     print(f'\nEvent log:')
+    #     for line in result['event_log'].splitlines():
+    #         print(f'  {line}')
+
+    # # ── Checkpoint JSON (uncomment to print) ─────────────────────────────
+    # if show_checkpoint and result['checkpoint']:
+    #     cp = result['checkpoint']
+    #     scores = cp.get('scores', {})
+    #     print(f'\nCheckpoint result:')
+    #     print(f'  Status   : {cp.get("status", "?")}')
+    #     print(f'  Score    : route={scores.get("score_route", 0):.1f}  '
+    #           f'penalty={scores.get("score_penalty", 0):.4f}  '
+    #           f'composed={scores.get("score_composed", 0):.2f}')
+    #     infr = cp.get('infractions', {})
+    #     total_i = sum(len(v) for v in infr.values() if isinstance(v, list))
+    #     if total_i:
+    #         print(f'  Infractions ({total_i} total):')
+    #         for k, v in infr.items():
+    #             if isinstance(v, list) and v:
+    #                 print(f'    {k}: {len(v)}')
 
     qas = result['qas']
     if not qas:
@@ -249,7 +341,7 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument('--eval-dir',    default='eval_v1',
                    help='Root eval directory (searched recursively for anno/ folders)')
-    p.add_argument('--checkpoint',  default='my_checkpoint2.json',
+    p.add_argument('--checkpoint',  default='my_checkpoint3.json',
                    help='Path to checkpoint.json')
     p.add_argument('--max-routes',  type=int, default=None,
                    help='Stop after N routes (default: all)')
@@ -257,6 +349,12 @@ def parse_args():
                    help='Only process routes whose scenario type matches this string')
     p.add_argument('--quiet',       action='store_true',
                    help='Only print summary table, suppress per-route QA text')
+    p.add_argument('--show-prompts', action='store_true',
+                   help='Print all prompts sent to the LLM')
+    p.add_argument('--export-csv',  action='store_true',
+                   help='Write per-route event log CSV files to --csv-dir')
+    p.add_argument('--csv-dir',     default='debug_event_logs',
+                   help='Directory to write per-route event log CSV files (requires --export-csv)')
     return p.parse_args()
 
 
@@ -267,10 +365,10 @@ def main():
 
     llm_client = LLMGTClient()
     if llm_client.enabled:
-        print(f'LLM enabled: {llm_client.model} @ {llm_client.base_url}')
+        print(f'LLM enabled @ {llm_client.base_url}')
     else:
         print('LLM disabled — using rule-based fallback answers.')
-        print('Set LLM_GT_ENABLED=1 (and optionally LLM_GT_MODEL, LLM_GT_URL) to enable.\n')
+        print('Set LLM_GT_ENABLED=1 (and optionally LLM_GT_URL) to enable.\n')
 
     # Discover route run folders (those containing an anno/ subfolder)
     route_dirs = sorted(p.parent for p in eval_root.rglob('anno')
@@ -286,12 +384,16 @@ def main():
     print(f'Found {len(route_dirs)} route(s) to process.\n')
 
     summary = []
+    csv_dir = ROOT / args.csv_dir
+
     for route_dir in route_dirs:
-        result = run_route(route_dir, llm_client, cp_path)
+        result = run_route(route_dir, llm_client, cp_path, show_prompts=args.show_prompts)
         if result is None:
             continue
         if not args.quiet:
             print_result(result)
+        if args.export_csv:
+            write_event_log_csv(result, csv_dir)
         summary.append(result)
 
     # Summary table

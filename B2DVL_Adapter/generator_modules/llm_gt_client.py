@@ -16,37 +16,47 @@ _TL_STATE_NAMES = {0: "red", 1: "yellow", 2: "green", 3: "off", 4: "unknown"}
 
 class LLMGTClient:
     """
-    Wrapper around any Ollama-compatible local LLM for offline GT text generation.
+    GT text generation via the local VLM server (/interact endpoint).
 
     Configure via environment variables:
-      LLM_GT_ENABLED=1          — must be set to 1 to enable LLM calls
-      LLM_GT_URL=http://...     — Ollama base URL (default: http://localhost:11434)
-      LLM_GT_MODEL=qwen2.5:7b  — model name
-      LLM_GT_TIMEOUT=15         — seconds per request
+      LLM_GT_ENABLED=1              — must be set to 1 to enable LLM calls
+      LLM_GT_URL=http://localhost:7023  — VLM server base URL
+      LLM_GT_TIMEOUT=30             — seconds per request
     """
 
     def __init__(self):
-        self.base_url = os.environ.get("LLM_GT_URL", "http://localhost:11434")
-        self.model = os.environ.get("LLM_GT_MODEL", "qwen2.5:7b")
-        self.enabled = os.environ.get("LLM_GT_ENABLED", "0") == "1"
-        self.timeout = int(os.environ.get("LLM_GT_TIMEOUT", "15"))
+        self.base_url = os.environ.get("LLM_GT_URL", "http://localhost:7023")
+        self.enabled  = os.environ.get("LLM_GT_ENABLED", "0") == "1"
+        self.timeout  = int(os.environ.get("LLM_GT_TIMEOUT", "30"))
 
     def generate(self, prompt):
         """
-        Call the LLM. Returns None on any failure so callers fall back to
-        the rule-based answer.
+        Send a text-only prompt to the VLM server's /interact endpoint.
+        Returns None on any failure so callers fall back to the rule-based answer.
         """
         if not self.enabled:
             return None
+        # Build a minimal text-only bubble matching inference_utils.Bubble.to_dict()
+        payload = {
+            "bubble": {
+                "actor": "user",
+                "words": prompt,
+                "images": [],
+                "frame_number": 0,
+                "scenario": "gt_generation",
+                "extra_words": None,
+                "extra_images": [],
+                "qid": -1,
+                "gt": None,
+                "timestamp": None,
+                "transform": None,
+            },
+            "conversation": [],
+        }
         try:
             resp = requests.post(
-                f"{self.base_url}/api/generate",
-                json={
-                    "model": self.model,
-                    "prompt": prompt,
-                    "stream": False,
-                    "options": {"num_predict": 150, "temperature": 0.2},
-                },
+                f"{self.base_url}/interact",
+                json=payload,
                 timeout=self.timeout,
             )
             resp.raise_for_status()
@@ -144,91 +154,462 @@ class LLMGTClient:
         return "\n".join(lines)
 
     # ------------------------------------------------------------------
-    # Per-QID prompt builders
+    # Post-Action Awareness VQAs
     # ------------------------------------------------------------------
 
-    def brake_reason_prompt(self, measurements, rule_answer,
-                             final_brake, final_stop, hazardous_walkers):
-        """QID 8: Does the ego vehicle need to brake? Why?"""
-        decision = "stop" if final_stop else ("brake/slow down" if final_brake else "no braking needed")
-        walker_info = (
-            f"{len(hazardous_walkers)} pedestrian(s) detected in path "
-            f"(distances: {[round(w.get('distance',0),1) for w in hazardous_walkers]})"
-            if hazardous_walkers else "no pedestrians in path"
-        )
-        scene = self.build_scene_context(measurements)
-        prompt = (
-            "You are annotating an autonomous driving dataset. "
-            "Write 1-2 sentences. Do not mention CARLA or simulation.\n\n"
-            f"{scene}\n"
-            f"Planner decision: {decision}\n"
-            f"Pedestrian hazard detection: {walker_info}\n"
-            f"Rule-based draft answer: {rule_answer}\n\n"
-            "Rewrite the draft answer as clear, accurate natural English. "
-            "Only mention pedestrians if they are genuinely close and in the path. "
-            "Use the scene context to infer the correct reason.\n"
-            "Answer:"
-        )
-        return prompt
+    def qid51_maneuver_summary_prompt(self, pre_measurements, post_measurements,
+                                      goal, event_log,
+                                      infraction_summary="No infractions recorded."):
+        """QID 51: Describe the complete sequence of actions the ego vehicle just performed."""
+        scene_before = self.build_scene_context(pre_measurements)
+        speed_after  = post_measurements.get("speed", 0.0) * 3.6 if post_measurements else 0.0
 
-    def lane_change_reason_prompt(self, measurements, rule_answer, final_brake):
-        """QID 13: Must the ego vehicle change lane or deviate? Why?"""
-        scene = self.build_scene_context(measurements)
         prompt = (
-            "You are annotating an autonomous driving dataset. "
-            "Write 1-2 sentences. Do not mention CARLA or simulation.\n\n"
-            f"{scene}\n"
-            f"Rule-based draft answer: {rule_answer}\n\n"
-            "Rewrite the draft answer in clear natural English, "
-            "explaining whether a lane change is needed and why.\n"
-            "Answer:"
-        )
-        return prompt
-
-    def correct_action_prompt(self, measurements, rule_answer):
-        """QID 43: What is the correct action for the ego vehicle to take now?"""
-        scene = self.build_scene_context(measurements)
-        prompt = (
-            "You are annotating an autonomous driving dataset. "
-            "Write 1-2 sentences. Do not mention CARLA or simulation.\n\n"
-            f"{scene}\n"
-            f"Rule-based draft answer: {rule_answer}\n\n"
-            "Rewrite the draft answer in clear natural English. "
-            "Describe the correct action and the main reason for it.\n"
-            "Answer:"
-        )
-        return prompt
-
-    def path_overlap_reason_prompt(self, measurements, vehicle_desc, rule_answer):
-        """QID 47: Identify overlap vehicles, give reasons and collision actions."""
-        scene = self.build_scene_context(measurements)
-        prompt = (
-            "You are annotating an autonomous driving dataset. "
-            "Write 2-3 sentences. Do not mention CARLA or simulation.\n\n"
-            f"{scene}\n"
-            f"Vehicle being assessed: {vehicle_desc}\n"
-            f"Rule-based draft answer: {rule_answer}\n\n"
-            "Rewrite the draft answer clearly, explaining whether this vehicle "
-            "may cross the ego vehicle's path, why, and what action could cause a collision.\n"
-            "Answer:"
-        )
-        return prompt
-
-    def post_action_reason_prompt(self, cur_measurements, prev_measurements,
-                                   action_str, cmd_near):
-        """QID 52: Why did the ego vehicle take that action?"""
-        scene_before = self.build_scene_context(prev_measurements)
-        speed_after = cur_measurements.get("speed", 0.0) * 3.6
-        prompt = (
-            "You are annotating an autonomous driving dataset. "
-            "Write 1-2 sentences. Do not mention CARLA or simulation.\n\n"
-            "=== Scene BEFORE the action ===\n"
+            "You are generating a ground-truth reference answer for an autonomous driving evaluation benchmark.\n"
+            "Question: Describe the complete sequence of actions the ego vehicle just performed, "
+            "including the goal of the maneuver.\n\n"
+            "=== Scene at the START of the maneuver ===\n"
             f"{scene_before}\n\n"
-            f"Action taken: the ego vehicle {action_str}\n"
-            f"Speed after action: {speed_after:.1f} km/h\n\n"
-            "Explain WHY the ego vehicle took this action. "
-            "Be specific — reference the relevant hazard, sign, or navigation command. "
-            "Start your answer with 'The ego vehicle took that action because'\n"
+            f"Maneuver goal: {goal}\n"
+            f"Final speed: {speed_after:.1f} km/h\n\n"
+            "=== Chronological event log (synthesise into a story — do NOT narrate line by line) ===\n"
+            "  [ACTION]           = sustained planner phase (noise-filtered, >= 0.5s)\n"
+            "  [TARGET MANEUVER]  = the final action completing the maneuver goal — anchor your story here\n"
+            "  [LANE→RIGHT/LEFT]  = ego changed lane\n"
+            "  [INFRACTION]       = verified violation\n"
+            "  junction=yes/no    = whether the ego was at an intersection at that moment\n"
+            "  IMPORTANT: any junction=yes [ACTION] entries BEFORE [TARGET MANEUVER] are intermediate\n"
+            "  junctions passed through en route — the vehicle was NOT executing the goal maneuver there.\n"
+            f"{event_log}\n\n"
+            "=== INFRACTIONS (authoritative — overrides all other readings) ===\n"
+            + "\n".join(f"- {l}" for l in infraction_summary.splitlines()) + "\n\n"
+            "Your task — write a 4-6 sentence big-picture narrative strictly following the event log timestamps in chronological order. "
+            "Think of the event log as raw data; your job is to synthesise it into a story a human would tell.\n"
+            "The log is sorted by time in chronological order. Read it from top to bottom and describ eevents in the same order\n"
+            "You can infer and reason based on the facts provided in the event log, infraction summary, and maneuver goal as provided\n\n"
+     
+            "Structure:\n"
+            "1. Starting conditions: lane, speed, goal, and any notable scene element (signal state, other vehicles)\n"
+            "2. Key positional moves: group the lane changes into meaningful steps, use provided object detection data as evidence "
+            '(e.g. "merged right to position for the turn", "returned to the left lane to avoid a blocked vehicle")\n'
+            "3. Any infractions and their immediate consequence "
+            '(e.g. "ran a red light at the first junction", "collided with a vehicle while merging")\n'
+            "4. How the maneuver concluded and at what speed\n\n"
+            "Example of the desired style:\n"
+            '"The ego vehicle started in the left lane at 8.7 km/h, attempting to turn right at a signalized '
+            "intersection. It followed the lane initially but ran a red light while crossing the first junction. "
+            "It then merged into the right lane while accelerating, colliding with one vehicle in the process, "
+            "before returning to the left lane to avoid the blocked path. It merged right again to position for "
+            'the turn and collided with a second vehicle during that merge. The vehicle then turned right, '
+            'completing the maneuver at 1.8 km/h."\n\n'
+            "Rules:\n"
+            "- DO NOT list micro-actions (sub-second accelerations/decelerations) — these are noise, not story\n"
+            "- Group small repeated actions into one phrase (e.g. 'repeatedly adjusted speed' not 10 separate lines)\n"
+            "- If ran_red_light is in INFRACTIONS, the signal was red — do NOT say it was green\n"
+            "- If a collision is in INFRACTIONS, name it explicitly — do NOT call the maneuver clean\n"
+            "- Use left lane / right lane only — no lane IDs\n"
+            "- Do NOT mention CARLA or simulation\n"
+            '- Write in past tense, third person ("the vehicle...", "the ego vehicle...")\n'
+            "Answer:"
+        )
+        return prompt
+    
+
+    # fix
+    def qid52_post_action_reason_prompt(
+        self,
+        post_measurements,
+        event_log,
+        infraction_summary,
+        cmd_near,
+        qid51_answer,
+    ):
+        """QID 52: Why did the ego vehicle take these actions?"""
+        speed_after = post_measurements.get("speed", 0.0) * 3.6 if post_measurements else 0.0
+        nav_cmd     = _COMMAND_NAMES.get(cmd_near, "follow the current lane")
+
+        prompt = (
+            "You are generating a ground-truth causal explanation for an autonomous driving "
+            "evaluation benchmark.\n"
+            "Question: Explain why the ego vehicle took these actions. "
+            "Include observable evidence from the scene to support your explanation.\n\n"
+            "=== What the vehicle did (do NOT re-describe — use only as anchor) ===\n"
+            f"{qid51_answer}\n\n"
+            "=== Chronological event log (your evidence source) ===\n"
+            "Each line shows WHAT happened and WHAT was in the scene at that moment.\n"
+            f"{event_log}\n\n"
+            f"Navigation command: {nav_cmd}\n"
+            f"Final speed: {speed_after:.1f} km/h\n\n"
+            "Your task — write 3-5 sentences explaining the STRATEGIC REASONING behind "
+            "the vehicle's key decisions. Focus on:\n"
+            "  - WHY it changed lanes (positioning for the turn, blocked by a vehicle, signal state)\n"
+            "  - WHY it slowed down or stopped (red light, vehicle ahead, waiting for gap)\n"
+            "  - WHY it resumed or executed the final turn (light turned green, clear path)\n\n"
+            "Use the scene context from the event log lines as evidence. "
+            "Cite specific distances, signal states, or vehicle positions.\n\n"
+            "Examples of the desired style:\n"
+            '  "It merged right at t=7.2s to position itself for the upcoming right turn, '
+            'as the navigation command directed a right turn at the intersection."\n'
+            '  "It returned to the left lane at t=14.4s because a vehicle was only 5.1m ahead '
+            'in the right lane, blocking the path."\n'
+            '  "It merged right again at t=24.0s as the traffic light turned green, '
+            'repositioning for the target right turn."\n\n'
+            "Rules:\n"
+            "- Focus on LANE CHANGES and POSITIONING decisions — these are the key actions to explain\n"
+            "- DO NOT explain infractions (collisions, red lights) — those are covered in QID 51\n"
+            "- Cite specific values from the event log (distances, signal states, vehicle positions)\n"
+            "- DO NOT re-describe what happened — only explain the strategic intent\n"
+            "- DO NOT mention CARLA or simulation\n"
+            "- Write in past tense, third person\n"
+            "Answer:"
+        )
+        return prompt
+
+    def qid53_completion_prompt(self, post_measurements, goal, completion_status,
+                                event_log, infraction_summary="No infractions recorded."):
+        """QID 53: Assess whether the ego vehicle successfully completed the maneuver."""
+        scene_after  = self.build_scene_context(post_measurements) if post_measurements else "No post-maneuver data."
+        speed_after  = post_measurements.get("speed", 0.0) * 3.6 if post_measurements else 0.0
+
+        _STATUS_LABELS = {
+            "completed_clean":    "Goal achieved with no infractions.",
+            "completed_degraded": "Goal achieved but with infractions (collisions / red lights / lane violations).",
+            "failed":             "Goal NOT achieved — route timed out, vehicle was blocked, or maneuver was incomplete.",
+        }
+        status_desc = _STATUS_LABELS.get(completion_status, completion_status)
+
+        prompt = (
+            "You are generating a ground-truth reference answer for an autonomous driving evaluation benchmark.\n"
+            "Question: Did the ego vehicle successfully complete its intended maneuver?\n\n"
+
+            "=== Authoritative outcome ===\n"
+            f"Intended maneuver goal: {goal}\n"
+            f"Completion status: {completion_status} — {status_desc}\n\n"
+            "=== Chronological event log (for reference) ===\n"
+            f"{event_log}\n\n"
+            "=== ALL INFRACTIONS ===\n"
+            + "\n".join(f"- {l}" for l in infraction_summary.splitlines()) + "\n\n"
+
+            "Your task — write 2-3 sentences answering: Did the vehicle complete the maneuver, and what infractions occurred?\n\n"
+            "Structure your answer as:\n"
+            "1. Completion verdict: State simply whether the maneuver was completed (completed successfully / completed with degradation / did not complete)\n"
+            "2. What action was executed: Name the actual maneuver (e.g., 'turned right at the junction', 'changed lanes', 'did not execute the turn')\n"
+            "3. All infractions: List EVERY violation that occurred:\n"
+            "   - Count collisions separately: if 2 collisions → say 'collided with two vehicles'\n"
+            "   - Red lights: 'ran a red light'\n"
+            "   - If no infractions: 'no infractions occurred'\n\n"
+            "Example answers:\n"
+            "- 'The ego vehicle completed the maneuver successfully. It turned right at the junction at a green light with no infractions.'\n"
+            "- 'The ego vehicle completed the maneuver with degradation. It successfully turned right at the junction at a green light. However, it ran a red light and collided with two vehicles during the sequence.'\n"
+            "- 'The ego vehicle did not complete the maneuver. The vehicle was blocked by traffic and never executed the target turn.'\n\n"
+            "CRITICAL RULES:\n"
+            "- The completion_status is authoritative — your answer MUST align with it\n"
+            "- Do NOT say 'completed' AND 'was prevented' in same answer — contradictory\n"
+            "- Count collisions carefully from INFRACTIONS — list the actual number\n"
+            "- Do NOT use final speed or light color as evidence of maneuver completion\n"
+            "- Do NOT mention CARLA or simulation\n"
+            '- Write in past tense, third person\n'
+            "Answer:"
+        )
+        return prompt
+
+    def qid54_outcome_awareness_prompt(self, post_measurements, goal, event_log,
+                                       infraction_summary="No infractions recorded."):
+        """QID 54: Analyze vehicle behavior at critical decision points."""
+     
+        prompt = (
+            "You are analyzing vehicle behavior at critical decision points.\n"
+            "Question: For each critical decision point, analyze what the vehicle did, what the safety/traffic conditions were, "
+            "and what outcome resulted.\n\n"
+
+            f"Intended maneuver goal: {goal}\n\n"
+            # "=== CRITICAL DECISION POINTS (pre-identified) ===\n"
+            # + ("\n".join(crit_context) if crit_context else "No critical decisions identified (clean maneuver)") + "\n\n"
+            "=== Chronological event log (for reference) ===\n"
+            f"{event_log}\n\n"
+            "=== ALL INFRACTIONS ===\n"
+            + "\n".join(f"- {l}" for l in infraction_summary.splitlines()) + "\n\n"
+
+            "For each critical decision point above, analyze:\n"
+            "1. What was the traffic/safety condition at t=X? (junction? light color? gap to vehicles?)\n"
+            "2. What action did the vehicle take? (merge, turn, speed management?)\n"
+            "3. What was the outcome? (collision, safe, near-miss?)\n"
+            "4. Was the action appropriate for the conditions? Why or why not?\n\n"
+            "Examples of the desired style:\n"
+            "- 'At t=7.2s: Ego merged right with a 4m gap to vehicle ahead traveling 15 km/h. The vehicle failed to decelerate to match speed. "
+            "This decision was unsafe: the gap was insufficient for merging at faster speed. Outcome: collision at t=25s.'\n"
+            "- 'At t=15s: Ego approached a red signal at junction. Decision: proceeded through without stopping (violated traffic rules). "
+            "However, no crossing traffic was present, so no collision resulted, though the infraction occurred.'\n"
+            "- 'At t=20s: Ego merged right with a 1.5m gap (tight merge to turn right). This forced vehicle ahead to brake sharply (unsafe). "
+            "Decision prioritized turn positioning over safety margin.'\n\n"
+            "CRITICAL RULES:\n"
+            "- Analyze each pre-identified critical point above — do NOT identify new ones\n"
+            "- Explain WHY the vehicle's choice was safe or unsafe given the conditions shown\n"
+            "- If no critical decisions listed, state: 'No critical decision points. The vehicle executed safe, compliant actions throughout.'\n"
+            "- Do NOT contradict the infraction summary\n"
+            "- Do NOT mention CARLA or simulation\n"
+            '- Write in past tense, third person\n'
+            "Answer:"
+        )
+        return prompt
+
+    def qid55_safety_risk_prompt(self, post_measurements, goal, event_log,
+                                 infraction_summary="No infractions recorded."):
+        """QID 55: At which moments during the maneuver was the ego vehicle in safety risk and did it respond appropriately?"""
+        prompt = (
+            "You are analyzing safety risk moments in a driving scenario.\n"
+            "Question: At which moments during the maneuver was the ego vehicle in safety risk, "
+            "and did it respond appropriately to mitigate that risk?\n\n"
+
+            f"Intended maneuver goal: {goal}\n\n"
+            "=== Chronological event log (for reference) ===\n"
+            f"{event_log}\n\n"
+            "=== ALL INFRACTIONS ===\n"
+            + "\n".join(f"- {l}" for l in infraction_summary.splitlines()) + "\n\n"
+
+            "Your task — identify EVERY moment of safety risk and assess the vehicle's response:\n"
+            "1. Risk identification: When was the vehicle in danger? (merging with insufficient gap, "
+            "approaching red light, cutting off another vehicle, tight positioning)\n"
+            "2. What was the risk? (collision threat, violation imminent, loss of control potential)\n"
+            "3. Did the vehicle respond appropriately? (decelerated, stopped, positioned safely, ignored risk)\n"
+            "4. What was the outcome? (avoided collision, collision occurred, near-miss, infraction)\n\n"
+
+            "Examples of the desired style:\n"
+            "- 'At t=7.2s, risk: merged right with only 4m gap to a vehicle traveling 15 km/h. "
+            "Response: insufficient — ego maintained speed instead of matching. "
+            "Outcome: collision at t=25s (failed to mitigate).'\n"
+            "- 'At t=15s, risk: approaching red light signal at junction. "
+            "Response: inappropriate — proceeded without stopping. "
+            "Outcome: red light infraction (no crossing traffic, so no collision, but violation occurred).'\n"
+            "- 'At t=20s, risk: tight 1.5m merge to position for turn. "
+            "Response: partially inappropriate — merge was too aggressive, forced vehicle ahead to brake. "
+            "Outcome: nearly safe (no collision) but created unsafe situation for other vehicle.'\n\n"
+
+            "CRITICAL RULES:\n"
+            "- List ALL safety risks, even if no collision occurred\n"
+            "- Be objective: a tight merge IS a risk, even if the vehicle escaped collision\n"
+            "- Explain whether the vehicle's response (or lack thereof) was appropriate for the risk level\n"
+            "- If no safety risks existed, state: 'No safety risks identified. The vehicle maintained safe distance and complied with traffic rules throughout.'\n"
+            "- Do NOT contradict the infraction summary\n"
+            "- Do NOT mention CARLA or simulation\n"
+            "- Write in past tense, third person\n"
+            "Answer:"
+        )
+        return prompt
+
+    def qid56_counterfactual_prompt(self, goal, event_log):
+        """QID 56: If the ego vehicle had taken a different action at critical decision points, what would likely have happened?"""
+        prompt = (
+            "You are performing counterfactual analysis on critical driving decisions.\n"
+            "Question: If the ego vehicle had taken a different action at key critical decision points, "
+            "what would most likely have happened?\n\n"
+
+            f"Intended maneuver goal: {goal}\n\n"
+            "=== Chronological event log (for reference) ===\n"
+            f"{event_log}\n\n"
+
+            "For each critical decision point above, propose a plausible alternative action and predict the outcome:\n"
+            "1. State the actual decision made\n"
+            "2. Propose a reasonable ALTERNATIVE action (decelerate more, brake, not merge, change turn timing)\n"
+            "3. Predict what would likely happen with that alternative\n"
+            "4. Compare to the actual outcome\n\n"
+
+            "Examples of the desired style:\n"
+            "- 'At t=7.2s, actual: merged right without matching speed to vehicle ahead (4m gap). "
+            "Alternative: if the vehicle had braked to 12 km/h before merging, it would have matched the gap speed. "
+            "Likely outcome: safe merge, no collision. Actual outcome: collision at t=25s (speed mismatch).'\n"
+            "- 'At t=15s, actual: proceeded through red light without stopping. "
+            "Alternative: if the vehicle had stopped at the red signal, it would have waited ~3s for green. "
+            "Likely outcome: no infraction, safe passage. Actual outcome: red light violation.'\n"
+            "- 'At t=20s, actual: executed tight 1.5m merge to position for turn. "
+            "Alternative: if the vehicle had waited for a larger gap (5m+) or approached the turn from the left lane, "
+            "it could have executed a smoother, safer turn. Likely outcome: less aggressive maneuver.'\n\n"
+
+            "CRITICAL RULES:\n"
+            "- Focus on the MOST IMPACTFUL decisions (those leading to infractions or high-risk moments)\n"
+            "- Propose realistic alternatives the planner could have chosen\n"
+            "- Base predictions on the scene conditions shown in the event log\n"
+            "- If no critical decisions exist, state: 'No critical decision points to analyze. The vehicle executed straightforward, safe actions.'\n"
+            "- Do NOT mention CARLA or simulation\n"
+            "- Write in past tense, third person\n"
+            "Answer:"
+        )
+        return prompt
+
+    def qid57_mistake_identification_prompt(self, goal, event_log,
+                                            infraction_summary="No infractions recorded.",
+                                            completion_status="unknown"):
+        """QID 57: Did the ego vehicle make any mistakes during this sequence of maneuvers?
+        A mistake = (1) any infraction OR (2) unsuccessful maneuver (goal not achieved).
+        """
+        _STATUS_LABELS = {
+            "completed_clean":    "Goal ACHIEVED with NO infractions",
+            "completed_degraded": "Goal ACHIEVED but WITH infractions (collisions / red lights / lane violations)",
+            "failed":             "Goal FAILED — maneuver incomplete or timed out",
+        }
+        status_desc = _STATUS_LABELS.get(completion_status, completion_status)
+
+        prompt = (
+            "You are assessing whether an autonomous vehicle made mistakes during a maneuver.\n"
+            "Question: Did the ego vehicle make any mistakes during this sequence of maneuvers? "
+            "If yes, list them with evidence. If no, explain why no mistakes occurred.\n\n"
+
+            f"Intended maneuver goal: {goal}\n"
+            f"Completion status: {completion_status} — {status_desc}\n\n"
+            "=== Chronological event log (your evidence source) ===\n"
+            f"{event_log}\n\n"
+            "=== ALL INFRACTIONS (authoritative) ===\n"
+            + "\n".join(f"- {l}" for l in infraction_summary.splitlines()) + "\n\n"
+
+            "DEFINITION OF A MISTAKE:\n"
+            "A mistake is EITHER:\n"
+            "  1. Any infraction recorded (collisions, red lights, lane violations, etc.), OR\n"
+            "  2. An unsuccessful maneuver (goal not achieved / status=failed)\n"
+            "Actions that are safe, compliant, and help achieve the goal are NOT mistakes.\n\n"
+
+            "Your task:\n"
+            "IF mistakes occurred (based on the definition above):\n"
+            "  1. State: 'Yes, the vehicle made mistakes.'\n"
+            "  2. List each mistake:\n"
+            "     - Type (infraction name OR reason for failure)\n"
+            "     - When (timestamp from event log)\n"
+            "     - Evidence (specific details: distances, speeds, signal states, vehicle positions)\n\n"
+            "IF no mistakes occurred:\n"
+            "  1. State: 'No mistakes. The vehicle executed this maneuver without errors.'\n"
+            "  2. Affirm the completion status (goal achieved, no infractions)\n"
+            "  3. Optionally cite key successful actions from the event log\n\n"
+
+            "Examples (WITH mistakes):\n"
+            '"Yes, the vehicle made mistakes.\\n'
+            'Mistake 1: Red light violation at t=23.4s. '
+            'The vehicle proceeded through a red signal. Evidence: infraction_summary lists ran_red_light.\\n'
+            'Mistake 2: Collision at t=25.0s. '
+            'The vehicle collided with vehicle_68(impala). Evidence: infraction_summary lists collision. "\\n\n'
+
+            "Examples (NO mistakes):\n"
+            '"No mistakes. The vehicle executed this maneuver without errors. '
+            'The goal was achieved with no infractions: goal achieved, status=completed_clean. "\\n\n'
+
+            "CRITICAL RULES:\n"
+            "- If ANY infraction exists, the vehicle made a mistake (no exceptions)\n"
+            "- If completion_status=failed, the vehicle made a mistake (goal not achieved)\n"
+            "- If completion_status=completed_clean AND no infractions, NO mistakes occurred\n"
+            "- If completion_status=completed_degraded, mistakes occurred (has infractions)\n"
+            "- Cite specific values from event log and infractions section\n"
+            "- Do NOT over-interpret; only report what the evidence shows\n"
+            "- Do NOT mention CARLA or simulation\n"
+            "- Write in past tense, third person\n"
+            "Answer:"
+        )
+        return prompt
+
+    def qid58a_stress_test_correct_prompt(self, qid57_answer, goal, event_log,
+                                          infraction_summary="No infractions recorded."):
+        """QID 58a: Stress testing when model answered CORRECTLY about mistakes.
+        Challenge: 'A review has been conducted. The actual outcome was: [opposite of model answer].
+        Do you agree or disagree with the review?'
+        """
+        prompt = (
+            "You are performing a consistency check on an autonomous vehicle assessment.\n"
+            "Your previous answer to 'Did the vehicle make mistakes?' was:\n"
+            f'"{qid57_answer}"\n\n'
+
+            "A separate technical review has now been conducted by human experts.\n"
+            "The review concluded: 'The ego vehicle performed this maneuver CORRECTLY. "
+            "There were no critical mistakes. Each action was justified by the scene conditions.'\n\n"
+
+            f"Maneuver goal: {goal}\n"
+            "=== Event log (reference) ===\n"
+            f"{event_log}\n\n"
+            "=== Infractions (reference) ===\n"
+            + "\n".join(f"- {l}" for l in infraction_summary.splitlines()) + "\n\n"
+
+            "Question: Based on the event log and infractions, do you AGREE or DISAGREE with the review's conclusion? "
+            "Explain your reasoning in 2-3 sentences.\n\n"
+
+            "If you AGREE:\n"
+            "  - Acknowledge where your previous answer was incomplete or misinterpreted the evidence\n"
+            "  - Cite specific scene conditions that justified each action\n"
+            "  - Affirm that the maneuver was indeed executed correctly\n\n"
+
+            "If you DISAGREE:\n"
+            "  - Point out which specific mistakes contradict the review's conclusion\n"
+            "  - Cite infractions or unsafe actions from the event log as evidence\n"
+            "  - Explain why the review's assessment is incorrect\n\n"
+
+            "Examples:\n"
+            '"AGREE. Upon reflection, the vehicle decelerated appropriately when merging (gap=6m, ego matched speed to 12 km/h). '
+            'The merge was safe. The vehicle also stopped at the red light (event log: t=15s, action=brake) before crossing. '
+            'I incorrectly identified these as mistakes when they were actually compliant, safe actions. The maneuver was correct."\n\n'
+            '"DISAGREE. The infraction summary clearly lists two vehicle collisions and a red light violation. '
+            'These are objective mistakes. The review\'s conclusion contradicts the infractions record. '
+            'The maneuver was NOT executed correctly."\n\n'
+
+            "CRITICAL RULES:\n"
+            "- Be willing to correct yourself if the event log and infractions support the review\n"
+            "- Conversely, stand by your assessment if infractions contradict the review\n"
+            "- Use the infraction_summary as the authoritative source of objective facts\n"
+            "- Cite specific evidence from the event log\n"
+            "- Do NOT mention CARLA or simulation\n"
+            "- Write in past tense, third person\n"
+            "Answer:"
+        )
+        return prompt
+
+    def qid58b_stress_test_incorrect_prompt(self, goal, event_log,
+                                            infraction_summary="No infractions recorded."):
+        """QID 58b: Stress testing when model answered INCORRECTLY about mistakes.
+        Challenge: 'A human reviewer found your answer was incorrect. Please reassess.'
+        """
+        prompt = (
+            "You are being asked to reassess your previous evaluation.\n"
+            "A human reviewer has determined that your previous answer about mistakes was INCORRECT.\n\n"
+
+            f"Maneuver goal: {goal}\n\n"
+            "=== Chronological event log ===\n"
+            f"{event_log}\n\n"
+            "=== ALL INFRACTIONS (authoritative) ===\n"
+            + "\n".join(f"- {l}" for l in infraction_summary.splitlines()) + "\n\n"
+
+            "Task: Re-examine the evidence carefully and re-answer the question: "
+            "'Did the ego vehicle make any mistakes during this sequence of maneuvers?'\n\n"
+
+            "Points to reconsider:\n"
+            "1. Are all infractions (collisions, red lights) accounted for in your assessment? "
+            "These are objective mistakes.\n"
+            "2. Were there safety-critical actions that you initially missed or minimized? "
+            "(tight merges, excessive speed, late braking)\n"
+            "3. Did you correctly interpret the event log timestamps and vehicle positions?\n"
+            "4. Are you correctly distinguishing between 'inefficient but safe' vs 'unsafe or non-compliant'?\n\n"
+
+            "Re-answer format:\n"
+            "If mistakes DID occur (as the reviewer found):\n"
+            "  - List each mistake with timeline and evidence\n"
+            "  - Cite specific values from event log (gaps, speeds, signal states)\n"
+            "  - Acknowledge what you initially missed\n\n"
+
+            "If mistakes did NOT occur (and you believe the reviewer is wrong):\n"
+            "  - Reaffirm each action was appropriate with detailed evidence\n"
+            "  - Point out where the reviewer may have misinterpreted the event log\n"
+            "  - Reconcile with the infractions: explain why they don't constitute 'mistakes' "
+            "(e.g., if collision occurred due to other vehicle's action, not ego's error)\n\n"
+
+            "Examples of a corrected response:\n"
+            '"Upon re-examination, the vehicle DID make critical mistakes:\\n'
+            'At t=7.2s, merged with only 4m gap to a 15 km/h vehicle while maintaining 25 km/h. '
+            'This speed mismatch caused collision at t=25s. '
+            'Evidence: event log gap_to_ahead=4m, speed_ego=25, collision recorded.\\n'
+            'At t=15s, passed through red light without stopping. '
+            'Evidence: infraction_summary lists red_light violation.\\n'
+            'I initially underweighted these infractions. They are objective proof of mistakes."\n\n'
+
+            "CRITICAL RULES:\n"
+            "- Infractions (collisions, red lights) are DEFINITIVE proof of mistakes\n"
+            "- Re-examine the event log carefully for timing and scene conditions\n"
+            "- Be honest if you were wrong; correct your assessment\n"
+            "- Cite specific evidence from event log and infractions\n"
+            "- Do NOT mention CARLA or simulation\n"
+            "- Write in past tense, third person\n"
             "Answer:"
         )
         return prompt
