@@ -143,25 +143,9 @@ class StubAgent:
     via getattr/setattr on `self`.
     """
     def __init__(self, llm_client):
-        self.llm_client  = llm_client
-        self.frame_rate  = 10
-        self._qa_output  = []   # collects all emitted QAs
+        self.llm_client   = llm_client
+        self.frame_rate   = 10
         self.show_prompts = False
-
-    def add_qas_questions(self, qa_list, qid, chain, layer, qa_type,
-                          connection_up, connection_down, question, answer):
-        entry = {
-            'qid':            qid,
-            'chain':          chain,
-            'layer':          layer,
-            'qa_type':        qa_type,
-            'connection_up':  connection_up,
-            'connection_down':connection_down,
-            'question':       question,
-            'answer':         answer,
-        }
-        qa_list.append(entry)
-        self._qa_output.append(entry)
 
 
 # ── Per-route runner ──────────────────────────────────────────────────────────
@@ -219,9 +203,6 @@ def run_route(route_dir: Path, llm_client, checkpoint_path=None, verbose=False, 
         agent.current_dir_cmd = derive_dir_cmd(steer, spd, prev_speed)
         agent.current_spd_cmd = derive_spd_cmd(spd, prev_speed, brake)
 
-        # Save last frame measurements so flush can use prev_measurements
-        if frame_idx > 0:
-            agent.prev_measurements = measurements
         prev_speed = spd
 
         qas, _, _ = generate_post_action_questions(

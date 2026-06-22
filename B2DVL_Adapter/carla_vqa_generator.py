@@ -313,11 +313,6 @@ class QAsGenerator():
         self.prev_measurements = None
         self.llm_client = LLMGTClient()
 
-        # Sequence tracking for post-action QAs (51/52/53)
-        self.current_sequence_scenario = None
-        self.sequence_start_frame = -1
-        self.sequence_qid50_history = []
-        self.sequence_pre_state = None
         self.current_dir_cmd = "FOLLOW_LANE"
         self.current_spd_cmd = "KEEP"
 
