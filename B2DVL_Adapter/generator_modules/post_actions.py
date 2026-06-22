@@ -583,6 +583,52 @@ def _agent_relative_pos(vehicle_id, target_f, snapshots):
     return None
 
 
+# Half a typical vehicle length — used to separate "parallel" from "front/rear quarter" contact.
+_VEHICLE_HALF_LEN_M = 2.5
+
+
+def _collision_type(vehicle_id, target_f, snapshots):
+    """
+    Classify the collision geometry between ego and vehicle_id at target_f.
+
+    Same lane:
+      'rear_end_ahead'   — ego struck the vehicle ahead (ego's front, their rear)
+      'rear_end_behind'  — vehicle behind struck ego (their front, ego's rear)
+
+    Different lane — combines the lateral side with the longitudinal contact zone:
+      'side_{left|right}_ego_front'    — ego's front clipped the other vehicle's
+                                         side/rear while they were well ahead
+      'side_{left|right}_parallel'     — vehicles side by side; panel-to-panel contact
+      'side_{left|right}_other_front'  — other vehicle's front came into ego's side
+                                         from behind in the adjacent lane
+
+    position[0] is the ego-relative forward axis (positive = other vehicle is ahead).
+    Lane comparison: higher lane_id = further left (same convention as lane-change logic).
+    """
+    bbs = _nearest_snapshot_m(target_f, snapshots).get("bounding_boxes", [])
+    _, ego_lane = _ego_lane_info(bbs)
+
+    for bb in bbs:
+        if bb.get("class") != "vehicle" or str(bb.get("id", "")) != str(vehicle_id):
+            continue
+
+        veh_lane = bb.get("lane_id")
+        pos      = bb.get("position", [0, 0, 0])
+        fwd      = pos[0]  # positive = other vehicle is ahead of ego
+
+        if ego_lane is not None and veh_lane is not None and veh_lane != ego_lane:
+            side = "left" if veh_lane > ego_lane else "right"
+            if fwd > _VEHICLE_HALF_LEN_M:
+                return f"side_{side}_ego_front"
+            if fwd < -_VEHICLE_HALF_LEN_M:
+                return f"side_{side}_other_front"
+            return f"side_{side}_parallel"
+
+        return "rear_end_ahead" if fwd >= 0 else "rear_end_behind"
+
+    return None
+
+
 def _vehicle_response_after(vehicle_id, collision_f, snapshots, frame_rate, window_s=3.0):
     """
     What did vehicle_id do in the window_s after collision_f?
@@ -778,6 +824,7 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
             "t_s":              round(t, 1),
             "type":             "collision",
             "object_id":        f"veh_{vehicle_id}" if vehicle_id else "vehicle_unknown",
+            "collision_type":   _collision_type(vehicle_id, target_f, snapshots),
             "phase":            phase,
             "preceding_action": _preceding_action_str(history, target_f),
             "ego_speed_kmh":    round(_ego_speed_kmh_at(target_f, snapshots), 1),
