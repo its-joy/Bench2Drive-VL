@@ -307,6 +307,16 @@ def _vehicle_side(v_loc, ego_x, ego_y, ego_theta):
     return "ahead" if fwd_dot > 0 else "behind"
 
 
+def _in_junction(m):
+    """Return True if the ego vehicle is inside a junction at measurement m."""
+    if "junction" in m:
+        return bool(m["junction"])
+    bbs    = m.get("bounding_boxes", [])
+    cmd    = m.get("command_near", 4)
+    has_tl = any(b.get("class") == "traffic_light" and b.get("affects_ego") for b in bbs)
+    return (cmd in (1, 2, 3)) or has_tl
+
+
 def _quick_scene_str(m):
     """
     Dense scene string for one event log line:
@@ -324,13 +334,7 @@ def _quick_scene_str(m):
     # ── Junction detection ────────────────────────────────────────────────────
     # Primary: direct boolean from measurements/ folder (merged in test harness)
     # Fallback: command_near 1/2/3 = at intersection, or affecting traffic light present
-    if "junction" in m:
-        in_junction = bool(m["junction"])
-    else:
-        cmd    = m.get("command_near", 4)
-        has_tl = any(b.get("class") == "traffic_light" and b.get("affects_ego")
-                     for b in bbs)
-        in_junction = (cmd in (1, 2, 3)) or has_tl
+    in_junction = _in_junction(m)
     parts.append("junction=yes" if in_junction else "junction=no")
 
     # ── Ego lane_id for direction inference ───────────────────────────────────
@@ -751,11 +755,13 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
 
         target_f = int(origin_f + t * frame_rate)
         veh_id, gap = _nearest_vehicle_at(target_f, snapshots)
+        snap_m = _nearest_snapshot_m(target_f, snapshots)
 
         lane_changes.append({
             "t_s":                    round(t, 1),
             "from":                   from_lane.replace(" lane", ""),
             "to":                     to_lane.replace(" lane", ""),
+            "junction":               _in_junction(snap_m),
             "reason":                 _lc_reason(t, collision_times),
             "nearest_agent":          f"veh_{veh_id}" if veh_id else None,
             "nearest_agent_position": _agent_relative_pos(veh_id, target_f, snapshots) if veh_id else None,
@@ -777,6 +783,7 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
         infraction_rows.append((t, {
             "t_s":              round(t, 1),
             "type":             "ran_red_light",
+            "junction":         _in_junction(_nearest_snapshot_m(target_f, snapshots)),
             "phase":            _phase_at_frame(target_f, history, snapshots, origin_f, frame_rate),
             "preceding_action": _preceding_action_str(history, target_f),
             "signal_state":     "red",
@@ -825,6 +832,7 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
             "type":             "collision",
             "object_id":        f"veh_{vehicle_id}" if vehicle_id else "vehicle_unknown",
             "collision_type":   _collision_type(vehicle_id, target_f, snapshots),
+            "junction":         _in_junction(_nearest_snapshot_m(target_f, snapshots)),
             "phase":            phase,
             "preceding_action": _preceding_action_str(history, target_f),
             "ego_speed_kmh":    round(_ego_speed_kmh_at(target_f, snapshots), 1),
@@ -849,6 +857,7 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
             "t_s":              round(t, 1),
             "type":             "collision",
             "object_id":        f"pedestrian_{m_id.group(1)}" if m_id else "pedestrian_unknown",
+            "junction":         _in_junction(_nearest_snapshot_m(target_f, snapshots)),
             "phase":            _phase_at_frame(target_f, history, snapshots, origin_f, frame_rate),
             "preceding_action": _preceding_action_str(history, target_f),
             "ego_speed_kmh":    round(_ego_speed_kmh_at(target_f, snapshots), 1),
