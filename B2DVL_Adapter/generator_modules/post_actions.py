@@ -190,7 +190,7 @@ _ID_RE   = re.compile(r'\bid=(\w+)')
 _TYPE_RE = re.compile(r'type=([\w.]+)')
 
 
-_MERGE_WINDOW_S = 2.0   # seconds either side of infraction to detect merging
+_MERGE_WINDOW_S = 1.0   # seconds BEFORE infraction to detect an active merge
 
 
 def _phase_at_frame(frame_idx, history, snapshots=None, origin_f=0, frame_rate=10):
@@ -198,17 +198,17 @@ def _phase_at_frame(frame_idx, history, snapshots=None, origin_f=0, frame_rate=1
     Return the action phase label for a given frame index.
 
     Merging is detected by checking whether a physical lane-change event
-    (from snapshots) occurred within MERGE_WINDOW_S of the infraction,
-    regardless of what the planner command says at that exact frame.
+    (from snapshots) occurred within MERGE_WINDOW_S *before* the infraction.
+    A lane change that happens after the infraction does not make it a merge.
     """
-    # ── Check if a lane change happened close in time ─────────────────────
+    # ── Check if a lane change happened shortly before the infraction ─────
     if snapshots:
         infraction_t = (frame_idx - origin_f) / frame_rate
         for snap_f, _, event in snapshots:
             if event not in ("right", "left"):
                 continue
             lc_t = (snap_f - origin_f) / frame_rate
-            if abs(lc_t - infraction_t) <= _MERGE_WINDOW_S:
+            if 0 <= infraction_t - lc_t <= _MERGE_WINDOW_S:
                 return "merging"
 
     # ── Fall back to planner command label ────────────────────────────────
