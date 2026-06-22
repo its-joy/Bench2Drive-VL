@@ -558,6 +558,31 @@ def _nearest_vehicle_at(target_f, snapshots):
     return str(closest.get("id", "unknown")), closest.get("distance")
 
 
+def _agent_relative_pos(vehicle_id, target_f, snapshots):
+    """
+    Return the position of vehicle_id relative to ego at target_f.
+
+    Left/right is determined by lane_id: a higher lane_id means the vehicle
+    is to the left of ego (consistent with the lane change direction convention
+    used elsewhere in this module).
+    Ahead/behind uses position[0] — the ego-relative forward axis, where
+    positive means the vehicle is in front of the ego.
+    Returns one of: 'ahead', 'behind', 'left', 'right', or None if not found.
+    """
+    bbs = _nearest_snapshot_m(target_f, snapshots).get("bounding_boxes", [])
+    _, ego_lane = _ego_lane_info(bbs)
+
+    for bb in bbs:
+        if bb.get("class") != "vehicle" or str(bb.get("id", "")) != str(vehicle_id):
+            continue
+        veh_lane = bb.get("lane_id")
+        if ego_lane is not None and veh_lane is not None and veh_lane != ego_lane:
+            return "left" if veh_lane > ego_lane else "right"
+        pos = bb.get("position", [0, 0, 0])
+        return "ahead" if pos[0] >= 0 else "behind"
+    return None
+
+
 def _vehicle_response_after(vehicle_id, collision_f, snapshots, frame_rate, window_s=3.0):
     """
     What did vehicle_id do in the window_s after collision_f?
@@ -682,14 +707,15 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
         veh_id, gap = _nearest_vehicle_at(target_f, snapshots)
 
         lane_changes.append({
-            "t_s":             round(t, 1),
-            "from":            from_lane.replace(" lane", ""),
-            "to":              to_lane.replace(" lane", ""),
-            "reason":          _lc_reason(t, collision_times),
-            "nearest_agent":   f"veh_{veh_id}" if veh_id else None,
-            "gap_m":           round(gap, 1) if gap is not None else None,
-            "ego_speed_kmh":   round(_ego_speed_kmh_at(target_f, snapshots), 1),
-            "ego_speed_trend": _ego_speed_trend(target_f, snapshots, frame_rate),
+            "t_s":                    round(t, 1),
+            "from":                   from_lane.replace(" lane", ""),
+            "to":                     to_lane.replace(" lane", ""),
+            "reason":                 _lc_reason(t, collision_times),
+            "nearest_agent":          f"veh_{veh_id}" if veh_id else None,
+            "nearest_agent_position": _agent_relative_pos(veh_id, target_f, snapshots) if veh_id else None,
+            "gap_m":                  round(gap, 1) if gap is not None else None,
+            "ego_speed_kmh":          round(_ego_speed_kmh_at(target_f, snapshots), 1),
+            "ego_speed_trend":        _ego_speed_trend(target_f, snapshots, frame_rate),
         })
 
     # ── 3. Infractions ────────────────────────────────────────────────────────
@@ -735,11 +761,24 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
         g0 = gap_trend.get("at_collision")
         closing_kmh = round((g1 - g0) * 3.6, 1) if (g1 is not None and g0 is not None) else None
 
+        # A collision is a merge collision if the struck vehicle was also the
+        # nearest agent at a lane change within 2s — same vehicle, same moment.
+        # This is more reliable than a pure time window because it survives the
+        # case where the lane boundary is crossed slightly after the impact.
+        _LC_MATCH_WINDOW_S = 2.0
+        is_merge_collision = vehicle_id is not None and any(
+            lc.get('nearest_agent') == f"veh_{vehicle_id}"
+            and abs(lc['t_s'] - t) <= _LC_MATCH_WINDOW_S
+            for lc in lane_changes
+        )
+        phase = "merging" if is_merge_collision else _phase_at_frame(
+            target_f, history, snapshots, origin_f, frame_rate)
+
         infraction_rows.append((t, {
             "t_s":              round(t, 1),
             "type":             "collision",
             "object_id":        f"veh_{vehicle_id}" if vehicle_id else "vehicle_unknown",
-            "phase":            _phase_at_frame(target_f, history, snapshots, origin_f, frame_rate),
+            "phase":            phase,
             "preceding_action": _preceding_action_str(history, target_f),
             "ego_speed_kmh":    round(_ego_speed_kmh_at(target_f, snapshots), 1),
             "ego_speed_trend":  _ego_speed_trend(target_f, snapshots, frame_rate),
