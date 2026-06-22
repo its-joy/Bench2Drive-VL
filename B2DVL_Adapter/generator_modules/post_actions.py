@@ -1164,7 +1164,6 @@ class PostActionTracker:
         # ── QID 51 — structured facts → narrative (single stage) ─────────
         answer_51 = _gen(llm.qid51_maneuver_summary_prompt(
             facts=facts, goal=goal,
-            infraction_summary=infraction_summary,
         )) if enabled else _NO_GT
         self._add_qa(qas, 51, 1, -1, 52,
             "Describe the complete sequence of actions the ego vehicle just "

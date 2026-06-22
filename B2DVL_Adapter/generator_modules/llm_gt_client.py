@@ -158,43 +158,47 @@ class LLMGTClient:
     # Post-Action Awareness VQAs
     # ------------------------------------------------------------------
 
-    def qid51_maneuver_summary_prompt(self, facts, goal,
-                                    infraction_summary="No infractions recorded."):
-        """QID 51: Structured facts → stable GT narrative (single-stage, no reasoning)."""
+    def qid51_maneuver_summary_prompt(self, facts, goal):
+        """QID 51: Structured facts → natural GT narrative (chronology implied, no timestamps)."""
 
         prompt = (
             "You are generating a ground-truth reference description for an autonomous driving evaluation benchmark.\n"
             "Your task is to describe what happened using ONLY the structured facts provided.\n\n"
-            "Question: Describe the complete sequence of actions performed by the ego vehicle, "
-            "including the maneuver goal.\n\n"
+            "Question: Describe the complete sequence of actions performed by the vehicle, including the maneuver goal.\n\n"
             f"Maneuver goal: {goal}\n\n"
-            "=== STRUCTURED FACTS (authoritative source) ===\n"
+            "=== STRUCTURED FACTS (authoritative single source of truth) ===\n"
             f"{json.dumps(facts, indent=2)}\n\n"
-            "=== INFRACTIONS (authoritative — must be included if present) ===\n"
-            + "\n".join(f"- {l}" for l in infraction_summary.splitlines()) + "\n\n"
-            "Write a 4–6 sentence narrative in strict chronological order by t_s.\n\n"
-            "Required content coverage:\n"
-            "- Starting state: lane, speed, signal state (if present), and goal\n"
-            "- Lane changes: from/to lane, reason, and nearby agent context (gap and position)\n"
-            "- Infractions: type, junction flag if present, and collision_type if applicable\n"
-            "- Target maneuver (if present): final action and speed\n"
-            "- Final state: final_speed_kmh and completion_status\n\n"
-            "Rules:\n"
-            "- Use ONLY explicitly stated values from the structured facts — do NOT infer or guess\n"
-            "- Do NOT introduce causality or reasoning words (e.g., because, caused, therefore, led to)\n"
-            "- Do NOT assume intent or explain why actions occurred\n"
-            "- Preserve strict chronological order based on t_s\n"
-            "- If a field is missing, omit it completely\n"
-            "- Use natural language only (do not repeat field names or JSON keys)\n"
-            "- Use only 'left lane' and 'right lane' for lane descriptions\n"
-            "- If junction is true, you may say 'at the intersection' if explicitly present\n"
-            "- Do NOT mention CARLA, simulation, or system internals\n"
-            "- Write in past tense, third person (e.g., 'the vehicle')\n\n"
-            "Output ONLY the final narrative.\n"
+            "Write a 4–6 sentence narrative describing the full driving episode.\n\n"
+            "CRITICAL REQUIREMENTS:\n"
+            "- Use ONLY explicitly stated facts (do NOT infer intent, reasoning, or hidden causes)\n"
+            "- Do NOT use timestamps or reference time values in the output\n"
+            "- Preserve chronological order implicitly (follow event order by t_s in the facts)\n"
+            "- Do NOT use causal words (because, caused, led to, therefore)\n"
+            "- Do NOT mention JSON fields, keys, or structure\n"
+            "- Write in past tense, third person (use 'the vehicle')\n"
+            "- Keep narrative fluent and human-like (not a log)\n\n"
+            "CONTENT REQUIREMENTS:\n"
+            "1. Start state: lane, speed, signal (if present), and goal\n"
+            "2. Lane changes: from/to lane, reason, and nearby vehicle context if present\n"
+            "3. Infractions and collisions (use natural language only)\n"
+            "4. Target maneuver completion (if present)\n"
+            "5. Final speed and completion status\n\n"
+            "COLLISION NATURAL LANGUAGE MAPPING:\n"
+            "- rear_end_ahead → 'rear-ended a vehicle ahead'\n"
+            "- side_right_parallel → 'sideswiped a vehicle on the right'\n"
+            "- side_left_parallel → 'sideswiped a vehicle on the left'\n"
+            "- front_collision → 'collided with a vehicle in front'\n"
+            "- rear_collision → 'was hit from behind'\n\n"
+            "LANE RULES:\n"
+            "- Use only 'left lane' and 'right lane'\n\n"
+            "JUNCTION RULE:\n"
+            "- If junction is true, you may say 'at the intersection' (only if explicitly stated)\n\n"
+            "OUTPUT:\n"
+            "Return ONLY the final narrative.\n"
         )
 
         return prompt
-    
+        
 
     # fix
     def qid52_post_action_reason_prompt(
