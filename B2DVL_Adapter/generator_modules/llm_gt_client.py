@@ -159,34 +159,40 @@ class LLMGTClient:
     # ------------------------------------------------------------------
 
     def qid51_maneuver_summary_prompt(self, facts, goal,
-                                      infraction_summary="No infractions recorded."):
-        """QID 51: Structured facts → stable narrative (single-stage, no intermediate reasoning)."""
+                                    infraction_summary="No infractions recorded."):
+        """QID 51: Structured facts → stable GT narrative (single-stage, no reasoning)."""
+
         prompt = (
-            "You are generating a ground-truth reference answer for an autonomous driving "
-            "evaluation benchmark.\n"
-            "Question: Describe the complete sequence of actions the ego vehicle just performed, "
-            "including the goal of the maneuver.\n\n"
+            "You are generating a ground-truth reference description for an autonomous driving evaluation benchmark.\n"
+            "Your task is to describe what happened using ONLY the structured facts provided.\n\n"
+            "Question: Describe the complete sequence of actions performed by the ego vehicle, "
+            "including the maneuver goal.\n\n"
             f"Maneuver goal: {goal}\n\n"
-            "=== STRUCTURED FACTS (authoritative source — use exactly as given) ===\n"
+            "=== STRUCTURED FACTS (authoritative source) ===\n"
             f"{json.dumps(facts, indent=2)}\n\n"
-            "=== INFRACTIONS (authoritative — overrides all other readings) ===\n"
+            "=== INFRACTIONS (authoritative — must be included if present) ===\n"
             + "\n".join(f"- {l}" for l in infraction_summary.splitlines()) + "\n\n"
-            "Write a 4-6 sentence narrative that covers, in chronological order by t_s:\n"
-            "1. Starting conditions: lane, speed, signal state, and goal\n"
-            "2. Each lane change: from/to lane, reason, nearest agent position and gap\n"
-            "3. Each infraction: type, junction context, collision_type if applicable, "
-            "closing speed, and the other vehicle's response\n"
-            "4. The target maneuver completion (if present) and final speed\n\n"
+            "Write a 4–6 sentence narrative in strict chronological order by t_s.\n\n"
+            "Required content coverage:\n"
+            "- Starting state: lane, speed, signal state (if present), and goal\n"
+            "- Lane changes: from/to lane, reason, and nearby agent context (gap and position)\n"
+            "- Infractions: type, junction flag if present, and collision_type if applicable\n"
+            "- Target maneuver (if present): final action and speed\n"
+            "- Final state: final_speed_kmh and completion_status\n\n"
             "Rules:\n"
-            "- Use ONLY values from the structured facts above — do not invent or infer details\n"
-            "- Translate field values into natural language "
-            '(e.g. collision_type "side_right_parallel" → "sideswiped a vehicle on the right")\n'
-            "- If junction is true, name the location as 'at the intersection'\n"
-            "- Use left lane / right lane only — no lane IDs or numeric identifiers\n"
-            "- Do NOT mention CARLA, simulation, or internal field names\n"
-            '- Write in past tense, third person ("the vehicle...", "the ego vehicle...")\n'
-            "Answer:"
+            "- Use ONLY explicitly stated values from the structured facts — do NOT infer or guess\n"
+            "- Do NOT introduce causality or reasoning words (e.g., because, caused, therefore, led to)\n"
+            "- Do NOT assume intent or explain why actions occurred\n"
+            "- Preserve strict chronological order based on t_s\n"
+            "- If a field is missing, omit it completely\n"
+            "- Use natural language only (do not repeat field names or JSON keys)\n"
+            "- Use only 'left lane' and 'right lane' for lane descriptions\n"
+            "- If junction is true, you may say 'at the intersection' if explicitly present\n"
+            "- Do NOT mention CARLA, simulation, or system internals\n"
+            "- Write in past tense, third person (e.g., 'the vehicle')\n\n"
+            "Output ONLY the final narrative.\n"
         )
+
         return prompt
     
 
