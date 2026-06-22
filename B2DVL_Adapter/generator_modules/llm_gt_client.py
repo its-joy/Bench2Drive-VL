@@ -165,7 +165,7 @@ class LLMGTClient:
         """
 
         print(facts)
-        
+
         prompt = (
             "You are building an intermediate causal chain from structured autonomous driving facts.\n"
             "Your output will be passed to a second stage that converts it into prose — "
@@ -201,6 +201,8 @@ class LLMGTClient:
                                       goal, causal_chain,
                                       infraction_summary="No infractions recorded."):
         """QID 51 Stage 2: Convert a causal chain into a fluent prose narrative."""
+        print(causal_chain)
+        
         scene_before = self.build_scene_context(pre_measurements)
         speed_after  = post_measurements.get("speed", 0.0) * 3.6 if post_measurements else 0.0
 
