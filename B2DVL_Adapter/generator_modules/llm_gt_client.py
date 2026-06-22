@@ -158,82 +158,32 @@ class LLMGTClient:
     # Post-Action Awareness VQAs
     # ------------------------------------------------------------------
 
-    def qid51a_causal_chain_prompt(self, facts, goal):
-        """
-        QID 51 Stage 1: Convert structured facts into a timestamped causal chain.
-        Output is passed directly to qid51_maneuver_summary_prompt for prosing.
-        """
-
-        print(facts)
-
-        prompt = (
-            "You are building an intermediate causal chain from structured autonomous driving facts.\n"
-            "Your output will be passed to a second stage that converts it into prose — "
-            "focus on completeness and causal clarity, not style.\n\n"
-            f"Maneuver goal: {goal}\n\n"
-            "=== STRUCTURED FACTS ===\n"
-            f"{json.dumps(facts, indent=2)}\n\n"
-            "Task: Using ONLY the facts above, connect every event in strict chronological order "
-            "(by t_s) into a causal sequence.\n\n"
-            "For each event output one line:\n"
-            "  [t=<t_s>s] <what happened> | BECAUSE: <preceding condition that caused it> "
-            "| CAUSED: <what followed or changed>\n\n"
-            "Coverage rules — every item below must appear as its own line:\n"
-            "- starting_state: one line summarising lane, speed, signal, goal\n"
-            "- each lane_change: include from/to lane, ego_speed_kmh, ego_speed_trend, "
-            "nearest_agent gap_m, and reason\n"
-            "- each infraction: include type, phase, ego_speed_kmh; for collisions also include "
-            "gap_trend_m (t-2.0s → at_collision), closing_speed_kmh, and "
-            "post_collision_vehicle_response\n"
-            "- target_maneuver (if present): mark clearly as goal completion with speed_kmh\n"
-            "- final_speed_kmh and completion_status as the closing line\n\n"
-            "Rules:\n"
-            "- Use ONLY facts from the structured data — do NOT invent details\n"
-            "- Use ego_speed_trend as causal evidence (e.g. 'was decelerating → created gap')\n"
-            "- For collisions, cite gap shrinkage from gap_trend_m as the BECAUSE evidence\n"
-            "- If a field is null, omit it rather than writing 'unknown'\n"
-            "- Do NOT write prose paragraphs — one bullet line per event only\n"
-            "Causal chain:"
-        )
-        return prompt
-
-    def qid51_maneuver_summary_prompt(self, pre_measurements, post_measurements,
-                                      goal, causal_chain,
+    def qid51_maneuver_summary_prompt(self, facts, goal,
                                       infraction_summary="No infractions recorded."):
-        """QID 51 Stage 2: Convert a causal chain into a fluent prose narrative."""
-        print(causal_chain)
-        
-        scene_before = self.build_scene_context(pre_measurements)
-        speed_after  = post_measurements.get("speed", 0.0) * 3.6 if post_measurements else 0.0
-
+        """QID 51: Structured facts → stable narrative (single-stage, no intermediate reasoning)."""
         prompt = (
             "You are generating a ground-truth reference answer for an autonomous driving "
             "evaluation benchmark.\n"
             "Question: Describe the complete sequence of actions the ego vehicle just performed, "
             "including the goal of the maneuver.\n\n"
-            "=== Scene at the START of the maneuver ===\n"
-            f"{scene_before}\n\n"
-            f"Maneuver goal: {goal}\n"
-            f"Final speed: {speed_after:.1f} km/h\n\n"
-            "=== CAUSAL CHAIN (your source material — convert this into prose) ===\n"
-            f"{causal_chain}\n\n"
+            f"Maneuver goal: {goal}\n\n"
+            "=== STRUCTURED FACTS (authoritative source — use exactly as given) ===\n"
+            f"{json.dumps(facts, indent=2)}\n\n"
             "=== INFRACTIONS (authoritative — overrides all other readings) ===\n"
             + "\n".join(f"- {l}" for l in infraction_summary.splitlines()) + "\n\n"
-            "Your task: Write a 4-6 sentence big-picture narrative based strictly on the causal "
-            "chain above. The chain already has facts and causes sorted out — your job is only "
-            "to convert it into fluent, readable prose in chronological order.\n\n"
-            "Structure:\n"
-            "1. Starting conditions: lane, speed, goal, and any notable scene element\n"
-            "2. Key events in time order, grouped into meaningful steps\n"
-            "3. Any infractions and their immediate consequence\n"
-            "4. How the maneuver concluded and at what speed\n\n"
+            "Write a 4-6 sentence narrative that covers, in chronological order by t_s:\n"
+            "1. Starting conditions: lane, speed, signal state, and goal\n"
+            "2. Each lane change: from/to lane, reason, nearest agent position and gap\n"
+            "3. Each infraction: type, junction context, collision_type if applicable, "
+            "closing speed, and the other vehicle's response\n"
+            "4. The target maneuver completion (if present) and final speed\n\n"
             "Rules:\n"
-            "- DO NOT add facts that are not in the causal chain above\n"
-            "- Group small repeated actions into one phrase — no micro-action listing\n"
-            "- If ran_red_light is in INFRACTIONS, the signal was red — do NOT say it was green\n"
-            "- If a collision is in INFRACTIONS, name it explicitly\n"
-            "- Use left lane / right lane only — no lane IDs\n"
-            "- Do NOT mention CARLA or simulation\n"
+            "- Use ONLY values from the structured facts above — do not invent or infer details\n"
+            "- Translate field values into natural language "
+            '(e.g. collision_type "side_right_parallel" → "sideswiped a vehicle on the right")\n'
+            "- If junction is true, name the location as 'at the intersection'\n"
+            "- Use left lane / right lane only — no lane IDs or numeric identifiers\n"
+            "- Do NOT mention CARLA, simulation, or internal field names\n"
             '- Write in past tense, third person ("the vehicle...", "the ego vehicle...")\n'
             "Answer:"
         )

@@ -1161,18 +1161,11 @@ class PostActionTracker:
         def _gen(prompt):
             return llm.generate(prompt) or _NO_GT
 
-        # ── QID 51 — two-stage: facts → causal chain → prose narrative ────
-        # Stage 1: link facts into a timestamped causal sequence
-        causal_chain = _gen(llm.qid51a_causal_chain_prompt(
-            facts=facts, goal=goal,
-        )) if enabled else _NO_GT
-        print_debug(f"[QID51 stage1 causal_chain]\n{causal_chain}")
-
-        # Stage 2: convert causal chain into fluent prose
+        # ── QID 51 — structured facts → narrative (single stage) ─────────
         answer_51 = _gen(llm.qid51_maneuver_summary_prompt(
-            pre_measurements=pre_m, post_measurements=post_m, goal=goal,
-            causal_chain=causal_chain, infraction_summary=infraction_summary,
-        )) if (enabled and pre_m) else _NO_GT
+            facts=facts, goal=goal,
+            infraction_summary=infraction_summary,
+        )) if enabled else _NO_GT
         self._add_qa(qas, 51, 1, -1, 52,
             "Describe the complete sequence of actions the ego vehicle just "
             "performed, including the goal of the maneuver.",
