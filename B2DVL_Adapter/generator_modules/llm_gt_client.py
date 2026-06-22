@@ -1,3 +1,4 @@
+import json
 import requests
 import os
 
@@ -162,8 +163,9 @@ class LLMGTClient:
         QID 51 Stage 1: Convert structured facts into a timestamped causal chain.
         Output is passed directly to qid51_maneuver_summary_prompt for prosing.
         """
-        import json
 
+        print(facts)
+        
         prompt = (
             "You are building an intermediate causal chain from structured autonomous driving facts.\n"
             "Your output will be passed to a second stage that converts it into prose — "
