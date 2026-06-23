@@ -161,6 +161,7 @@ class LLMGTClient:
     def qid51_maneuver_summary_prompt(self, facts, goal):
         """QID 51: Structured facts → natural GT narrative (chronology implied, no timestamps)."""
 
+        print(facts)
         prompt = (
             "You are generating a ground-truth reference description for an autonomous driving evaluation benchmark.\n"
             "Your task is to describe what happened using ONLY the structured facts provided.\n\n"
