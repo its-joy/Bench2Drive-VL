@@ -52,6 +52,11 @@ SCENARIO_MANEUVER_DESCRIPTIONS = {
     "Normal":                                  "complete normal lane-following driving",
 }
 
+SCENARIO_SUCCESS_CONDITIONS = {
+    k: f"successfully {v} without collisions or infractions"
+    for k, v in SCENARIO_MANEUVER_DESCRIPTIONS.items()
+}
+
 MIN_PHASE_DUR = 0.5   # seconds — phases shorter than this are road-curve noise, skip them
 
 # Maps every Bench2Drive scenario type to the planner command(s) that signal
@@ -679,8 +684,217 @@ def _lc_reason(lc_t, collision_times):
     return "positioning"
 
 
+# ------------------------------------------------------------------
+# Mermaid GT-schema helpers  (Goal / Events / DecisionPoint)
+# ------------------------------------------------------------------
+
+def _derive_location(scenario_type, starting_state, pre_m):
+    lane = starting_state.get("lane", "unknown")
+    if pre_m and _in_junction(pre_m):
+        return f"{lane} at junction"
+    if scenario_type:
+        if "Signalized" in scenario_type and "Junction" in scenario_type:
+            return f"{lane} approaching signalized junction"
+        if "Junction" in scenario_type:
+            return f"{lane} approaching junction"
+        if "Highway" in scenario_type:
+            return f"{lane} on highway"
+        if "Interurban" in scenario_type:
+            return f"{lane} on interurban road"
+    return f"{lane} on road"
+
+
+def _build_events_list(event_rows, snapshots, origin_f, frame_rate):
+    events = []
+    for t, tag, body in event_rows:
+        target_f = int(origin_f + t * frame_rate)
+        snap_m = _nearest_snapshot_m(target_f, snapshots)
+        ego_action = body.split("|")[0].strip()
+        events.append({
+            "t_s":        round(t, 1),
+            "ego_action": ego_action,
+            "junction":   _in_junction(snap_m),
+        })
+    return events
+
+
+def _risk_level_from_gap(gap_m):
+    if gap_m is None:  return None
+    if gap_m < 2.0:    return "critical"
+    if gap_m < 4.0:    return "high"
+    if gap_m < 6.0:    return "medium"
+    return "low"
+
+
+def _build_risk_annotation(tag, body, target_f, snapshots, t, lane_changes):
+    snap_m = _nearest_snapshot_m(target_f, snapshots)
+    bbs    = snap_m.get("bounding_boxes", [])
+
+    if "INFRACTION" in tag:
+        infr_type = body.split("|")[0].strip()
+        if infr_type == "ran_red_light":
+            return {
+                "risk_level":      "high",
+                "risk_type":       "red_light_violation",
+                "hazards":         ["red_traffic_light"],
+                "agents_involved": [],
+                "response":        "proceeded_without_stopping",
+                "appropriate":     False,
+            }
+        # collision
+        obj = next((p.split("=")[1].strip() for p in body.split("|") if "object=" in p), "unknown")
+        return {
+            "risk_level":      "critical",
+            "risk_type":       "collision",
+            "hazards":         ["collision_with_agent"],
+            "agents_involved": [obj],
+            "response":        "no_evasive_action",
+            "appropriate":     False,
+        }
+
+    if "LANE→" in tag:
+        lc = next((l for l in lane_changes if abs(l["t_s"] - t) < 0.5), None)
+        if lc is None:
+            return None
+        gap = lc.get("gap_m")
+        if gap is None or gap > 8.0:
+            return None
+        appropriate = lc.get("ego_speed_trend") == "decelerating"
+        agent = lc.get("nearest_agent")
+        return {
+            "risk_level":      _risk_level_from_gap(gap),
+            "risk_type":       "tight_merge_gap",
+            "hazards":         [f"gap_{gap:.1f}m_to_agent"],
+            "agents_involved": [agent] if agent else [],
+            "response":        "decelerated" if appropriate else "maintained_or_accelerated",
+            "appropriate":     appropriate,
+        }
+
+    if "TARGET MANEUVER" in tag:
+        red = any(
+            b.get("class") == "traffic_light" and b.get("affects_ego") and b.get("state") == 0
+            for b in bbs
+        )
+        if red:
+            return {
+                "risk_level":      "high",
+                "risk_type":       "red_light_at_maneuver",
+                "hazards":         ["red_signal_at_execution"],
+                "agents_involved": [],
+                "response":        "proceeded_through_red",
+                "appropriate":     False,
+            }
+
+    return None
+
+
+def _build_outcome_annotation(tag, body, completion_status):
+    if "TARGET MANEUVER" in tag:
+        successful = completion_status in ("completed_clean", "completed_degraded")
+        return {
+            "outcome":    "target_maneuver_executed" if successful else "target_maneuver_not_completed",
+            "successful": successful,
+        }
+    if "INFRACTION" in tag and body.split("|")[0].strip() == "collision":
+        return {"outcome": "collision_occurred", "successful": False}
+    return None
+
+
+def _build_infraction_annotation(tag, body, target_f, snapshots):
+    if "INFRACTION" not in tag:
+        return None
+    parts       = [p.strip() for p in body.split("|")]
+    infr_type   = parts[0] if parts else "unknown"
+
+    if infr_type == "ran_red_light":
+        return {
+            "infraction":       "ran_red_light",
+            "infraction_fault": "ego",
+            "caused_by":        ["ego_ignored_red_signal"],
+        }
+
+    if infr_type == "collision":
+        obj = next((p.split("=")[1].strip() for p in parts if p.startswith("object=")), None)
+        ctype = None
+        if obj:
+            vid = obj.split("_", 1)[1] if "_" in obj else obj
+            ctype = _collision_type(vid, target_f, snapshots)
+        fault = "ego"
+        if ctype == "rear_end_behind":
+            fault = "other"
+        elif ctype and "other_front" in ctype:
+            fault = "ambiguous"
+        return {
+            "infraction":       "collision",
+            "infraction_fault": fault,
+            "caused_by":        [obj] if obj else ["unknown"],
+        }
+
+    return {"infraction": infr_type, "infraction_fault": "ego", "caused_by": []}
+
+
+def _derive_available_actions(tag, body, snap_m):
+    bbs    = snap_m.get("bounding_boxes", [])
+    has_tl = any(b.get("class") == "traffic_light" and b.get("affects_ego") for b in bbs)
+
+    if "INFRACTION" in tag:
+        if "ran_red_light" in body:
+            return "stop_at_red_light, proceed_through_red_light"
+        return "brake_hard, swerve, maintain_speed"
+
+    if "LANE→" in tag:
+        direction = "right" if "RIGHT" in tag else "left"
+        opp = "left" if direction == "right" else "right"
+        return f"change_lane_{direction}, stay_in_lane, change_lane_{opp}"
+
+    if "TARGET MANEUVER" in tag:
+        action = body.split("|")[0].strip().lower()
+        if "left" in action:
+            return "turn_left, go_straight" + (", wait_for_green" if has_tl else "")
+        if "right" in action:
+            return "turn_right, go_straight" + (", wait_for_green" if has_tl else "")
+        return "go_straight, stop, turn"
+
+    return "go_straight, decelerate, stop"
+
+
+def _build_decision_points(event_rows, snapshots, origin_f, frame_rate,
+                            lane_changes, completion_status):
+    dps = []
+    for t, tag, body in event_rows:
+        if not any(dt in tag for dt in ("LANE→", "TARGET MANEUVER", "INFRACTION")):
+            continue
+
+        target_f = int(origin_f + t * frame_rate)
+        snap_m   = _nearest_snapshot_m(target_f, snapshots)
+
+        if "LANE→" in tag:
+            direction = "right" if "RIGHT" in tag else "left"
+            chosen    = f"lane_change_{direction}"
+            reason    = next((l["reason"] for l in lane_changes if abs(l["t_s"] - t) < 0.5),
+                              "positioning")
+        elif "INFRACTION" in tag:
+            chosen = body.split("|")[0].strip()
+            reason = "infraction"
+        else:
+            chosen = body.split("|")[0].strip()
+            reason = "target_maneuver_execution"
+
+        dps.append({
+            "t_s":               round(t, 1),
+            "situation":         _quick_scene_str(snap_m),
+            "available_actions": _derive_available_actions(tag, body, snap_m),
+            "chosen_action":     chosen,
+            "reason":            reason,
+            "risk":              _build_risk_annotation(tag, body, target_f, snapshots, t, lane_changes),
+            "outcome":           _build_outcome_annotation(tag, body, completion_status),
+            "infraction":        _build_infraction_annotation(tag, body, target_f, snapshots),
+        })
+    return dps
+
+
 def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, frame_rate,
-                             pre_m, post_m, completion_status, goal):
+                             pre_m, post_m, completion_status, goal, scenario_type=None):
     """
     Build a structured fact dict from full-route event data for use as LLM context.
 
@@ -908,6 +1122,23 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
         }
         break
 
+    # ── Mermaid GT schema fields ──────────────────────────────────────────────
+    goal_location = _derive_location(scenario_type, starting_state, pre_m)
+    success_cond  = SCENARIO_SUCCESS_CONDITIONS.get(
+        scenario_type, f"successfully {goal} without infractions")
+
+    goal_list = [{
+        "goal":              goal,
+        "location":          goal_location,
+        "success_condition": success_cond,
+        "completion_status": completion_status,
+    }]
+
+    events_list = _build_events_list(event_rows, snapshots, origin_f, frame_rate)
+
+    decision_points_list = _build_decision_points(
+        event_rows, snapshots, origin_f, frame_rate, lane_changes, completion_status)
+
     return {
         "starting_state":    starting_state,
         "lane_changes":      lane_changes,
@@ -915,6 +1146,10 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
         "target_maneuver":   target_maneuver,
         "final_speed_kmh":   round(post_m.get("speed", 0.0) * 3.6 if post_m else 0.0, 1),
         "completion_status": completion_status,
+        # ── Mermaid GT schema ──────────────────────────────────────────────
+        "goal":              goal_list,
+        "events":            events_list,
+        "decision_points":   decision_points_list,
     }
 
 
@@ -1049,6 +1284,7 @@ class PostActionTracker:
             post_m            = self._prev_measurements,
             completion_status = self.last_completion_status,
             goal              = goal,
+            scenario_type     = getattr(self, 'last_scenario_type', None),
         )
 
     # ------------------------------------------------------------------
@@ -1095,6 +1331,7 @@ class PostActionTracker:
     def _emit(self, qas, completed, pre_m, post_m, seq_history, measurements):
         """Build and append QIDs 51-58 for one completed scenario."""
         goal = SCENARIO_MANEUVER_DESCRIPTIONS.get(completed, "complete the driving maneuver")
+        self.last_scenario_type = completed
 
         cp   = self.checkpoint_record or {}
         infr = cp.get('infractions', {})
@@ -1144,6 +1381,7 @@ class PostActionTracker:
             post_m=post_m,
             completion_status=completion_status,
             goal=goal,
+            scenario_type=completed,
         )
         self.last_facts = facts
 
