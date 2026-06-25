@@ -1,0 +1,1074 @@
+{
+    "scenario": "RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_06_11_07_50_56",
+    "frame_number": 240,
+    "key_object_infos": {
+        "<c68<CAM_FRONT,810.6,493.8>>": {
+            "id": "68",
+            "Category": "Vehicle",
+            "Status": null,
+            "Visual_description": "maroon car",
+            "Detailed_description": "the maroon car that is to the front of the ego vehicle",
+            "2d_bbox": {
+                "CAM_FRONT": [
+                    [
+                        738.4,
+                        461.4
+                    ],
+                    [
+                        882.8,
+                        526.2
+                    ]
+                ]
+            },
+            "3d_bbox": {
+                "CAM_FRONT": [
+                    [
+                        31.7,
+                        2.3,
+                        -0.5
+                    ],
+                    [
+                        31.7,
+                        2.2,
+                        -1.9
+                    ],
+                    [
+                        32.4,
+                        0.4,
+                        -0.4
+                    ],
+                    [
+                        32.4,
+                        0.3,
+                        -1.8
+                    ],
+                    [
+                        26.7,
+                        0.5,
+                        -0.4
+                    ],
+                    [
+                        26.7,
+                        0.4,
+                        -1.8
+                    ],
+                    [
+                        27.3,
+                        -1.4,
+                        -0.3
+                    ],
+                    [
+                        27.3,
+                        -1.5,
+                        -1.7
+                    ]
+                ]
+            },
+            "is_role": false,
+            "is_dangerous": false,
+            "obj_dict": {
+                "class": "vehicle",
+                "state": "dynamic",
+                "id": "68",
+                "location": [
+                    -97.98308563232422,
+                    104.28177642822266,
+                    -0.007753725629299879
+                ],
+                "rotation": [
+                    0.029479095712304115,
+                    -0.002685546176508069,
+                    -113.16522216796875
+                ],
+                "bbx_loc": [
+                    5.930567203904502e-05,
+                    0.0017862672684714198,
+                    0.7014925479888916
+                ],
+                "center": [
+                    -97.98135375976562,
+                    104.28136444091797,
+                    0.6937388777732849
+                ],
+                "extent": [
+                    2.6787397861480713,
+                    1.0166014432907104,
+                    0.7053293585777283
+                ],
+                "world_cord": [
+                    [
+                        -98.10037994384766,
+                        101.41902923583984,
+                        1.40049409866333
+                    ],
+                    [
+                        -98.10060119628906,
+                        101.4183349609375,
+                        -0.010164540261030197
+                    ],
+                    [
+                        -99.96965026855469,
+                        102.21886444091797,
+                        1.400398850440979
+                    ],
+                    [
+                        -99.96987915039062,
+                        102.21817016601562,
+                        -0.01025984063744545
+                    ],
+                    [
+                        -95.99283599853516,
+                        106.34455871582031,
+                        1.3977376222610474
+                    ],
+                    [
+                        -95.99305725097656,
+                        106.34386444091797,
+                        -0.012921003624796867
+                    ],
+                    [
+                        -97.86210632324219,
+                        107.1443862915039,
+                        1.3976423740386963
+                    ],
+                    [
+                        -97.86233520507812,
+                        107.1436996459961,
+                        -0.01301630213856697
+                    ]
+                ],
+                "semantic_tags": [
+                    14
+                ],
+                "type_id": "vehicle.chevrolet.impala",
+                "color": "71,12,12",
+                "base_type": "car",
+                "num_points": 38,
+                "distance": 30.32942093615932,
+                "speed": 1.0796255405089965,
+                "brake": 0.0,
+                "throttle": 0.8500000238418579,
+                "steer": 0.038097165524959564,
+                "light_state": "NONE",
+                "road_id": 5,
+                "lane_id": -2,
+                "section_id": 0,
+                "world2vehicle": [
+                    [
+                        -0.3933839201927185,
+                        -0.9193741679191589,
+                        0.0005145072937011719,
+                        57.329002380371094
+                    ],
+                    [
+                        0.9193742871284485,
+                        -0.3933839499950409,
+                        4.687161708716303e-05,
+                        131.1059112548828
+                    ],
+                    [
+                        0.0001593063643667847,
+                        0.0004914633464068174,
+                        0.9999998807907104,
+                        -0.0278876181691885
+                    ],
+                    [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                ],
+                "wp_angle": 1.675311971936275,
+                "position": [
+                    30.326555212986932,
+                    0.3735859414850182,
+                    -0.18523587006528341
+                ],
+                "yaw": 0.3403802168196815,
+                "color_rgb": null,
+                "color_name": null,
+                "lane_type": 2,
+                "lane_type_str": "Driving",
+                "is_in_junction": false,
+                "junction_id": -1,
+                "distance_to_junction": 62.038944244384766,
+                "next_junction_id": 719,
+                "next_road_ids": [
+                    763
+                ],
+                "next_next_road_ids": [
+                    18
+                ],
+                "same_road_as_ego": true,
+                "same_direction_as_ego": true,
+                "lane_relative_to_ego": 0,
+                "relative_speed": 15.410517568389798,
+                "approaching_dot_product": -467.0854192703777,
+                "intersection_point": [
+                    29.27171854792311,
+                    0.0
+                ],
+                "ego_to_intersection": 29.27171854792311,
+                "actor_to_intersection": 0.3809616424633996,
+                "actor_arrive_intersection_time": 0.35286460737469466,
+                "intersection_point_left": [
+                    7.655649303276711,
+                    -7.65564930327671
+                ],
+                "ego_to_intersection_left": 10.82672307346606,
+                "actor_to_intersection_left": -22.550750370469892,
+                "intersection_point_right": [
+                    -16.05209675985815,
+                    -16.052096759858145
+                ],
+                "ego_to_intersection_right": -22.701092942316606,
+                "actor_to_intersection_right": -47.70144724521313,
+                "actor_arrive_intersection_time_left": -20.887566590762752,
+                "actor_arrive_intersection_time_right": -44.18332602869322,
+                "lane_yaw_degree": 246.83477783203125,
+                "vehicle_yaw_degree": 245.15972315077425,
+                "lane_deviant_degree": -1.675054681256995,
+                "vehicle_cuts_in": false
+            },
+            "position": [
+                30.326555212986932,
+                0.3735859414850182,
+                -0.18523587006528341
+            ],
+            "distance": 30.32942093615932,
+            "speed": [
+                30.326555212986932,
+                0.3735859414850182,
+                -0.18523587006528341
+            ],
+            "same_dir": true,
+            "is_sign": false
+        },
+        "<c104<CAM_FRONT,183.4,483.4><CAM_FRONT_LEFT,1445.6,483.6>>": {
+            "id": "104",
+            "Category": "Vehicle",
+            "Status": null,
+            "Visual_description": "black car",
+            "Detailed_description": "the black car that is to the front left of the ego vehicle",
+            "2d_bbox": {
+                "CAM_FRONT": [
+                    [
+                        22.5,
+                        423.7
+                    ],
+                    [
+                        344.3,
+                        543.2
+                    ]
+                ],
+                "CAM_FRONT_LEFT": [
+                    [
+                        1287.3,
+                        426.5
+                    ],
+                    [
+                        1603.8,
+                        540.6
+                    ]
+                ]
+            },
+            "3d_bbox": {
+                "CAM_FRONT": [
+                    [
+                        15.2,
+                        -10.2,
+                        0.3
+                    ],
+                    [
+                        15.2,
+                        -10.3,
+                        -1.1
+                    ],
+                    [
+                        15.0,
+                        -8.4,
+                        0.3
+                    ],
+                    [
+                        15.0,
+                        -8.5,
+                        -1.2
+                    ],
+                    [
+                        20.0,
+                        -9.7,
+                        0.3
+                    ],
+                    [
+                        20.0,
+                        -9.8,
+                        -1.2
+                    ],
+                    [
+                        19.8,
+                        -7.9,
+                        0.2
+                    ],
+                    [
+                        19.8,
+                        -8.0,
+                        -1.3
+                    ]
+                ],
+                "CAM_FRONT_LEFT": [
+                    [
+                        16.9,
+                        7.3,
+                        0.3
+                    ],
+                    [
+                        17.0,
+                        7.2,
+                        -1.1
+                    ],
+                    [
+                        15.3,
+                        8.2,
+                        0.3
+                    ],
+                    [
+                        15.4,
+                        8.1,
+                        -1.2
+                    ],
+                    [
+                        19.3,
+                        11.6,
+                        0.3
+                    ],
+                    [
+                        19.4,
+                        11.5,
+                        -1.2
+                    ],
+                    [
+                        17.7,
+                        12.5,
+                        0.2
+                    ],
+                    [
+                        17.8,
+                        12.4,
+                        -1.3
+                    ]
+                ]
+            },
+            "is_role": false,
+            "is_dangerous": false,
+            "obj_dict": {
+                "class": "vehicle",
+                "state": "dynamic",
+                "id": "104",
+                "location": [
+                    -96.83769989013672,
+                    119.5988998413086,
+                    -0.004542541224509478
+                ],
+                "rotation": [
+                    0.002697924617677927,
+                    0.4455961585044861,
+                    53.32452392578125
+                ],
+                "bbx_loc": [
+                    -0.0062979720532894135,
+                    2.1642445062752813e-06,
+                    0.7488452196121216
+                ],
+                "center": [
+                    -96.84615325927734,
+                    119.59729766845703,
+                    0.7442797422409058
+                ],
+                "extent": [
+                    2.44619083404541,
+                    0.9183566570281982,
+                    0.7451388239860535
+                ],
+                "world_cord": [
+                    [
+                        -96.12628936767578,
+                        122.11116027832031,
+                        1.4823689460754395
+                    ],
+                    [
+                        -96.11695098876953,
+                        122.10429382324219,
+                        -0.007863483391702175
+                    ],
+                    [
+                        -94.65322875976562,
+                        121.01415252685547,
+                        1.4966531991958618
+                    ],
+                    [
+                        -94.64389038085938,
+                        121.00728607177734,
+                        0.006420712452381849
+                    ],
+                    [
+                        -99.04841613769531,
+                        118.18730926513672,
+                        1.4821386337280273
+                    ],
+                    [
+                        -99.03907775878906,
+                        118.18045043945312,
+                        -0.008093854412436485
+                    ],
+                    [
+                        -97.57536315917969,
+                        117.0903091430664,
+                        1.4964227676391602
+                    ],
+                    [
+                        -97.56602478027344,
+                        117.08344268798828,
+                        0.006190341431647539
+                    ]
+                ],
+                "semantic_tags": [
+                    14
+                ],
+                "type_id": "vehicle.lincoln.mkz_2020",
+                "color": "0,0,0",
+                "base_type": "car",
+                "num_points": 56,
+                "distance": 20.45203835216491,
+                "speed": 8.163668381370838,
+                "brake": 0.25192683935165405,
+                "throttle": 0.0,
+                "steer": -0.09731343388557434,
+                "light_state": "NONE",
+                "road_id": 5,
+                "lane_id": 1,
+                "section_id": 0,
+                "world2vehicle": [
+                    [
+                        0.5972819328308105,
+                        0.8020313382148743,
+                        4.708766573457979e-05,
+                        -38.08265686035156
+                    ],
+                    [
+                        -0.8020068407058716,
+                        0.5972641706466675,
+                        -0.007777041755616665,
+                        -149.09666442871094
+                    ],
+                    [
+                        -0.006265555042773485,
+                        0.004607321694493294,
+                        0.9999697804450989,
+                        -1.1532301902770996
+                    ],
+                    [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                ],
+                "wp_angle": 0.9720233003815931,
+                "position": [
+                    18.287820973781734,
+                    -9.148246155287197,
+                    0.3890159145936436
+                ],
+                "yaw": 3.2461744569649866,
+                "color_rgb": null,
+                "color_name": null,
+                "lane_type": 2,
+                "lane_type_str": "Driving",
+                "is_in_junction": false,
+                "junction_id": -1,
+                "distance_to_junction": 30.589977264404297,
+                "next_junction_id": 468,
+                "next_road_ids": [
+                    516
+                ],
+                "next_next_road_ids": [
+                    4
+                ],
+                "same_road_as_ego": true,
+                "same_direction_as_ego": false,
+                "lane_relative_to_ego": -2,
+                "relative_speed": 24.55784311734499,
+                "approaching_dot_product": -441.0426569241493,
+                "intersection_point": [
+                    105.44322451625862,
+                    0.0
+                ],
+                "ego_to_intersection": 105.44322451625862,
+                "actor_to_intersection": -86.1342100687267,
+                "actor_arrive_intersection_time": -10.550919763629974,
+                "intersection_point_left": [
+                    10.01644876709531,
+                    -10.016448767095309
+                ],
+                "ego_to_intersection_left": 14.165397693241452,
+                "actor_to_intersection_left": 9.816812728244821,
+                "intersection_point_right": [
+                    -12.36579572428257,
+                    -12.365795724282568
+                ],
+                "ego_to_intersection_right": -17.487876022815637,
+                "actor_to_intersection_right": 32.3220187836681,
+                "actor_arrive_intersection_time_left": 1.2025001836976121,
+                "actor_arrive_intersection_time_right": 3.9592518061397057,
+                "lane_yaw_degree": 53.32452392578125,
+                "vehicle_yaw_degree": 52.352502431034374,
+                "lane_deviant_degree": -0.9720214947468762,
+                "vehicle_cuts_in": false
+            },
+            "position": [
+                18.287820973781734,
+                -9.148246155287197,
+                0.3890159145936436
+            ],
+            "distance": 20.45203835216491,
+            "speed": [
+                18.287820973781734,
+                -9.148246155287197,
+                0.3890159145936436
+            ],
+            "same_dir": false,
+            "is_sign": false
+        },
+        "<c95<CAM_FRONT,597.6,487.0>>": {
+            "id": "95",
+            "Category": "Vehicle",
+            "Status": null,
+            "Visual_description": "black car",
+            "Detailed_description": "the black car that is to the front left of the ego vehicle",
+            "2d_bbox": {
+                "CAM_FRONT": [
+                    [
+                        512.7,
+                        446.7
+                    ],
+                    [
+                        682.4,
+                        527.2
+                    ]
+                ]
+            },
+            "3d_bbox": {
+                "CAM_FRONT": [
+                    [
+                        27.0,
+                        -2.8,
+                        -0.1
+                    ],
+                    [
+                        27.0,
+                        -2.8,
+                        -1.6
+                    ],
+                    [
+                        27.4,
+                        -4.6,
+                        -0.0
+                    ],
+                    [
+                        27.4,
+                        -4.6,
+                        -1.5
+                    ],
+                    [
+                        22.2,
+                        -3.8,
+                        -0.0
+                    ],
+                    [
+                        22.2,
+                        -3.9,
+                        -1.5
+                    ],
+                    [
+                        22.6,
+                        -5.6,
+                        0.1
+                    ],
+                    [
+                        22.6,
+                        -5.7,
+                        -1.4
+                    ]
+                ]
+            },
+            "is_role": false,
+            "is_dangerous": false,
+            "obj_dict": {
+                "class": "vehicle",
+                "state": "dynamic",
+                "id": "95",
+                "location": [
+                    -98.19556427001953,
+                    110.9042739868164,
+                    -0.004261512774974108
+                ],
+                "rotation": [
+                    -0.07553505897521973,
+                    -0.5197142958641052,
+                    -120.26787567138672
+                ],
+                "bbx_loc": [
+                    -0.006289092358201742,
+                    1.8328428268432617e-06,
+                    0.7488452196121216
+                ],
+                "center": [
+                    -98.1987533569336,
+                    110.91227722167969,
+                    0.7445605397224426
+                ],
+                "extent": [
+                    2.44619083404541,
+                    0.9183566570281982,
+                    0.7451388239860535
+                ],
+                "world_cord": [
+                    [
+                        -98.64495086669922,
+                        108.3392333984375,
+                        1.4947731494903564
+                    ],
+                    [
+                        -98.63228607177734,
+                        108.33411407470703,
+                        0.004558174405246973
+                    ],
+                    [
+                        -100.231201171875,
+                        109.26499938964844,
+                        1.478113055229187
+                    ],
+                    [
+                        -100.21853637695312,
+                        109.25988006591797,
+                        -0.012101903557777405
+                    ],
+                    [
+                        -96.1789779663086,
+                        112.5646743774414,
+                        1.5012229681015015
+                    ],
+                    [
+                        -96.16631317138672,
+                        112.55955505371094,
+                        0.011007972061634064
+                    ],
+                    [
+                        -97.76522827148438,
+                        113.49043273925781,
+                        1.484562873840332
+                    ],
+                    [
+                        -97.7525634765625,
+                        113.48532104492188,
+                        -0.005652104504406452
+                    ]
+                ],
+                "semantic_tags": [
+                    14
+                ],
+                "type_id": "vehicle.lincoln.mkz_2020",
+                "color": "0,0,0",
+                "base_type": "car",
+                "num_points": 36,
+                "distance": 25.95378381211726,
+                "speed": 7.827505168786868,
+                "brake": 0.0,
+                "throttle": 0.3706801235675812,
+                "steer": 0.06622850894927979,
+                "light_state": "NONE",
+                "road_id": 5,
+                "lane_id": -1,
+                "section_id": 0,
+                "world2vehicle": [
+                    [
+                        -0.5040428638458252,
+                        -0.8636775612831116,
+                        -0.0013183350674808025,
+                        46.29075241088867
+                    ],
+                    [
+                        0.8636367917060852,
+                        -0.5040329098701477,
+                        0.009070592001080513,
+                        140.7047576904297
+                    ],
+                    [
+                        -0.008498551324009895,
+                        0.0034334049560129642,
+                        0.9999579787254333,
+                        -1.2110379934310913
+                    ],
+                    [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                ],
+                "wp_angle": 0.6235098508940139,
+                "position": [
+                    25.601140190220775,
+                    -4.262929802086219,
+                    0.09009245678510425
+                ],
+                "yaw": 0.2164155275567276,
+                "color_rgb": null,
+                "color_name": null,
+                "lane_type": 2,
+                "lane_type_str": "Driving",
+                "is_in_junction": false,
+                "junction_id": -1,
+                "distance_to_junction": 69.0407485961914,
+                "next_junction_id": 719,
+                "next_road_ids": [
+                    795
+                ],
+                "next_next_road_ids": [
+                    18
+                ],
+                "same_road_as_ego": true,
+                "same_direction_as_ego": true,
+                "lane_relative_to_ego": -1,
+                "relative_speed": 8.938522196161108,
+                "approaching_dot_product": -231.91936301438403,
+                "intersection_point": [
+                    44.99054681094435,
+                    0.0
+                ],
+                "ego_to_intersection": 44.99054681094435,
+                "actor_to_intersection": 21.352497565829694,
+                "actor_arrive_intersection_time": 2.727880353369217,
+                "intersection_point_left": [
+                    8.108777897627501,
+                    -8.1087778976275
+                ],
+                "ego_to_intersection_left": 11.467543677096002,
+                "actor_to_intersection_left": -16.410144783036166,
+                "intersection_point_right": [
+                    -12.679194574656224,
+                    -12.679194574656222
+                ],
+                "ego_to_intersection_right": -17.931088927446197,
+                "actor_to_intersection_right": -37.69461114021995,
+                "actor_arrive_intersection_time_left": -2.096471919108226,
+                "actor_arrive_intersection_time_right": -4.815660970820154,
+                "lane_yaw_degree": 239.73212432861328,
+                "vehicle_yaw_degree": 240.35105052609418,
+                "lane_deviant_degree": 0.6189261974809028,
+                "vehicle_cuts_in": false
+            },
+            "position": [
+                25.601140190220775,
+                -4.262929802086219,
+                0.09009245678510425
+            ],
+            "distance": 25.95378381211726,
+            "speed": [
+                25.601140190220775,
+                -4.262929802086219,
+                0.09009245678510425
+            ],
+            "same_dir": true,
+            "is_sign": false
+        }
+    },
+    "QA": {
+        "Category": [
+            {
+                "Q": "What are the important objects in the scene? List them from most to least important.",
+                "A": "The black car that is to the front left of the ego vehicle(<c95<CAM_FRONT,597.6,487.0>>), the maroon car that is to the front of the ego vehicle(<c68<CAM_FRONT,810.6,493.8>>), the black car that is to the front left of the ego vehicle(<c104<CAM_FRONT,183.4,483.4><CAM_FRONT_LEFT,1445.6,483.6>>).",
+                "C": null,
+                "qid": 19,
+                "con_up": -1,
+                "con_down": -1,
+                "cluster": 0,
+                "layer": 0,
+                "object_tags": [
+                    "<c95<CAM_FRONT,597.6,487.0>>",
+                    "<c68<CAM_FRONT,810.6,493.8>>",
+                    "<c104<CAM_FRONT,183.4,483.4><CAM_FRONT_LEFT,1445.6,483.6>>"
+                ],
+                "actual_Q": "Basic infos of the actors: [{\"desc\": \"ego vehicle\", \"speed\": \"16.4m/s\"}, {\"id\": \"c68\", \"desc\": \"maroon car\", \"relative position\": \"30.3m to the front, 0.4m to the right\", \"speed\": \"1.1m/s\", \"speed direction relative to ego\": \"19.5 degrees to the right\"}, {\"id\": \"c67\", \"desc\": \"black car\", \"relative position\": \"42.7m to the front, 6.0m to the right\", \"speed\": \"5.2m/s\", \"speed direction relative to ego\": \"31.0 degrees to the right\"}, {\"id\": \"c105\", \"desc\": \"maroon car\", \"relative position\": \"25.5m to the front, 11.7m to the left\", \"speed\": \"5.6m/s\", \"speed direction relative to ego\": \"168.2 degrees to the left\"}, {\"id\": \"c104\", \"desc\": \"black car\", \"relative position\": \"18.3m to the front, 9.1m to the left\", \"speed\": \"8.2m/s\", \"speed direction relative to ego\": \"174.0 degrees to the left\"}, {\"id\": \"c103\", \"desc\": \"maroon car\", \"relative position\": \"4.2m to the rear, 9.0m to the left\", \"speed\": \"7.7m/s\", \"speed direction relative to ego\": \"157.8 degrees to the right\"}, {\"id\": \"c102\", \"desc\": \"maroon car\", \"relative position\": \"7.0m to the rear, 3.8m to the left\", \"speed\": \"6.6m/s\", \"speed direction relative to ego\": \"151.7 degrees to the right\"}, {\"id\": \"c95\", \"desc\": \"black car\", \"relative position\": \"25.6m to the front, 4.3m to the left\", \"speed\": \"7.8m/s\", \"speed direction relative to ego\": \"12.4 degrees to the right\"}, {\"id\": \"c80\", \"desc\": \"silver car\", \"relative position\": \"48.8m to the front, 5.8m to the right\", \"speed\": \"8.0m/s\", \"speed direction relative to ego\": \"33.6 degrees to the right\"}] \"\"\"In this question, focus on specific objects rather than general categories. For example, if you need to address vehicles on the road, the answer should specify which vehicle.\"\"\"The ego vehicle is driving at the speed of 16.4 m/s, and it wants to follow the road. What are the important objects in the scene? List them from most to least important.",
+                "actual_gt": "The black car that is to the front left of the ego vehicle(<c95<CAM_FRONT,597.6,487.0>>), the maroon car that is to the front of the ego vehicle(<c68<CAM_FRONT,810.6,493.8>>), the black car that is to the front left of the ego vehicle(<c104<CAM_FRONT,183.4,483.4><CAM_FRONT_LEFT,1445.6,483.6>>).",
+                "VLM_name": "Qwen2.5VL",
+                "VLM_answer": "The most important objects in the scene are:\n\n1. **Ego Vehicle**: The vehicle from which the image is taken.\n2. **Black Car (c67)**: Positioned 42.7 meters in front and 6.0 meters to the right of the ego vehicle, moving at 5.2 m/s.\n3. **Maroon Car (c105)**: Positioned 25.5 meters in front and 11.7 meters to the left of the ego vehicle, moving at 5.6 m/s.\n4. **Maroon Car (c103)**: Positioned 4.2 meters behind and 9.0 meters to the left of the ego vehicle, moving at 7.7 m/s.\n5. **Maroon Car (c102)**: Positioned 7.0 meters behind and 3.8 meters to the left of the ego vehicle, moving at 6.6 m/s.\n6. **Black Car (c95)**: Positioned 25.6 meters in front and 4.3 meters to the left of the ego vehicle, moving at 7.8 m/s.\n7. **Silver Car (c80)**: Positioned 48.8 meters in front and 5.8 meters to the right of the ego vehicle, moving at 8.0 m/s.\n\nThese objects are listed from most to least important based on their proximity to the ego vehicle and their relative positions.",
+                "Q_timestamp": 1781165207.207752,
+                "Q_time_readable": "2026-06-11 08:06:47.207752",
+                "A_timestamp": 1781165213.714427,
+                "A_time_readable": "2026-06-11 08:06:53.714427"
+            },
+            {
+                "Q": "Identify all traffic lights and signs affecting the ego vehicle in current scene. Based on these traffic signs, what actions should the ego vehicle take respectively?",
+                "A": "There's no traffic light or sign affecting the ego vehicle right now.",
+                "C": null,
+                "qid": 15,
+                "con_up": [
+                    [
+                        6,
+                        0
+                    ]
+                ],
+                "con_down": [
+                    [
+                        1,
+                        0
+                    ]
+                ],
+                "cluster": 1,
+                "layer": 1,
+                "object_tags": [],
+                "actual_Q": "Basic infos of the actors: [{\"desc\": \"ego vehicle\", \"speed\": \"16.4m/s\"}, {\"id\": \"c68\", \"desc\": \"maroon car\", \"relative position\": \"30.3m to the front, 0.4m to the right\", \"speed\": \"1.1m/s\", \"speed direction relative to ego\": \"19.5 degrees to the right\"}, {\"id\": \"c67\", \"desc\": \"black car\", \"relative position\": \"42.7m to the front, 6.0m to the right\", \"speed\": \"5.2m/s\", \"speed direction relative to ego\": \"31.0 degrees to the right\"}, {\"id\": \"c105\", \"desc\": \"maroon car\", \"relative position\": \"25.5m to the front, 11.7m to the left\", \"speed\": \"5.6m/s\", \"speed direction relative to ego\": \"168.2 degrees to the left\"}, {\"id\": \"c104\", \"desc\": \"black car\", \"relative position\": \"18.3m to the front, 9.1m to the left\", \"speed\": \"8.2m/s\", \"speed direction relative to ego\": \"174.0 degrees to the left\"}, {\"id\": \"c103\", \"desc\": \"maroon car\", \"relative position\": \"4.2m to the rear, 9.0m to the left\", \"speed\": \"7.7m/s\", \"speed direction relative to ego\": \"157.8 degrees to the right\"}, {\"id\": \"c102\", \"desc\": \"maroon car\", \"relative position\": \"7.0m to the rear, 3.8m to the left\", \"speed\": \"6.6m/s\", \"speed direction relative to ego\": \"151.7 degrees to the right\"}, {\"id\": \"c95\", \"desc\": \"black car\", \"relative position\": \"25.6m to the front, 4.3m to the left\", \"speed\": \"7.8m/s\", \"speed direction relative to ego\": \"12.4 degrees to the right\"}, {\"id\": \"c80\", \"desc\": \"silver car\", \"relative position\": \"48.8m to the front, 5.8m to the right\", \"speed\": \"8.0m/s\", \"speed direction relative to ego\": \"33.6 degrees to the right\"}] Identify all traffic lights and signs affecting the ego vehicle in current scene. Based on these traffic signs, what actions should the ego vehicle take respectively?",
+                "actual_gt": "There's no traffic light or sign affecting the ego vehicle right now.",
+                "VLM_name": "Qwen2.5VL",
+                "VLM_answer": "In the current scene, there are no visible traffic lights or signs affecting the ego vehicle. The road appears to be clear, and there are no immediate obstacles or signals requiring specific actions from the ego vehicle.\n\nThe ego vehicle can proceed at its current speed and direction without any immediate need for braking, turning, or changing lanes. The presence of multiple cars in the scene suggests that the ego vehicle should maintain a safe distance from them and continue driving according to the road rules and traffic conditions.",
+                "Q_timestamp": 1781165213.716607,
+                "Q_time_readable": "2026-06-11 08:06:53.716607",
+                "A_timestamp": 1781165216.086079,
+                "A_time_readable": "2026-06-11 08:06:56.086079"
+            },
+            {
+                "Q": "The list of important vehicles in the current scene is 'the black car that is to the front left of the ego vehicle(<c104<CAM_FRONT,183.4,483.4><CAM_FRONT_LEFT,1445.6,483.6>>), the black car that is to the front left of the ego vehicle(<c95<CAM_FRONT,597.6,487.0>>), the maroon car that is to the front of the ego vehicle(<c68<CAM_FRONT,810.6,493.8>>).' What are the rough moving speed and moving direction of them?",
+                "A": "The black car that is to the front left of the ego vehicle(<c104<CAM_FRONT,183.4,483.4><CAM_FRONT_LEFT,1445.6,483.6>>) is driving slowly in the opposite direction of the ego vehicle, going straight. The black car that is to the front left of the ego vehicle(<c95<CAM_FRONT,597.6,487.0>>) is driving slowly in the same direction of the ego vehicle, going straight. The maroon car that is to the front of the ego vehicle(<c68<CAM_FRONT,810.6,493.8>>) is driving slowly in the same direction of the ego vehicle, going straight.",
+                "C": null,
+                "qid": 24,
+                "con_up": [
+                    [
+                        4,
+                        3
+                    ]
+                ],
+                "con_down": [
+                    [
+                        4,
+                        0
+                    ]
+                ],
+                "cluster": 4,
+                "layer": 1,
+                "object_tags": [
+                    "<c104<CAM_FRONT,183.4,483.4><CAM_FRONT_LEFT,1445.6,483.6>>",
+                    "<c95<CAM_FRONT,597.6,487.0>>",
+                    "<c68<CAM_FRONT,810.6,493.8>>"
+                ],
+                "actual_Q": "Basic infos of the actors: [{\"desc\": \"ego vehicle\", \"speed\": \"16.4m/s\"}, {\"id\": \"c68\", \"desc\": \"maroon car\", \"relative position\": \"30.3m to the front, 0.4m to the right\", \"speed\": \"1.1m/s\", \"speed direction relative to ego\": \"19.5 degrees to the right\"}, {\"id\": \"c67\", \"desc\": \"black car\", \"relative position\": \"42.7m to the front, 6.0m to the right\", \"speed\": \"5.2m/s\", \"speed direction relative to ego\": \"31.0 degrees to the right\"}, {\"id\": \"c105\", \"desc\": \"maroon car\", \"relative position\": \"25.5m to the front, 11.7m to the left\", \"speed\": \"5.6m/s\", \"speed direction relative to ego\": \"168.2 degrees to the left\"}, {\"id\": \"c104\", \"desc\": \"black car\", \"relative position\": \"18.3m to the front, 9.1m to the left\", \"speed\": \"8.2m/s\", \"speed direction relative to ego\": \"174.0 degrees to the left\"}, {\"id\": \"c103\", \"desc\": \"maroon car\", \"relative position\": \"4.2m to the rear, 9.0m to the left\", \"speed\": \"7.7m/s\", \"speed direction relative to ego\": \"157.8 degrees to the right\"}, {\"id\": \"c102\", \"desc\": \"maroon car\", \"relative position\": \"7.0m to the rear, 3.8m to the left\", \"speed\": \"6.6m/s\", \"speed direction relative to ego\": \"151.7 degrees to the right\"}, {\"id\": \"c95\", \"desc\": \"black car\", \"relative position\": \"25.6m to the front, 4.3m to the left\", \"speed\": \"7.8m/s\", \"speed direction relative to ego\": \"12.4 degrees to the right\"}, {\"id\": \"c80\", \"desc\": \"silver car\", \"relative position\": \"48.8m to the front, 5.8m to the right\", \"speed\": \"8.0m/s\", \"speed direction relative to ego\": \"33.6 degrees to the right\"}] What are the rough moving speed and moving direction of the important vehicles?",
+                "actual_gt": "The black car that is to the front left of the ego vehicle(<c104<CAM_FRONT,183.4,483.4><CAM_FRONT_LEFT,1445.6,483.6>>) is driving slowly in the opposite direction of the ego vehicle, going straight. The black car that is to the front left of the ego vehicle(<c95<CAM_FRONT,597.6,487.0>>) is driving slowly in the same direction of the ego vehicle, going straight. The maroon car that is to the front of the ego vehicle(<c68<CAM_FRONT,810.6,493.8>>) is driving slowly in the same direction of the ego vehicle, going straight.",
+                "VLM_name": "Qwen2.5VL",
+                "VLM_answer": "The black car that is to the front left of the ego vehicle(<c104<CAM_FRONT,183.4,483.4><CAM_FRONT_LEFT,1445.6,483.6>>) is driving slowly in the opposite direction of the ego vehicle, going straight. The black car that is to the front left of the ego vehicle(<c95<CAM_FRONT,597.6,487.0>>) is driving slowly in the same direction of the ego vehicle, going straight. The maroon car that is to the front of the ego vehicle(<c68<CAM_FRONT,810.6,493.8>>) is driving slowly in the same direction of the ego vehicle, going straight.",
+                "Q_timestamp": 1781165216.088341,
+                "Q_time_readable": "2026-06-11 08:06:56.088341",
+                "A_timestamp": 1781165216.088467,
+                "A_time_readable": "2026-06-11 08:06:56.088467"
+            },
+            {
+                "Q": "What is the current speed limit?",
+                "A": "There's no speed limit now.",
+                "C": null,
+                "qid": 7,
+                "con_up": [
+                    [
+                        6,
+                        0
+                    ]
+                ],
+                "con_down": [
+                    [
+                        3,
+                        2
+                    ]
+                ],
+                "cluster": 3,
+                "layer": 7,
+                "object_tags": [],
+                "actual_Q": "Basic infos of the actors: [{\"desc\": \"ego vehicle\", \"speed\": \"16.4m/s\"}, {\"id\": \"c68\", \"desc\": \"maroon car\", \"relative position\": \"30.3m to the front, 0.4m to the right\", \"speed\": \"1.1m/s\", \"speed direction relative to ego\": \"19.5 degrees to the right\"}, {\"id\": \"c67\", \"desc\": \"black car\", \"relative position\": \"42.7m to the front, 6.0m to the right\", \"speed\": \"5.2m/s\", \"speed direction relative to ego\": \"31.0 degrees to the right\"}, {\"id\": \"c105\", \"desc\": \"maroon car\", \"relative position\": \"25.5m to the front, 11.7m to the left\", \"speed\": \"5.6m/s\", \"speed direction relative to ego\": \"168.2 degrees to the left\"}, {\"id\": \"c104\", \"desc\": \"black car\", \"relative position\": \"18.3m to the front, 9.1m to the left\", \"speed\": \"8.2m/s\", \"speed direction relative to ego\": \"174.0 degrees to the left\"}, {\"id\": \"c103\", \"desc\": \"maroon car\", \"relative position\": \"4.2m to the rear, 9.0m to the left\", \"speed\": \"7.7m/s\", \"speed direction relative to ego\": \"157.8 degrees to the right\"}, {\"id\": \"c102\", \"desc\": \"maroon car\", \"relative position\": \"7.0m to the rear, 3.8m to the left\", \"speed\": \"6.6m/s\", \"speed direction relative to ego\": \"151.7 degrees to the right\"}, {\"id\": \"c95\", \"desc\": \"black car\", \"relative position\": \"25.6m to the front, 4.3m to the left\", \"speed\": \"7.8m/s\", \"speed direction relative to ego\": \"12.4 degrees to the right\"}, {\"id\": \"c80\", \"desc\": \"silver car\", \"relative position\": \"48.8m to the front, 5.8m to the right\", \"speed\": \"8.0m/s\", \"speed direction relative to ego\": \"33.6 degrees to the right\"}] What is the current speed limit?",
+                "actual_gt": "There's no speed limit now.",
+                "VLM_name": "Qwen2.5VL",
+                "VLM_answer": "Based on the information provided, the current speed limit is 50 mph (approximately 80 km/h).",
+                "Q_timestamp": 1781165216.089797,
+                "Q_time_readable": "2026-06-11 08:06:56.089797",
+                "A_timestamp": 1781165217.052642,
+                "A_time_readable": "2026-06-11 08:06:57.052642"
+            },
+            {
+                "Q": "Must the ego vehicle change lane or deviate from the lane now? why?",
+                "A": "No, the ego vehicle can stay on its current lane.",
+                "C": null,
+                "qid": 13,
+                "con_up": [
+                    [
+                        6,
+                        0
+                    ]
+                ],
+                "con_down": [
+                    [
+                        1,
+                        0
+                    ]
+                ],
+                "cluster": 1,
+                "layer": 1,
+                "object_tags": [],
+                "actual_Q": "Basic infos of the actors: [{\"desc\": \"ego vehicle\", \"speed\": \"16.4m/s\"}, {\"id\": \"c68\", \"desc\": \"maroon car\", \"relative position\": \"30.3m to the front, 0.4m to the right\", \"speed\": \"1.1m/s\", \"speed direction relative to ego\": \"19.5 degrees to the right\"}, {\"id\": \"c67\", \"desc\": \"black car\", \"relative position\": \"42.7m to the front, 6.0m to the right\", \"speed\": \"5.2m/s\", \"speed direction relative to ego\": \"31.0 degrees to the right\"}, {\"id\": \"c105\", \"desc\": \"maroon car\", \"relative position\": \"25.5m to the front, 11.7m to the left\", \"speed\": \"5.6m/s\", \"speed direction relative to ego\": \"168.2 degrees to the left\"}, {\"id\": \"c104\", \"desc\": \"black car\", \"relative position\": \"18.3m to the front, 9.1m to the left\", \"speed\": \"8.2m/s\", \"speed direction relative to ego\": \"174.0 degrees to the left\"}, {\"id\": \"c103\", \"desc\": \"maroon car\", \"relative position\": \"4.2m to the rear, 9.0m to the left\", \"speed\": \"7.7m/s\", \"speed direction relative to ego\": \"157.8 degrees to the right\"}, {\"id\": \"c102\", \"desc\": \"maroon car\", \"relative position\": \"7.0m to the rear, 3.8m to the left\", \"speed\": \"6.6m/s\", \"speed direction relative to ego\": \"151.7 degrees to the right\"}, {\"id\": \"c95\", \"desc\": \"black car\", \"relative position\": \"25.6m to the front, 4.3m to the left\", \"speed\": \"7.8m/s\", \"speed direction relative to ego\": \"12.4 degrees to the right\"}, {\"id\": \"c80\", \"desc\": \"silver car\", \"relative position\": \"48.8m to the front, 5.8m to the right\", \"speed\": \"8.0m/s\", \"speed direction relative to ego\": \"33.6 degrees to the right\"}] The ego vehicle is driving at the speed of 16.4 m/s, and it wants to follow the road. Must the ego vehicle change lane or deviate from the lane now? why?",
+                "actual_gt": "No, the ego vehicle can stay on its current lane.",
+                "VLM_name": "Qwen2.5VL",
+                "VLM_answer": "Based on the information provided, the ego vehicle is currently driving at a speed of 16.4 m/s and is following the road. Here are the key points to consider regarding whether the ego vehicle should change lanes or deviate from the lane:\n\n1. **Relative Positions and Speeds**:\n   - The ego vehicle is ahead of the black car (c67) and the maroon car (c105).\n   - The black car (c67) is ahead of the ego vehicle and is moving at 5.2 m/s.\n   - The maroon car (c105) is ahead of the ego vehicle and is moving at 5.6 m/s.\n   - The black car (c95) is ahead of the ego vehicle and is moving at 7.8 m/s.\n   - The silver car (c80) is ahead of the ego vehicle and is moving at 8.0 m/s.\n\n2. **Speed Differences**:\n   - The ego vehicle is moving at 16.4 m/s, while the black car (c67) is moving at 5.2 m/s, the maroon car (c105) is moving at 5.6 m/s, the black car (c95) is moving at 7.8 m/s, and the silver car (c80) is moving at 8.0 m/s.\n   - The ego vehicle is significantly faster than all other cars in the lane.\n\n3. **Lane Change Considerations**:\n   - Since the ego vehicle is already in the correct lane and is maintaining a safe distance from the other vehicles, it does not need to change lanes or deviate from the lane.\n   - The ego vehicle is following the road and has enough space to maintain its current lane without any immediate need for lane changes.\n\n**Conclusion**:\nThe ego vehicle does not need to change lanes or deviate from the lane at this moment. It is already in the correct lane and maintaining a safe distance from the other vehicles. The ego vehicle can continue following the road and its current lane without any immediate action required.",
+                "Q_timestamp": 1781165217.055804,
+                "Q_time_readable": "2026-06-11 08:06:57.055804",
+                "A_timestamp": 1781165226.344914,
+                "A_time_readable": "2026-06-11 08:07:06.344914"
+            },
+            {
+                "Q": "The ego vehicle follows the road. The list of important vehicles in the current scene is 'the black car that is to the front left of the ego vehicle(<c104<CAM_FRONT,183.4,483.4><CAM_FRONT_LEFT,1445.6,483.6>>), the black car that is to the front left of the ego vehicle(<c95<CAM_FRONT,597.6,487.0>>), the maroon car that is to the front of the ego vehicle(<c68<CAM_FRONT,810.6,493.8>>).' Among them, identify those that may overlap with the ego vehicle's path, provide reasons for the overlap and the actions that could lead to a collision.",
+                "A": "None of them potentially crossing the path of ego vehicle now.",
+                "C": null,
+                "qid": 47,
+                "con_up": [
+                    [
+                        4,
+                        3
+                    ]
+                ],
+                "con_down": [
+                    [
+                        4,
+                        0
+                    ]
+                ],
+                "cluster": 4,
+                "layer": 1,
+                "object_tags": [],
+                "actual_Q": "Basic infos of the actors: [{\"desc\": \"ego vehicle\", \"speed\": \"16.4m/s\"}, {\"id\": \"c68\", \"desc\": \"maroon car\", \"relative position\": \"30.3m to the front, 0.4m to the right\", \"speed\": \"1.1m/s\", \"speed direction relative to ego\": \"19.5 degrees to the right\"}, {\"id\": \"c67\", \"desc\": \"black car\", \"relative position\": \"42.7m to the front, 6.0m to the right\", \"speed\": \"5.2m/s\", \"speed direction relative to ego\": \"31.0 degrees to the right\"}, {\"id\": \"c105\", \"desc\": \"maroon car\", \"relative position\": \"25.5m to the front, 11.7m to the left\", \"speed\": \"5.6m/s\", \"speed direction relative to ego\": \"168.2 degrees to the left\"}, {\"id\": \"c104\", \"desc\": \"black car\", \"relative position\": \"18.3m to the front, 9.1m to the left\", \"speed\": \"8.2m/s\", \"speed direction relative to ego\": \"174.0 degrees to the left\"}, {\"id\": \"c103\", \"desc\": \"maroon car\", \"relative position\": \"4.2m to the rear, 9.0m to the left\", \"speed\": \"7.7m/s\", \"speed direction relative to ego\": \"157.8 degrees to the right\"}, {\"id\": \"c102\", \"desc\": \"maroon car\", \"relative position\": \"7.0m to the rear, 3.8m to the left\", \"speed\": \"6.6m/s\", \"speed direction relative to ego\": \"151.7 degrees to the right\"}, {\"id\": \"c95\", \"desc\": \"black car\", \"relative position\": \"25.6m to the front, 4.3m to the left\", \"speed\": \"7.8m/s\", \"speed direction relative to ego\": \"12.4 degrees to the right\"}, {\"id\": \"c80\", \"desc\": \"silver car\", \"relative position\": \"48.8m to the front, 5.8m to the right\", \"speed\": \"8.0m/s\", \"speed direction relative to ego\": \"33.6 degrees to the right\"}] Identify important vehicles that may overlap with the ego vehicle's path, explain the reasons, and determine actions that could cause a collision.",
+                "actual_gt": "None of them potentially crossing the path of ego vehicle now.",
+                "VLM_name": "Qwen2.5VL",
+                "VLM_answer": "Based on the provided information, the following vehicles may overlap with the ego vehicle's path and could potentially cause a collision:\n\n1. **Black Car (c67)**:\n   - **Relative Position**: 42.7 meters in front, 6.0 meters to the right.\n   - **Speed**: 5.2 m/s.\n   - **Speed Direction Relative to Ego**: 31.0 degrees to the right.\n   - **Reason for Potential Collision**: This black car is relatively close to the ego vehicle and is moving in the same direction but at a slower speed. If the ego vehicle does not maintain a safe distance, it could potentially collide with this car.\n\n2. **Maroon Car (c105)**:\n   - **Relative Position**: 25.5 meters in front, 11.7 meters to the left.\n   - **Speed**: 5.6 m/s.\n   - **Speed Direction Relative to Ego**: 168.2 degrees to the left.\n   - **Reason for Potential Collision**: This maroon car is also relatively close to the ego vehicle and is moving in the same direction but at a slower speed. If the ego vehicle does not maintain a safe distance, it could potentially collide with this car.\n\n3. **Black Car (c104)**:\n   - **Relative Position**: 18.3 meters in front, 9.1 meters to the left.\n   - **Speed**: 8.2 m/s.\n   - **Speed Direction Relative to Ego**: 174.0 degrees to the left.\n   - **Reason for Potential Collision**: This black car is relatively close to the ego vehicle and is moving in the same direction but at a faster speed. If the ego vehicle does not maintain a safe distance, it could potentially collide with this car.\n\n4. **Silver Car (c80)**:\n   - **Relative Position**: 48.8 meters in front, 5.8 meters to the right.\n   - **Speed**: 8.0 m/s.\n   - **Speed Direction Relative to Ego**: 33.6 degrees to the right.\n   - **Reason for Potential Collision**: This silver car is relatively close to the ego vehicle and is moving in the same direction but at a faster speed. If the ego vehicle does not maintain a safe distance, it could potentially collide with this car.\n\n### Actions That Could Cause a Collision\n\nTo avoid potential collisions, the ego vehicle should take the following actions:\n\n1. **Maintain Safe Distance**: Ensure a safe distance from all vehicles, especially those moving in the same direction and at similar speeds.\n2. **Adjust Speed**: If necessary, adjust the speed to maintain a safe distance from other vehicles.\n3. **Lane Change**: If the ego vehicle is in the correct lane and there is no immediate need to change lanes, it should continue following the road.\n4. **Observe Traffic Signs and Signals**: Pay attention to traffic signs and signals to ensure compliance with traffic rules.\n\nBy taking these actions, the ego vehicle can reduce the risk of colliding with other vehicles on the road.",
+                "Q_timestamp": 1781165226.347954,
+                "Q_time_readable": "2026-06-11 08:07:06.347954",
+                "A_timestamp": 1781165239.374312,
+                "A_time_readable": "2026-06-11 08:07:19.374312"
+            },
+            {
+                "Q": "Does the ego vehicle need to brake? Why?",
+                "A": "The ego vehicle should slow down to adjust its speed to the speed of the maroon car that is to the front of it(<c68<CAM_FRONT,810.6,493.8>>) because it is driving slowly.",
+                "C": null,
+                "qid": 8,
+                "con_up": -1,
+                "con_down": [
+                    [
+                        1,
+                        1
+                    ],
+                    [
+                        2,
+                        2
+                    ],
+                    [
+                        3,
+                        5
+                    ],
+                    [
+                        3,
+                        6
+                    ],
+                    [
+                        3,
+                        7
+                    ],
+                    [
+                        3,
+                        8
+                    ],
+                    [
+                        4,
+                        3
+                    ],
+                    [
+                        5,
+                        0
+                    ]
+                ],
+                "cluster": 6,
+                "layer": 0,
+                "object_tags": [
+                    "<c68<CAM_FRONT,810.6,493.8>>"
+                ],
+                "actual_Q": "Basic infos of the actors: [{\"desc\": \"ego vehicle\", \"speed\": \"16.4m/s\"}, {\"id\": \"c68\", \"desc\": \"maroon car\", \"relative position\": \"30.3m to the front, 0.4m to the right\", \"speed\": \"1.1m/s\", \"speed direction relative to ego\": \"19.5 degrees to the right\"}, {\"id\": \"c67\", \"desc\": \"black car\", \"relative position\": \"42.7m to the front, 6.0m to the right\", \"speed\": \"5.2m/s\", \"speed direction relative to ego\": \"31.0 degrees to the right\"}, {\"id\": \"c105\", \"desc\": \"maroon car\", \"relative position\": \"25.5m to the front, 11.7m to the left\", \"speed\": \"5.6m/s\", \"speed direction relative to ego\": \"168.2 degrees to the left\"}, {\"id\": \"c104\", \"desc\": \"black car\", \"relative position\": \"18.3m to the front, 9.1m to the left\", \"speed\": \"8.2m/s\", \"speed direction relative to ego\": \"174.0 degrees to the left\"}, {\"id\": \"c103\", \"desc\": \"maroon car\", \"relative position\": \"4.2m to the rear, 9.0m to the left\", \"speed\": \"7.7m/s\", \"speed direction relative to ego\": \"157.8 degrees to the right\"}, {\"id\": \"c102\", \"desc\": \"maroon car\", \"relative position\": \"7.0m to the rear, 3.8m to the left\", \"speed\": \"6.6m/s\", \"speed direction relative to ego\": \"151.7 degrees to the right\"}, {\"id\": \"c95\", \"desc\": \"black car\", \"relative position\": \"25.6m to the front, 4.3m to the left\", \"speed\": \"7.8m/s\", \"speed direction relative to ego\": \"12.4 degrees to the right\"}, {\"id\": \"c80\", \"desc\": \"silver car\", \"relative position\": \"48.8m to the front, 5.8m to the right\", \"speed\": \"8.0m/s\", \"speed direction relative to ego\": \"33.6 degrees to the right\"}] The ego vehicle is driving at the speed of 16.4 m/s, and it wants to follow the road. Does the ego vehicle need to brake? Why?",
+                "actual_gt": "The ego vehicle should slow down to adjust its speed to the speed of the maroon car that is to the front of it(<c68<CAM_FRONT,810.6,493.8>>) because it is driving slowly.",
+                "VLM_name": "Qwen2.5VL",
+                "VLM_answer": "Based on the information provided, the ego vehicle is driving at a speed of 16.4 m/s and wants to follow the road. Let's analyze the situation step by step to determine if the ego vehicle needs to brake.\n\n### Current Situation:\n- **Ego Vehicle**: Speed = 16.4 m/s\n- **Black Car (c67)**: Speed = 5.2 m/s, Relative Position = 42.7 m to the front, 6.0 m to the right\n- **Maroon Car (c105)**: Speed = 5.6 m/s, Relative Position = 25.5 m to the front, 11.7 m to the left\n- **Black Car (c104)**: Speed = 8.2 m/s, Relative Position = 18.3 m to the front, 9.1 m to the left\n- **Maroon Car (c103)**: Speed = 7.7 m/s, Relative Position = 4.2 m to the rear, 9.0 m to the left\n- **Maroon Car (c102)**: Speed = 6.6 m/s, Relative Position = 7.0 m to the rear, 3.8 m to the left\n- **Black Car (c95)**: Speed = 7.8 m/s, Relative Position = 25.6 m to the front, 4.3 m to the left\n- **Silver Car (c80)**: Speed = 8.0 m/s, Relative Position = 48.8 m to the front, 5.8 m to the right\n\n### Analysis:\n1. **Relative Positions and Speeds**:\n   - The ego vehicle is ahead of all the other vehicles.\n   - The ego vehicle is moving at a higher speed compared to the other vehicles.\n   - The ego vehicle is maintaining a safe distance from all the other vehicles.\n\n2. **Speed Differences**:\n   - The ego vehicle is moving at 16.4 m/s, which is significantly faster than all the other vehicles.\n   - The ego vehicle is maintaining a safe distance from all the other vehicles, which means it is not approaching any of them at a speed that would require braking.\n\n3. **Collision Risk**:\n   - There is no immediate risk of collision because the ego vehicle is maintaining a safe distance from all the other vehicles.\n   - The ego vehicle is moving at a higher speed, which allows it to maintain a safe distance without needing to brake.\n\n### Conclusion:\nThe ego vehicle does not need to brake. The ego vehicle is moving at a safe speed and maintaining a safe distance from all the other vehicles. Therefore, the ego vehicle can continue following the road without any need for braking.",
+                "Q_timestamp": 1781165239.375936,
+                "Q_time_readable": "2026-06-11 08:07:19.375936",
+                "A_timestamp": 1781165251.255682,
+                "A_time_readable": "2026-06-11 08:07:31.255682"
+            },
+            {
+                "Q": "What is the correct action for the ego vehicle to take now?",
+                "A": "The ego vehicle should slow down to adjust its speed to the speed of the maroon car that is to the front of it(<c68<CAM_FRONT,810.6,493.8>>) because it is driving slowly.",
+                "C": null,
+                "qid": 43,
+                "con_up": -1,
+                "con_down": -1,
+                "cluster": 3,
+                "layer": 1,
+                "object_tags": [],
+                "actual_Q": "Basic infos of the actors: [{\"desc\": \"ego vehicle\", \"speed\": \"16.4m/s\"}, {\"id\": \"c68\", \"desc\": \"maroon car\", \"relative position\": \"30.3m to the front, 0.4m to the right\", \"speed\": \"1.1m/s\", \"speed direction relative to ego\": \"19.5 degrees to the right\"}, {\"id\": \"c67\", \"desc\": \"black car\", \"relative position\": \"42.7m to the front, 6.0m to the right\", \"speed\": \"5.2m/s\", \"speed direction relative to ego\": \"31.0 degrees to the right\"}, {\"id\": \"c105\", \"desc\": \"maroon car\", \"relative position\": \"25.5m to the front, 11.7m to the left\", \"speed\": \"5.6m/s\", \"speed direction relative to ego\": \"168.2 degrees to the left\"}, {\"id\": \"c104\", \"desc\": \"black car\", \"relative position\": \"18.3m to the front, 9.1m to the left\", \"speed\": \"8.2m/s\", \"speed direction relative to ego\": \"174.0 degrees to the left\"}, {\"id\": \"c103\", \"desc\": \"maroon car\", \"relative position\": \"4.2m to the rear, 9.0m to the left\", \"speed\": \"7.7m/s\", \"speed direction relative to ego\": \"157.8 degrees to the right\"}, {\"id\": \"c102\", \"desc\": \"maroon car\", \"relative position\": \"7.0m to the rear, 3.8m to the left\", \"speed\": \"6.6m/s\", \"speed direction relative to ego\": \"151.7 degrees to the right\"}, {\"id\": \"c95\", \"desc\": \"black car\", \"relative position\": \"25.6m to the front, 4.3m to the left\", \"speed\": \"7.8m/s\", \"speed direction relative to ego\": \"12.4 degrees to the right\"}, {\"id\": \"c80\", \"desc\": \"silver car\", \"relative position\": \"48.8m to the front, 5.8m to the right\", \"speed\": \"8.0m/s\", \"speed direction relative to ego\": \"33.6 degrees to the right\"}] The ego vehicle is driving at the speed of 16.4 m/s, and it wants to follow the road. Please ensure that the speed of the ego vehicle matches that of surrounding normally moving vehicles under normal circumstances to avoid low traffic efficiency.What is the correct action for the ego vehicle to take now?",
+                "actual_gt": "The ego vehicle should slow down to adjust its speed to the speed of the maroon car that is to the front of it(<c68<CAM_FRONT,810.6,493.8>>) because it is driving slowly.",
+                "VLM_name": "Qwen2.5VL",
+                "VLM_answer": "Based on the information provided, the ego vehicle is driving at a speed of 16.4 m/s and wants to follow the road. Let's analyze the situation step by step to determine the correct action for the ego vehicle to take now.\n\n### Current Situation:\n- **Ego Vehicle**: Speed = 16.4 m/s\n- **Black Car (c68)**: Speed = 1.1 m/s, Relative Position = 30.3 m to the front, 0.4 m to the right\n- **Maroon Car (c67)**: Speed = 5.2 m/s, Relative Position = 42.7 m to the front, 6.0 m to the right\n- **Maroon Car (c105)**: Speed = 5.6 m/s, Relative Position = 25.5 m to the front, 11.7 m to the left\n- **Black Car (c104)**: Speed = 8.2 m/s, Relative Position = 18.3 m to the front, 9.1 m to the left\n- **Maroon Car (c103)**: Speed = 7.7 m/s, Relative Position = 4.2 m to the rear, 9.0 m to the left\n- **Maroon Car (c102)**: Speed = 6.6 m/s, Relative Position = 7.0 m to the rear, 3.8 m to the left\n- **Black Car (c95)**: Speed = 7.8 m/s, Relative Position = 25.6 m to the front, 4.3 m to the left\n- **Silver Car (c80)**: Speed = 8.0 m/s, Relative Position = 48.8 m to the front, 5.8 m to the right\n\n### Analysis:\n1. **Relative Positions and Speeds**:\n   - The ego vehicle is ahead of all the other vehicles.\n   - The ego vehicle is moving at a higher speed compared to the other vehicles.\n   - The ego vehicle is maintaining a safe distance from all the other vehicles.\n\n2. **Speed Differences**:\n   - The ego vehicle is moving at 16.4 m/s, which is significantly faster than all the other vehicles.\n   - The ego vehicle is maintaining a safe distance from all the other vehicles, which means it is not approaching any of them at a speed that would require braking.\n\n3. **Collision Risk**:\n   - There is no immediate risk of collision because the ego vehicle is maintaining a safe distance from all the other vehicles.\n   - The ego vehicle is moving at a higher speed, which allows it to maintain a safe distance without needing to brake.\n\n### Conclusion:\nThe ego vehicle does not need to brake. The ego vehicle is moving at a safe speed and maintaining a safe distance from all the other vehicles. Therefore, the ego vehicle can continue following the road without any need for braking.\n\n**Action for the Ego Vehicle:**\nThe correct action for the ego vehicle to take now is to continue following the road at a speed of 16.4 m/s. This ensures that the ego vehicle maintains a safe distance from all the other vehicles and avoids any potential low traffic efficiency issues.",
+                "Q_timestamp": 1781165251.257924,
+                "Q_time_readable": "2026-06-11 08:07:31.257924",
+                "A_timestamp": 1781165265.500556,
+                "A_time_readable": "2026-06-11 08:07:45.500556"
+            },
+            {
+                "Q": "Provide the appropriate behavior for the ego vehicle, which consists of two keys: the Direction key, which can be 'FOLLOW_LANE', 'CHANGE_LANE_LEFT', 'CHANGE_LANE_RIGHT', 'DEVIATE_LEFT', 'DEVIATE_RIGHT', 'GO_STRAIGHT', 'TURN_LEFT', or 'TURN_RIGHT'; and the Speed key, which can be 'KEEP', 'ACCELERATE', 'DECELERATE', or 'STOP'.",
+                "A": "FOLLOW_LANE, DECELERATE",
+                "C": null,
+                "qid": 50,
+                "con_up": -1,
+                "con_down": -1,
+                "cluster": 3,
+                "layer": 1,
+                "object_tags": [],
+                "actual_Q": "Basic infos of the actors: [{\"desc\": \"ego vehicle\", \"speed\": \"16.4m/s\"}, {\"id\": \"c68\", \"desc\": \"maroon car\", \"relative position\": \"30.3m to the front, 0.4m to the right\", \"speed\": \"1.1m/s\", \"speed direction relative to ego\": \"19.5 degrees to the right\"}, {\"id\": \"c67\", \"desc\": \"black car\", \"relative position\": \"42.7m to the front, 6.0m to the right\", \"speed\": \"5.2m/s\", \"speed direction relative to ego\": \"31.0 degrees to the right\"}, {\"id\": \"c105\", \"desc\": \"maroon car\", \"relative position\": \"25.5m to the front, 11.7m to the left\", \"speed\": \"5.6m/s\", \"speed direction relative to ego\": \"168.2 degrees to the left\"}, {\"id\": \"c104\", \"desc\": \"black car\", \"relative position\": \"18.3m to the front, 9.1m to the left\", \"speed\": \"8.2m/s\", \"speed direction relative to ego\": \"174.0 degrees to the left\"}, {\"id\": \"c103\", \"desc\": \"maroon car\", \"relative position\": \"4.2m to the rear, 9.0m to the left\", \"speed\": \"7.7m/s\", \"speed direction relative to ego\": \"157.8 degrees to the right\"}, {\"id\": \"c102\", \"desc\": \"maroon car\", \"relative position\": \"7.0m to the rear, 3.8m to the left\", \"speed\": \"6.6m/s\", \"speed direction relative to ego\": \"151.7 degrees to the right\"}, {\"id\": \"c95\", \"desc\": \"black car\", \"relative position\": \"25.6m to the front, 4.3m to the left\", \"speed\": \"7.8m/s\", \"speed direction relative to ego\": \"12.4 degrees to the right\"}, {\"id\": \"c80\", \"desc\": \"silver car\", \"relative position\": \"48.8m to the front, 5.8m to the right\", \"speed\": \"8.0m/s\", \"speed direction relative to ego\": \"33.6 degrees to the right\"}] The ego vehicle is driving at the speed of 16.4 m/s, and it wants to follow the road. Provide the appropriate behaviour for the ego vehicle, which consists of two keys: the Direction key, which can be 'FOLLOW_LANE', 'CHANGE_LANE_LEFT', 'CHANGE_LANE_RIGHT'(these three are for situations following a road), 'GO_STRAIGHT', 'TURN_LEFT', 'TURN_RIGHT'(these three are for situations in a junction), 'DEVIATE_LEFT' or 'DEVIATE_RIGHT'(these two are used when the ego vehicle wants to occupy a position slightly to the left/right within the current lane). and the Speed key, which can be 'KEEP', 'ACCELERATE', 'DECELERATE', or 'STOP'. You MUST provide the Direction Key and Speed Key AT THE END of the answer with NO OTHER WORD FOLLOWING; otherwise, the answer will be considered broken. format example (if you want to follow the lane at current speed): Direction Key = FOLLOW_LANE, Speed Key = KEEP",
+                "actual_gt": "FOLLOW_LANE, DECELERATE",
+                "VLM_name": "Qwen2.5VL",
+                "VLM_answer": "Direction Key = FOLLOW_LANE, Speed Key = KEEP",
+                "Q_timestamp": 1781165265.502739,
+                "Q_time_readable": "2026-06-11 08:07:45.502739",
+                "A_timestamp": 1781165266.296584,
+                "A_time_readable": "2026-06-11 08:07:46.296584"
+            }
+        ]
+    },
+    "extra_flags": {
+        "ego_speed": 16.42398711166067,
+        "change_lane_flag": false,
+        "change_lane_gt": false,
+        "speed_cmd": "DECELERATE",
+        "direction_cmd": "FOLLOW_LANE",
+        "speed_change_gt": "Ambiguous",
+        "waiting_for_red_light": false,
+        "is_trivial_case": false
+    },
+    "Cameras": {
+        "CAM_FRONT": "./eval_v1/Qwen2.5VL+front_cam/RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_06_11_07_50_56/camera/rgb_front/00240.jpg",
+        "CAM_FRONT_LEFT": "./eval_v1/Qwen2.5VL+front_cam/RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_06_11_07_50_56/camera/rgb_front_left/00240.jpg",
+        "CAM_FRONT_RIGHT": "./eval_v1/Qwen2.5VL+front_cam/RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_06_11_07_50_56/camera/rgb_front_right/00240.jpg",
+        "CAM_BACK": "./eval_v1/Qwen2.5VL+front_cam/RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_06_11_07_50_56/camera/rgb_back/00240.jpg",
+        "CAM_BACK_LEFT": "./eval_v1/Qwen2.5VL+front_cam/RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_06_11_07_50_56/camera/rgb_back_left/00240.jpg",
+        "CAM_BACK_RIGHT": "./eval_v1/Qwen2.5VL+front_cam/RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_06_11_07_50_56/camera/rgb_back_right/00240.jpg",
+        "ANNO_CAM_FRONT": "./eval_v1/Qwen2.5VL+front_cam/RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_06_11_07_50_56/camera/anno_rgb_front/00240.jpg"
+    }
+}
