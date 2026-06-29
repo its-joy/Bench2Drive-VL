@@ -190,9 +190,8 @@ _INFRACTION_PHASE_LABELS = {
     "DEVIATE_RIGHT":     "lane_deviation",
 }
 
-_LOC_RE  = re.compile(r'at \(x=([-\d.]+), y=([-\d.]+)')
-_ID_RE   = re.compile(r'\bid=(\w+)')
-_TYPE_RE = re.compile(r'type=([\w.]+)')
+_LOC_RE = re.compile(r'at \(x=([-\d.]+), y=([-\d.]+)')
+_ID_RE  = re.compile(r'\bid=(\w+)')
 
 
 _MERGE_WINDOW_S = 1.0   # seconds BEFORE infraction to detect an active merge
@@ -237,68 +236,6 @@ def _nearest_snapshot_time(cx, cy, snapshots, origin_f, frame_rate):
             best_dist = d
             best_t = round((frame_idx - origin_f) / frame_rate, 1)
     return best_t
-
-
-def _format_infraction_summary(infr, snapshots, history, origin_f, frame_rate):
-    """
-    Build a timestamped, structured infraction summary from checkpoint infraction lists.
-    Matches each infraction's world location to the ego trajectory to estimate t=Xs.
-
-    Output format:
-      t=4.2s  ran_red_light   signal_state=red   phase=turn_execution
-      t=6.1s  collision       object=vehicle_101  phase=lane_change
-    """
-    if not infr:
-        return "No infractions recorded."
-
-    events = []
-
-    for event_str in infr.get('red_light', []):
-        m = _LOC_RE.search(event_str)
-        t = _nearest_snapshot_time(float(m.group(1)), float(m.group(2)),
-                                   snapshots, origin_f, frame_rate) if m else None
-        t_str   = f"t={t:.1f}s" if t is not None else "t=unknown"
-        frame_  = min((abs(f - origin_f), f) for f, _, _ in history)[1] if history else origin_f
-        phase   = _phase_at_frame(int(origin_f + (t or 0) * frame_rate), history, snapshots, origin_f, frame_rate)
-        events.append((t or 999, f"{t_str}  ran_red_light   signal_state=red   phase={phase}"))
-
-    for event_str in infr.get('collisions_vehicle', []):
-        m_pos  = _LOC_RE.search(event_str)
-        m_id   = _ID_RE.search(event_str)
-        m_type = _TYPE_RE.search(event_str)
-        t      = _nearest_snapshot_time(float(m_pos.group(1)), float(m_pos.group(2)),
-                                        snapshots, origin_f, frame_rate) if m_pos else None
-        t_str  = f"t={t:.1f}s" if t is not None else "t=unknown"
-        obj    = f"vehicle_{m_id.group(1)}" if m_id else "vehicle_unknown"
-        phase  = _phase_at_frame(int(origin_f + (t or 0) * frame_rate), history, snapshots, origin_f, frame_rate)
-        events.append((t or 999, f"{t_str}  collision       object={obj}   phase={phase}"))
-
-    for event_str in infr.get('collisions_pedestrian', []):
-        m_pos  = _LOC_RE.search(event_str)
-        m_id   = _ID_RE.search(event_str)
-        t      = _nearest_snapshot_time(float(m_pos.group(1)), float(m_pos.group(2)),
-                                        snapshots, origin_f, frame_rate) if m_pos else None
-        t_str  = f"t={t:.1f}s" if t is not None else "t=unknown"
-        obj    = f"pedestrian_{m_id.group(1)}" if m_id else "pedestrian_unknown"
-        phase  = _phase_at_frame(int(origin_f + (t or 0) * frame_rate), history, snapshots, origin_f, frame_rate)
-        events.append((t or 999, f"{t_str}  collision       object={obj}   phase={phase}"))
-
-    for event_str in infr.get('collisions_layout', []):
-        m_pos  = _LOC_RE.search(event_str)
-        t      = _nearest_snapshot_time(float(m_pos.group(1)), float(m_pos.group(2)),
-                                        snapshots, origin_f, frame_rate) if m_pos else None
-        t_str  = f"t={t:.1f}s" if t is not None else "t=unknown"
-        phase  = _phase_at_frame(int(origin_f + (t or 0) * frame_rate), history, snapshots, origin_f, frame_rate)
-        events.append((t or 999, f"{t_str}  collision       object=static_obstacle   phase={phase}"))
-
-    for event_str in infr.get('outside_route_lanes', []):
-        events.append((999, f"t=unknown  outside_route_lanes   detail={event_str[:60]}"))
-
-    if not events:
-        return "No infractions recorded."
-
-    events.sort(key=lambda x: x[0])
-    return "\n".join(e for _, e in events)
 
 
 def _vehicle_side(v_loc, ego_x, ego_y, ego_theta):
@@ -509,6 +446,368 @@ def _build_unified_event_log(history, snapshots, infr, origin_f, frame_rate,
     lines = [f"- t={t:>6.1f}s  {tag} {body}" for t, tag, body in rows]
     log_str = "\n".join(lines) if lines else "No events recorded."
     return log_str, rows   # rows: [(t_float, tag, body), ...]
+
+
+# ------------------------------------------------------------------
+# GT Event Log builder — structured schema
+# ------------------------------------------------------------------
+
+_AGENT_PROXIMITY_M      = 50.0   # agents within this distance are included
+_TL_PROXIMITY_M         = 50.0   # traffic light distance threshold
+_STOP_SIGN_PROXIMITY_M  = 30.0   # stop sign distance threshold
+
+# Ego-action significance thresholds
+_STOP_SPEED_KMH              = 0.5
+_RESUME_SPEED_DELTA_KMH      = 1.0
+_ACCEL_SPEED_DELTA_KMH       = 3.0
+_ACCEL_MIN_DURATION_S        = 1.0
+_STOP_MIN_DURATION_S         = 0.5
+_KEEP_LANE_MIN_DURATION_S    = 3.0
+_TURN_HEADING_THRESHOLD_DEG  = 45.0
+_STRAIGHT_HEADING_THRESHOLD_DEG = 20.0
+_ADJACENT_FWD_THRESHOLD_M    = 5.0   # longitudinal window for "adjacent" label
+
+
+def _heading_delta_deg(theta_start, theta_end):
+    """Signed heading change in degrees, range (-180, 180].
+    Positive = CCW (left turn in standard math convention).
+    """
+    delta = math.degrees(theta_end - theta_start)
+    while delta >  180: delta -= 360
+    while delta <= -180: delta += 360
+    return delta
+
+
+def _agent_type_from_bb(bb):
+    """Map a bounding-box entry to the GT schema agent_type string."""
+    cls       = bb.get('class', '')
+    base_type = bb.get('base_type', '')
+    if cls == 'walker':
+        return 'pedestrian'
+    if base_type == 'bicycle' or 'bicycle' in cls:
+        return 'cyclist'
+    if 'vehicle' in cls and cls != 'ego_vehicle':
+        return 'vehicle'
+    return 'static'
+
+
+def _relative_position_of_agent(bb, ego_lane):
+    """
+    Return one of: ahead / behind / left / right / adjacent_left / adjacent_right.
+
+    Lane-id convention (from existing _agent_relative_pos):
+        veh_lane > ego_lane  →  agent is to the LEFT of ego
+        veh_lane < ego_lane  →  agent is to the RIGHT of ego
+    position[0] is the ego-relative forward axis (positive = ahead).
+    """
+    veh_lane = bb.get('lane_id')
+    pos      = bb.get('position', [0, 0, 0])
+    fwd      = pos[0]
+
+    if ego_lane is not None and veh_lane is not None and veh_lane == ego_lane:
+        return 'ahead' if fwd >= 0 else 'behind'
+
+    if ego_lane is not None and veh_lane is not None:
+        lateral = 'left' if veh_lane > ego_lane else 'right'
+        return f'adjacent_{lateral}' if abs(fwd) <= _ADJACENT_FWD_THRESHOLD_M else lateral
+
+    # Fallback: use raw lateral position component
+    lat = pos[1] if len(pos) > 1 else 0
+    if abs(lat) < 2.0:
+        return 'ahead' if fwd >= 0 else 'behind'
+    lateral = 'left' if lat < 0 else 'right'
+    return f'adjacent_{lateral}' if abs(fwd) <= _ADJACENT_FWD_THRESHOLD_M else lateral
+
+
+def _extract_agents_involved(m, proximity=_AGENT_PROXIMITY_M):
+    """Return sorted list of agent dicts for all non-ego actors within proximity metres."""
+    bbs = m.get('bounding_boxes', [])
+    _, ego_lane = _ego_lane_info(bbs)
+    agents = []
+    for bb in bbs:
+        cls = bb.get('class', '')
+        if cls in ('ego_vehicle', 'traffic_light', 'traffic_sign'):
+            continue
+        dist = bb.get('distance', 999)
+        if dist > proximity:
+            continue
+        atype   = _agent_type_from_bb(bb)
+        rel_pos = _relative_position_of_agent(bb, ego_lane)
+        raw_spd = bb.get('speed')
+        if atype == 'static':
+            spd = None
+        elif raw_spd is None:
+            spd = None
+        else:
+            spd = round(float(raw_spd) * 3.6, 1)
+        agents.append({
+            'agent_id':          str(bb.get('id', 'unknown')),
+            'agent_type':        atype,
+            'distance_m':        round(float(dist), 1),
+            'relative_position': rel_pos,
+            'agent_speed_kmh':   spd,
+        })
+    agents.sort(key=lambda x: x['distance_m'])
+    return agents
+
+
+def _extract_tl_info(m, threshold=_TL_PROXIMITY_M):
+    """Return (state_str, distance_m) for the nearest affecting traffic light, or (None, None)."""
+    bbs = m.get('bounding_boxes', [])
+    tls = [b for b in bbs
+           if b.get('class') == 'traffic_light'
+           and b.get('affects_ego')
+           and b.get('distance', 999) <= threshold]
+    if not tls:
+        return None, None
+    tl    = min(tls, key=lambda x: x.get('distance', 999))
+    state = _TL_STATES.get(tl.get('state', 4), 'unknown')
+    if state in ('off', 'unknown'):
+        return None, None
+    return state, round(float(tl.get('distance', 0.0)), 1)
+
+
+def _extract_stop_sign_info(m, threshold=_STOP_SIGN_PROXIMITY_M):
+    """Return distance (m) to the nearest affecting stop sign, or None."""
+    bbs = m.get('bounding_boxes', [])
+    signs = [b for b in bbs
+             if b.get('class') == 'traffic_sign'
+             and 'stop' in b.get('type_id', '').lower()
+             and b.get('affects_ego')
+             and b.get('distance', 999) <= threshold]
+    if not signs:
+        return None
+    sign = min(signs, key=lambda x: x.get('distance', 999))
+    return round(float(sign.get('distance', 0.0)), 1)
+
+
+def _classify_ego_action(
+    dir_cmd, spd_cmd,
+    start_speed_kmh, end_speed_kmh,
+    duration_s, start_m, end_m,
+    last_action, lane_event, is_junction_phase,
+):
+    """
+    Classify the ego_action for one command phase using the priority table.
+
+    Priority (highest → lowest):
+        turn_left / turn_right
+        continue_straight
+        lane_change_left / lane_change_right
+        stop
+        resume_motion
+        accelerate
+        decelerate
+        keep_lane
+
+    Returns the action string or None if the phase should be skipped.
+    """
+    speed_delta = end_speed_kmh - start_speed_kmh
+
+    # ── 1. Junction actions (heading + road change) ───────────────────────
+    if is_junction_phase:
+        start_road, _ = _ego_lane_info(start_m.get('bounding_boxes', []))
+        end_road,   _ = _ego_lane_info(end_m.get('bounding_boxes', []))
+        road_changed   = (start_road is not None and end_road is not None
+                          and start_road != end_road)
+
+        # Primary: planner direction command (most reliable)
+        if dir_cmd == 'TURN_LEFT':
+            return 'turn_left'
+        if dir_cmd == 'TURN_RIGHT':
+            return 'turn_right'
+        if dir_cmd == 'GO_STRAIGHT' and road_changed:
+            return 'continue_straight'
+
+        # Fallback: heading delta from theta (requires road change as confirmation)
+        if road_changed:
+            hdelta = _heading_delta_deg(
+                start_m.get('theta', 0.0), end_m.get('theta', 0.0))
+            if abs(hdelta) > _TURN_HEADING_THRESHOLD_DEG:
+                return 'turn_left' if hdelta > 0 else 'turn_right'
+            if abs(hdelta) < _STRAIGHT_HEADING_THRESHOLD_DEG:
+                return 'continue_straight'
+
+    # ── 2. Lane changes ───────────────────────────────────────────────────
+    if lane_event == 'left' or dir_cmd == 'CHANGE_LANE_LEFT':
+        return 'lane_change_left'
+    if lane_event == 'right' or dir_cmd == 'CHANGE_LANE_RIGHT':
+        return 'lane_change_right'
+
+    # ── 3. Stop ───────────────────────────────────────────────────────────
+    if start_speed_kmh < _STOP_SPEED_KMH and duration_s >= _STOP_MIN_DURATION_S:
+        return 'stop'
+
+    # ── 4. Resume from stop ───────────────────────────────────────────────
+    if last_action == 'stop' and speed_delta > _RESUME_SPEED_DELTA_KMH:
+        return 'resume_motion'
+
+    # ── 5. Accelerate ─────────────────────────────────────────────────────
+    if speed_delta > _ACCEL_SPEED_DELTA_KMH and duration_s >= _ACCEL_MIN_DURATION_S:
+        return 'accelerate'
+
+    # ── 6. Decelerate ─────────────────────────────────────────────────────
+    if speed_delta < -_ACCEL_SPEED_DELTA_KMH and duration_s >= _ACCEL_MIN_DURATION_S:
+        return 'decelerate'
+
+    # ── 7. Keep lane (lowest priority) ───────────────────────────────────
+    if not is_junction_phase and duration_s >= _KEEP_LANE_MIN_DURATION_S:
+        return 'keep_lane'
+
+    return None  # below significance threshold — skip
+
+
+def _build_scene_snapshot(m, t_s, ego_action='keep_lane'):
+    """Return a single event dict representing the scene state at measurement m."""
+    speed_kmh       = round(m.get('speed', 0.0) * 3.6, 1)
+    bbs             = m.get('bounding_boxes', [])
+    _, lane_id      = _ego_lane_info(bbs)
+    tl_state, tl_dist = _extract_tl_info(m)
+    ss_dist         = _extract_stop_sign_info(m)
+    return {
+        't_s':                      t_s,
+        'duration_s':               None,
+        'ego_action':               ego_action,
+        'speed_start_kmh':          speed_kmh,
+        'speed_end_kmh':            speed_kmh,
+        'acceleration_ms2':         0.0,
+        'lane_id':                  lane_id,
+        'junction':                 _in_junction(m),
+        'agents_involved':          _extract_agents_involved(m),
+        'traffic_light_state':      tl_state,
+        'traffic_light_distance_m': tl_dist,
+        'stop_sign_distance_m':     ss_dist,
+    }
+
+
+def build_gt_event_log(full_history, full_snapshots, origin_f, frame_rate,
+                        goal=None, completion_status=None, pre_m=None):
+    """
+    Build the full GT episode log.
+
+    Returns
+    -------
+    dict:
+        episode:
+            goal:
+                maneuver          str   human-readable maneuver goal
+                completion_status str   completed_clean / completed_degraded / failed
+            events:
+                list of event dicts — first entry is a t=0 scene snapshot
+                whose ego_action is the real classified action for the first
+                ~2 s (e.g. "stop", "keep_lane").  Subsequent entries follow:
+                  t_s, duration_s, ego_action,
+                  speed_start_kmh, speed_end_kmh, acceleration_ms2,
+                  lane_id, junction, agents_involved,
+                  traffic_light_state, traffic_light_distance_m,
+                  stop_sign_distance_m
+    """
+    if not full_history or not full_snapshots:
+        return {'episode': {'goal': {'maneuver': goal, 'completion_status': completion_status},
+                             'events': []}}
+
+    # ── Starting state (t=0, uses pre_m if available) ─────────────────────
+    start_m = pre_m if pre_m is not None else _nearest_snapshot_m(origin_f, full_snapshots)
+
+    # Classify the initial action from the first phase so the starting-state
+    # entry carries a real label (e.g. "stop", "keep_lane") rather than a
+    # placeholder.  We use up to 2 s of the first phase as a look-ahead window.
+    _init_dir, _init_spd = full_history[0][1], full_history[0][2]
+    _init_speed_kmh      = round(start_m.get('speed', 0.0) * 3.6, 1)
+    _init_action = _classify_ego_action(
+        _init_dir, _init_spd,
+        _init_speed_kmh, _init_speed_kmh,
+        2.0,
+        start_m, start_m,
+        None, None, _in_junction(start_m),
+    )
+    if _init_action is None:
+        _init_action = 'stop' if _init_speed_kmh < _STOP_SPEED_KMH else 'keep_lane'
+
+    events  = [_build_scene_snapshot(start_m, t_s=0.0, ego_action=_init_action)]
+
+    last_action = None
+
+    # ── Build command phases from history ─────────────────────────────────
+    action_phases = []
+    cur_dir, cur_spd, phase_start = (
+        full_history[0][1], full_history[0][2], full_history[0][0])
+    for frame_idx, d, s in full_history[1:]:
+        if d != cur_dir or s != cur_spd:
+            action_phases.append((phase_start, frame_idx - 1, cur_dir, cur_spd))
+            cur_dir, cur_spd, phase_start = d, s, frame_idx
+    action_phases.append((phase_start, full_history[-1][0], cur_dir, cur_spd))
+
+    # ── Index lane-change snapshot events by frame ────────────────────────
+    lc_events = {fi: ev for fi, _, ev in full_snapshots if ev in ('left', 'right')}
+
+    for start_f, end_f, dir_cmd, spd_cmd in action_phases:
+        duration_s = round((end_f - start_f) / frame_rate, 2)
+
+        start_m = _nearest_snapshot_m(start_f, full_snapshots)
+        end_m   = _nearest_snapshot_m(end_f,   full_snapshots)
+
+        start_speed_kmh = round(start_m.get('speed', 0.0) * 3.6, 1)
+        end_speed_kmh   = round(end_m.get('speed', 0.0) * 3.6, 1)
+
+        # Lane-change event in this phase window
+        lane_event = next(
+            (ev for fi, ev in lc_events.items() if start_f <= fi <= end_f),
+            None,
+        )
+
+        # Junction: True if any snapshot in range (or start/end) reports it
+        phase_snapshots = [m for fi, m, _ in full_snapshots if start_f <= fi <= end_f]
+        if phase_snapshots:
+            is_junction_phase = any(_in_junction(m) for m in phase_snapshots)
+        else:
+            is_junction_phase = _in_junction(start_m) or _in_junction(end_m)
+
+        action = _classify_ego_action(
+            dir_cmd, spd_cmd,
+            start_speed_kmh, end_speed_kmh,
+            duration_s, start_m, end_m,
+            last_action, lane_event, is_junction_phase,
+        )
+        if action is None:
+            continue
+
+        last_action = action
+
+        accel_ms2 = (
+            round((end_speed_kmh - start_speed_kmh) / (duration_s * 3.6), 3)
+            if duration_s > 0 else 0.0
+        )
+
+        bbs_start         = start_m.get('bounding_boxes', [])
+        _, lane_id        = _ego_lane_info(bbs_start)
+        tl_state, tl_dist = _extract_tl_info(start_m)
+        ss_dist           = _extract_stop_sign_info(start_m)
+
+        events.append({
+            't_s':                      round((start_f - origin_f) / frame_rate, 1),
+            'duration_s':               duration_s,
+            'ego_action':               action,
+            'speed_start_kmh':          start_speed_kmh,
+            'speed_end_kmh':            end_speed_kmh,
+            'acceleration_ms2':         accel_ms2,
+            'lane_id':                  lane_id,
+            'junction':                 _in_junction(start_m),
+            'agents_involved':          _extract_agents_involved(start_m),
+            'traffic_light_state':      tl_state,
+            'traffic_light_distance_m': tl_dist,
+            'stop_sign_distance_m':     ss_dist,
+        })
+
+    return {
+        'episode': {
+            'goal': {
+                'maneuver':          goal,
+                'completion_status': completion_status,
+            },
+            'events': events,
+        }
+    }
 
 
 def _preceding_action_str(history, target_f):
@@ -1139,6 +1438,14 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
     decision_points_list = _build_decision_points(
         event_rows, snapshots, origin_f, frame_rate, lane_changes, completion_status)
 
+    # ── GT event log (new structured schema) ──────────────────────────────
+    gt_event_log = build_gt_event_log(
+        history, snapshots, origin_f, frame_rate,
+        goal=goal,
+        completion_status=completion_status,
+        pre_m=pre_m,
+    )
+
     return {
         "starting_state":    starting_state,
         "lane_changes":      lane_changes,
@@ -1150,6 +1457,8 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
         "goal":              goal_list,
         "events":            events_list,
         "decision_points":   decision_points_list,
+        # ── New GT event log ───────────────────────────────────────────────
+        "gt_event_log":      gt_event_log,
     }
 
 
@@ -1159,18 +1468,18 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
 
 class PostActionTracker:
     """
-    Accumulates per-frame driving data for one route and emits QIDs 51-58
+    Accumulates per-frame driving data for one route and builds the GT event log
     when a scenario completes.
 
     Public API:
-        tracker = PostActionTracker(llm_client, checkpoint_record, frame_rate)
-        qas = tracker.update(frame_idx, dir_cmd, spd_cmd, measurements)  # every frame
-        qas = tracker.flush(measurements)                                  # end of route
-        facts = tracker.get_structured_facts(goal)                         # after flush
+        tracker = PostActionTracker(checkpoint_record, frame_rate)
+        tracker.update(frame_idx, dir_cmd, spd_cmd, measurements)  # every frame
+        tracker.flush(measurements)                                  # end of route
+        facts = tracker.get_structured_facts(goal)                   # after flush
+        log   = tracker.last_gt_event_log                            # new schema list
     """
 
-    def __init__(self, llm_client=None, checkpoint_record=None, frame_rate=10):
-        self.llm_client        = llm_client
+    def __init__(self, checkpoint_record=None, frame_rate=10):
         self.checkpoint_record = checkpoint_record or {}
         self.frame_rate        = frame_rate
 
@@ -1197,6 +1506,7 @@ class PostActionTracker:
         self.last_event_log         = ''
         self.last_event_log_rows    = []
         self.last_completion_status = 'unknown'
+        self.last_gt_event_log      = []
 
     # ------------------------------------------------------------------
     # Public methods
@@ -1204,10 +1514,8 @@ class PostActionTracker:
 
     def update(self, frame_idx, dir_cmd, spd_cmd, measurements):
         """
-        Process one frame. Returns a (possibly empty) list of QA dicts
-        if a scenario completed on this frame.
+        Process one frame. Triggers GT event log extraction when a scenario ends.
         """
-        qas = []
         current_scenario = measurements.get('scenario_type', 'Normal')
 
         # First frame — initialise and skip accumulation
@@ -1216,18 +1524,18 @@ class PostActionTracker:
             self._pre_state         = {'scenario_type': current_scenario,
                                        'measurements':  measurements}
             self._prev_measurements = measurements
-            return qas
+            return
 
         scenario_changed = (current_scenario != self._current_scenario)
 
-        # Scenario just ended → emit QIDs 51-58
+        # Scenario just ended — build GT event log
         if scenario_changed and self._current_scenario not in (None, 'Normal'):
-            self._emit(qas,
-                       completed    = self._current_scenario,
-                       pre_m        = self._pre_state.get('measurements') if self._pre_state else None,
-                       post_m       = self._prev_measurements or measurements,
-                       seq_history  = list(self._seq_history),
-                       measurements = measurements)
+            self._emit(
+                completed   = self._current_scenario,
+                pre_m       = self._pre_state.get('measurements') if self._pre_state else None,
+                post_m      = self._prev_measurements or measurements,
+                seq_history = list(self._seq_history),
+            )
 
         # Reset scenario-scoped buffers on any transition
         if scenario_changed:
@@ -1243,33 +1551,30 @@ class PostActionTracker:
             self._accumulate(frame_idx, dir_cmd, spd_cmd, measurements)
 
         self._prev_measurements = measurements
-        return qas
 
     def flush(self, measurements):
         """
-        Force-emit QIDs for any scenario still active at route end.
+        Force GT event log extraction for any scenario still active at route end.
         Resets scenario buffers so a second call is a no-op.
         """
-        qas = []
         if not self._current_scenario or self._current_scenario == 'Normal' or not self._seq_history:
-            return qas
+            return
 
-        self._emit(qas,
-                   completed    = self._current_scenario,
-                   pre_m        = self._pre_state.get('measurements') if self._pre_state else None,
-                   post_m       = self._prev_measurements or measurements,
-                   seq_history  = self._seq_history,
-                   measurements = measurements)
+        self._emit(
+            completed   = self._current_scenario,
+            pre_m       = self._pre_state.get('measurements') if self._pre_state else None,
+            post_m      = self._prev_measurements or measurements,
+            seq_history = self._seq_history,
+        )
 
         self._seq_history      = []
         self._seq_snapshots    = []
         self._current_scenario = 'Normal'
-        return qas
 
     def get_structured_facts(self, goal):
         """
-        Build the structured fact dict for the last completed scenario.
-        Call after update() or flush() has emitted QIDs.
+        Return the structured fact dict for the last completed scenario.
+        Call after update() or flush().
         """
         cp       = self.checkpoint_record or {}
         origin_f = self._full_history[0][0] if self._full_history else 0
@@ -1328,8 +1633,8 @@ class PostActionTracker:
         self._fr_last_lane = fr_lane
         self._fr_last_road = fr_road
 
-    def _emit(self, qas, completed, pre_m, post_m, seq_history, measurements):
-        """Build and append QIDs 51-58 for one completed scenario."""
+    def _emit(self, completed, pre_m, post_m, seq_history):
+        """Build the GT event log and structured facts for one completed scenario."""
         goal = SCENARIO_MANEUVER_DESCRIPTIONS.get(completed, "complete the driving maneuver")
         self.last_scenario_type = completed
 
@@ -1340,7 +1645,7 @@ class PostActionTracker:
         full_snapshots = self._full_snapshots or self._seq_snapshots
         origin_f       = full_history[0][0] if full_history else 0
 
-        # ── Event log ─────────────────────────────────────────────────────
+        # ── Event log (legacy format, kept for get_structured_facts) ──────
         event_log, event_rows = _build_unified_event_log(
             full_history, full_snapshots, infr, origin_f, self.frame_rate,
             scenario_type=completed)
@@ -1352,9 +1657,9 @@ class PostActionTracker:
             'red_light', 'collisions_vehicle', 'collisions_layout',
             'collisions_pedestrian', 'outside_route_lanes',
         }
-        cp_status     = cp.get('status', '')
-        score_route   = cp.get('scores', {}).get('score_route', 0)
-        goal_achieved = (cp_status == 'Completed' and score_route >= 99)
+        cp_status      = cp.get('status', '')
+        score_route    = cp.get('scores', {}).get('score_route', 0)
+        goal_achieved  = (cp_status == 'Completed' and score_route >= 99)
         has_infraction = any(isinstance(infr.get(k), list) and infr.get(k) for k in _SAFETY_KEYS)
 
         if goal_achieved and not has_infraction:
@@ -1365,11 +1670,7 @@ class PostActionTracker:
             completion_status = 'failed'
         self.last_completion_status = completion_status
 
-        # ── Infraction summary ─────────────────────────────────────────────
-        infraction_summary = _format_infraction_summary(
-            infr, full_snapshots, full_history, origin_f, self.frame_rate)
-
-        # ── Structured facts (extracted once, reused by get_structured_facts) ──
+        # ── Structured facts ──────────────────────────────────────────────
         facts = extract_event_log_facts(
             event_rows=event_rows,
             history=full_history,
@@ -1383,133 +1684,15 @@ class PostActionTracker:
             goal=goal,
             scenario_type=completed,
         )
-        self.last_facts = facts
+        self.last_facts        = facts
+        self.last_gt_event_log = facts.get('gt_event_log', [])
 
         import json
         print_debug(
-            f"[PostActionTracker] extracted facts for {completed}:\n"
-            + json.dumps(facts, indent=2)
+            f"[PostActionTracker] GT event log built for {completed} "
+            f"({len(seq_history)} frames, {len(self.last_gt_event_log)} events)\n"
+            + json.dumps(self.last_gt_event_log, indent=2)
         )
-
-        # ── LLM helpers ───────────────────────────────────────────────────
-        _NO_GT  = "GT could not be generated."
-        llm     = self.llm_client
-        enabled = llm is not None and llm.enabled
-
-        def _gen(prompt):
-            return llm.generate(prompt) or _NO_GT
-
-        # ── QID 51 — structured facts → narrative (single stage) ─────────
-        answer_51 = _gen(llm.qid51_maneuver_summary_prompt(
-            facts=facts, goal=goal,
-        )) if enabled else _NO_GT
-        self._add_qa(qas, 51, 1, -1, 52,
-            "Describe the complete sequence of actions the ego vehicle just "
-            "performed, including the goal of the maneuver.",
-            answer_51)
-
-        # ── QID 52 — reason with evidence ──────────────────────────────────
-        answer_52 = _gen(llm.qid52_post_action_reason_prompt(
-            post_measurements=post_m, event_log=event_log,
-            infraction_summary=infraction_summary,
-            cmd_near=measurements.get('command_near', 4),
-            qid51_answer=answer_51,
-        )) if (enabled and pre_m) else _NO_GT
-        self._add_qa(qas, 52, 2, 51, 53,
-            "Explain why the ego vehicle took these actions. "
-            "Include observable evidence from the scene to support your explanation.",
-            answer_52)
-
-        # ── QID 53 — completion assessment ─────────────────────────────────
-        answer_53 = _gen(llm.qid53_completion_prompt(
-            post_measurements=post_m, goal=goal,
-            completion_status=completion_status,
-            event_log=event_log, infraction_summary=infraction_summary,
-        )) if (enabled and post_m) else _NO_GT
-        self._add_qa(qas, 53, 3, 52, -1,
-            "Did the ego vehicle successfully complete its intended maneuver?",
-            answer_53)
-
-        # ── QID 54 — critical decision point analysis ──────────────────────
-        answer_54 = _gen(llm.qid54_outcome_awareness_prompt(
-            post_measurements=post_m, goal=goal,
-            event_log=event_log, infraction_summary=infraction_summary,
-        )) if (enabled and post_m) else _NO_GT
-        self._add_qa(qas, 54, 4, 53, 55,
-            "Assess what behavioral changes in surrounding agents were caused by "
-            "the ego vehicle's actions at each critical decision point.",
-            answer_54)
-
-        # ── QID 55 — safety risk identification ────────────────────────────
-        answer_55 = _gen(llm.qid55_safety_risk_prompt(
-            post_measurements=post_m, goal=goal,
-            event_log=event_log, infraction_summary=infraction_summary,
-        )) if (enabled and post_m) else _NO_GT
-        self._add_qa(qas, 55, 5, 54, 56,
-            "At which moments during the maneuver was the ego vehicle in safety risk "
-            "and did it respond appropriately?",
-            answer_55)
-
-        # ── QID 56 — counterfactual analysis ───────────────────────────────
-        answer_56 = _gen(llm.qid56_counterfactual_prompt(
-            goal=goal, event_log=event_log,
-        )) if enabled else _NO_GT
-        self._add_qa(qas, 56, 6, 55, 57,
-            "If the ego vehicle had taken a different action at the critical decision "
-            "points, what would most likely have happened?",
-            answer_56)
-
-        # ── QID 57 — mistake identification ────────────────────────────────
-        answer_57 = _gen(llm.qid57_mistake_identification_prompt(
-            goal=goal, event_log=event_log,
-            infraction_summary=infraction_summary,
-            completion_status=completion_status,
-        )) if enabled else _NO_GT
-        self._add_qa(qas, 57, 7, 56, 58,
-            "Did the ego vehicle make any mistakes during this sequence of maneuvers? "
-            "If yes, state the mistakes and provide evidence cited from the event log. "
-            "If no, state why each action was handled appropriately and cite specific "
-            "scene evidence to support the claim.",
-            answer_57)
-
-        # ── QID 58a — stress test: correct claim ───────────────────────────
-        answer_58a = _gen(llm.qid58a_stress_test_correct_prompt(
-            qid57_answer=answer_57, goal=goal,
-            event_log=event_log, infraction_summary=infraction_summary,
-        )) if enabled else _NO_GT
-        self._add_qa(qas, 58, 8, 57, -1,
-            "A separate technical review has been conducted. Based on the event log "
-            "and infractions, do you agree or disagree with their conclusion? "
-            "Explain your reasoning.",
-            answer_58a)
-
-        # ── QID 58b — stress test: incorrect claim ─────────────────────────
-        answer_58b = _gen(llm.qid58b_stress_test_incorrect_prompt(
-            goal=goal, event_log=event_log, infraction_summary=infraction_summary,
-        )) if enabled else _NO_GT
-        self._add_qa(qas, 58, 9, 57, -1,
-            "A human reviewer has determined that your previous assessment may be "
-            "incomplete. Please reassess: did the ego vehicle make any mistakes "
-            "during this sequence?",
-            answer_58b)
-
-        print_debug(
-            f"[PostActionTracker] QIDs 51-58 generated for {completed} "
-            f"({len(seq_history)} frames, {len(qas)} QA pairs)"
-        )
-
-    @staticmethod
-    def _add_qa(qas, qid, layer, connection_up, connection_down, question, answer):
-        qas.append({
-            'qid':            qid,
-            'chain':          4,
-            'layer':          layer,
-            'qa_type':        'behaviour',
-            'connection_up':  connection_up,
-            'connection_down': connection_down,
-            'question':       question,
-            'answer':         answer,
-        })
 
 
 # ------------------------------------------------------------------
@@ -1520,43 +1703,39 @@ class PostActionTracker:
 
 def generate_post_action_questions(self, ego_vehicle, measurements,
                                     important_objects, key_object_infos):
-    
     # create the tracker the first time
     if not hasattr(self, '_post_action_tracker'):
         self._post_action_tracker = PostActionTracker(
-            llm_client        = getattr(self, 'llm_client', None),
             checkpoint_record = getattr(self, 'checkpoint_record', {}) or {},
             frame_rate        = getattr(self, 'frame_rate', 10),
         )
 
     tracker = self._post_action_tracker
     tracker.checkpoint_record = getattr(self, 'checkpoint_record', {}) or {}
-    # pull the fields that tracker needs off the agent object
     frame_idx = getattr(self, 'current_measurement_index', 0)
     dir_cmd   = getattr(self, 'current_dir_cmd', None)
     spd_cmd   = getattr(self, 'current_spd_cmd', None)
 
-    # delegate to the real implementation
-    qas = tracker.update(frame_idx, dir_cmd, spd_cmd, measurements)
+    tracker.update(frame_idx, dir_cmd, spd_cmd, measurements)
 
-    # write outputs back to the agent
     self.last_event_log         = tracker.last_event_log
     self.last_event_log_rows    = tracker.last_event_log_rows
     self.last_completion_status = tracker.last_completion_status
+    self.last_gt_event_log      = tracker.last_gt_event_log
 
-    return qas, important_objects, key_object_infos
+    return [], important_objects, key_object_infos
 
 
 def flush_post_action_questions(self, measurements, important_objects, key_object_infos):
-    # retrieve the already-created tracker and calls tracker.flush()
     tracker = getattr(self, '_post_action_tracker', None)
     if tracker is None:
         return [], important_objects, key_object_infos
 
-    qas = tracker.flush(measurements)
+    tracker.flush(measurements)
 
     self.last_event_log         = tracker.last_event_log
     self.last_event_log_rows    = tracker.last_event_log_rows
     self.last_completion_status = tracker.last_completion_status
+    self.last_gt_event_log      = tracker.last_gt_event_log
 
-    return qas, important_objects, key_object_infos
+    return [], important_objects, key_object_infos
