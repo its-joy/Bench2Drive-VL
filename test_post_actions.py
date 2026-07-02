@@ -9,7 +9,7 @@ For each scenario directory found under EVAL_DIR it:
 
 Usage:
     python test_post_actions.py
-    python test_post_actions.py --eval-dir eval_v1/Qwen2.5VL+front_cam
+    python3 test_post_actions.py --eval-dir eval_v1/Qwen2.5VL+front_cam/RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_06_11_07_50_56
     python test_post_actions.py --eval-dir eval_v1 --max-routes 3
     python test_post_actions.py --eval-dir eval_v1 --output-dir gt_logs/
     python test_post_actions.py --checkpoint my_checkpoint.json
@@ -121,6 +121,23 @@ def _load_episode_data(scenario_dir: Path, infer_root: Path, checkpoint_records:
     pre_m  = None
     last_m = None
 
+    # Keep recent measurements for backtracking steering angle analysis
+    recent_frames = []    # [(fidx, m, lane, steer), ...] to look back for steering changes
+    MAX_HISTORY_FRAMES = 10  # Store up to 10 frames to find steering start
+
+    # Track turn maneuvers (detected by steering angle + junction entry/exit)
+    turn_in_progress = False
+    turn_start_fidx = None
+    turn_start_m = None
+    turn_start_steer = None
+
+    # Track continue_straight maneuvers (in junction without significant turn)
+    continue_straight_in_progress = False
+    continue_straight_start_fidx = None
+    continue_straight_start_m = None
+
+    fr_last_junction = False
+
     for fidx in all_frames:
         if fidx in cmd_by_frame:
             last_dir, last_spd = cmd_by_frame[fidx]
@@ -135,10 +152,15 @@ def _load_episode_data(scenario_dir: Path, infer_root: Path, checkpoint_records:
             "y":              pos[1],
             "speed":          raw_m.get("speed",    0.0),
             "theta":          raw_m.get("theta",    0.0),
+            "steer":          raw_m.get("steer",    0.0),
             "junction":       raw_m.get("junction", False),
             "command_near":   raw_a.get("command_near", 4),
             "bounding_boxes": raw_a.get("bounding_boxes", []),
         }
+
+        # Extract steering angle and junction state for turn detection
+        cur_steer = m.get("steer", 0.0)
+        cur_junction = m.get("junction", False)
 
         if pre_m is None:
             pre_m = m
@@ -150,14 +172,104 @@ def _load_episode_data(scenario_dir: Path, infer_root: Path, checkpoint_records:
             full_snapshots.append((fidx, m, False))
             fr_last_dir, fr_last_spd = dir_cmd, spd_cmd
 
+        # ──────────────────────────────────────────────────────────────────────────
+        # Lane change detection: Use lane_id to detect, steer angle to refine timing
+        # 1. Detect lane_id change (tells us a lane change happened)
+        # 2. Backtrack to find where steering angle became significant (start)
+        # 3. Find when steering angle straightens out (end)
+        # ──────────────────────────────────────────────────────────────────────────
         bbs      = m["bounding_boxes"]
         cur_road = next((b.get("road_id") for b in bbs if b.get("class") == "ego_vehicle"), None)
         cur_lane = next((b.get("lane_id") for b in bbs if b.get("class") == "ego_vehicle"), None)
+        cur_steer = m.get("steer", 0.0)
+
+        # Store current frame in recent history for backtracking
+        recent_frames.append((fidx, m, cur_lane, cur_steer))
+        if len(recent_frames) > MAX_HISTORY_FRAMES:
+            recent_frames.pop(0)
+
+        # Detect when lane_id changes
         if (cur_lane is not None and fr_last_lane is not None
                 and cur_lane != fr_last_lane and cur_road == fr_last_road):
-            direction = "right" if cur_lane < fr_last_lane else "left"
-            full_snapshots.append((fidx, m, direction))
+            # Lane ID changed → lane change likely happened
+            # Determine direction from absolute lane values
+            abs_cur_lane = abs(cur_lane)
+            abs_last_lane = abs(fr_last_lane)
+            direction = "right" if abs_cur_lane > abs_last_lane else "left"
+
+            # Backtrack up to MAX_HISTORY_FRAMES to find where steering became significant
+            # (> 0.1 radians is a meaningful steering input)
+            steer_start_idx = len(recent_frames) - 1  # Default to current frame
+            STEER_THRESHOLD = 0.1
+
+            for i in range(len(recent_frames) - 2, -1, -1):
+                frame_i, m_i, lane_i, steer_i = recent_frames[i]
+                if abs(steer_i) > STEER_THRESHOLD:
+                    steer_start_idx = i
+                else:
+                    break  # Stop at first frame with low steering (found the start)
+
+            # Get the measurement from when steering started
+            start_fidx, start_m, _, _ = recent_frames[steer_start_idx]
+
+            # Look forward to find when steering straightens out (< 0.05)
+            # For now, record the snapshot at steering start
+            full_snapshots.append((start_fidx, start_m, direction))
+
         fr_last_lane, fr_last_road = cur_lane, cur_road
+
+        # ──────────────────────────────────────────────────────────────────────────
+        # Turn detection: Steering angle + junction entry/exit
+        # Start: steering significant (>0.15) AND entering junction
+        # End: steering straightens (<0.05) AND leaving junction
+        # ──────────────────────────────────────────────────────────────────────────
+        STEER_START_THRESHOLD = 0.15   # Steering angle threshold to start turn
+        STEER_END_THRESHOLD = 0.05     # Steering angle threshold to end turn
+
+        # Detect turn start: significant steering + junction entry
+        if not turn_in_progress and abs(cur_steer) > STEER_START_THRESHOLD and cur_junction and not fr_last_junction:
+            turn_in_progress = True
+            turn_start_fidx = fidx
+            turn_start_m = m
+            turn_start_steer = cur_steer
+
+        # Detect turn end: only when exiting junction (turn continues through entire junction)
+        if turn_in_progress and not cur_junction and fr_last_junction:
+            # Determine turn direction from steering sign (positive steer = right, negative = left)
+            # Mark as 'turn_right' or 'turn_left' to distinguish from lane changes
+            direction = "turn_right" if turn_start_steer > 0 else "turn_left"
+            full_snapshots.append((turn_start_fidx, turn_start_m, direction))
+            turn_in_progress = False
+
+        # ──────────────────────────────────────────────────────────────────────────
+        # Continue straight detection: junction traversal without significant turn
+        # Start: entering junction AND steering NOT significant (no turn starting)
+        # End: leaving junction
+        # ──────────────────────────────────────────────────────────────────────────
+
+        # Detect continue_straight start: entering junction WITHOUT starting a turn
+        if (not continue_straight_in_progress and not turn_in_progress
+                and cur_junction and not fr_last_junction
+                and abs(cur_steer) <= STEER_START_THRESHOLD):
+            continue_straight_in_progress = True
+            continue_straight_start_fidx = fidx
+            continue_straight_start_m = m
+
+        # Detect continue_straight end: leaving junction
+        if continue_straight_in_progress and not cur_junction and fr_last_junction:
+            full_snapshots.append((continue_straight_start_fidx, continue_straight_start_m, "continue_straight"))
+            continue_straight_in_progress = False
+
+        fr_last_junction = cur_junction
+
+    # Handle turn still in progress at end of scenario
+    if turn_in_progress and last_m is not None:
+        direction = "turn_right" if turn_start_steer > 0 else "turn_left"
+        full_snapshots.append((turn_start_fidx, turn_start_m, direction))
+
+    # Handle continue_straight still in progress at end of scenario
+    if continue_straight_in_progress and last_m is not None:
+        full_snapshots.append((continue_straight_start_fidx, continue_straight_start_m, "continue_straight"))
 
     if last_m is not None and (not full_snapshots or full_snapshots[-1][0] != all_frames[-1]):
         full_snapshots.append((all_frames[-1], last_m, False))
@@ -166,7 +278,28 @@ def _load_episode_data(scenario_dir: Path, infer_root: Path, checkpoint_records:
     record = checkpoint_records.get(scenario_dir.name, {})
     s_type = record.get("scenario_name", "")
     goal   = pa.SCENARIO_MANEUVER_DESCRIPTIONS.get(s_type, "complete the driving maneuver")
-    status = "completed_clean" if record.get("status") == "Completed" else "failed"
+
+    # Determine completion_status from checkpoint (mirrors post_actions.py logic)
+    _SAFETY_INFRACTION_KEYS = {
+        'red_light', 'collisions_vehicle', 'collisions_layout', 'collisions_pedestrian',
+        'outside_route_lanes',
+    }
+    cp_status = record.get("status", "")
+    score_route = record.get("scores", {}).get("score_route", 0)
+    goal_achieved = (cp_status == "Completed" and score_route >= 99)
+
+    infractions = record.get("infractions", {})
+    has_safety_infraction = any(
+        isinstance(infractions.get(k), list) and infractions.get(k)
+        for k in _SAFETY_INFRACTION_KEYS
+    )
+
+    if goal_achieved and not has_safety_infraction:
+        status = "completed_clean"
+    elif goal_achieved and has_safety_infraction:
+        status = "completed_degraded"
+    else:
+        status = "failed"
 
     return full_history, full_snapshots, all_frames[0], FRAME_RATE, pre_m, goal, status
 
@@ -249,7 +382,10 @@ def main():
         fh, fs, orig, fr, pre_m, goal, status = loaded
         result = build_gt_event_log(fh, fs, orig, fr,
                                     goal=goal, completion_status=status,
-                                    pre_m=pre_m)
+                                    pre_m=pre_m,
+                                    checkpoint_path=str(cp_path) if cp_path else None,
+                                    scenario_name=scenario_dir.name,
+                                    scenario_dir=str(scenario_dir))
         out_json = json.dumps(result, indent=2)
 
         if output_dir:

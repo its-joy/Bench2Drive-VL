@@ -1,0 +1,25 @@
+<metadata>
+{
+    "route": "RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_06_11_07_50_56",
+    "scenario": "SignalizedJunctionRightTurn",
+    "completion_status": "completed_degraded",
+    "total_frames": 669,
+    "total_duration": 66.9,
+    "scenario_windows": "0.7-56.6"
+}
+</metadata>
+
+<event_log>
+{
+    "timestamp": 0.7,
+    "type": "ACTION",
+    "description": "went straight at constant speed for 0.5s",
+    "lane": "left",
+    "junction": false,
+    "surrounding_vehicles": 
+        "vehicle_01": "13.7m-ahead, going the same direction with speed of 19km/h",
+        "vehicle_02": "13.7m-ahead, going the same direction with speed of 19km/h,
+
+
+}
+</event_log>

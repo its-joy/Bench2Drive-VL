@@ -59,7 +59,7 @@
             <flow_speed value="8.3" />
             <source_dist_interval from="15" to="30" />
          </scenario>
-         <scenario name="Accident_1" type="Accident">
+         <!-- <scenario name="Accident_1" type="Accident">
             <trigger_point x="427.2" y="6086.8" z="359" yaw="144" />
          </scenario>
          <scenario name="VehicleOpensDoorTwoWays_1" type="VehicleOpensDoorTwoWays">
@@ -97,7 +97,7 @@
             <trigger_point x="498.6" y="5863.3" z="364.7" yaw="65.8" />
             <distance value="70" />
             <frequency from="45" to="120" />
-         </scenario>
+         </scenario> -->
          </scenarios>
    </route>
 </routes>

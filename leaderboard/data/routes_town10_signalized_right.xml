@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='utf-8'?>
+<routes>
+   <route id="0" town="Town10HD" scenario_type="SignalizedJunctionRightTurn">
+      <weathers>
+         <weather route_percentage="0" cloudiness="5.0" precipitation="0.0" precipitation_deposits="0.0" wetness="0.0" wind_intensity="10.0" sun_azimuth_angle="-1.0" sun_altitude_angle="90.0" fog_density="2.0" />
+         <weather route_percentage="100" cloudiness="5.0" precipitation="0.0" precipitation_deposits="0.0" wetness="0.0" wind_intensity="10.0" sun_azimuth_angle="-1.0" sun_altitude_angle="15.0" fog_density="2.0" />
+      </weathers>
+      <waypoints>
+         <position x="-20.169" y="133.587" z="0.0" />
+         <position x="-28.539" y="133.536" z="0.0" />
+         <position x="-33.539" y="133.505" z="0.0" />
+         <position x="-38.539" y="133.474" z="0.0" />
+         <position x="-43.538" y="133.443" z="0.0" />
+         <position x="-48.538" y="133.413" z="0.0" />
+         <position x="-53.538" y="133.382" z="0.0" />
+         <position x="-58.538" y="133.351" z="0.0" />
+         <position x="-63.496" y="133.31" z="0.0" />
+         <position x="-71.27" y="132.315" z="0.0" />
+         <position x="-91.966" y="114.787" z="0.0" />
+         <position x="-94.467" y="110.994" z="0.0" />
+         <position x="-96.731" y="106.953" z="0.0" />
+         <position x="-98.708" y="102.764" z="0.0" />
+         <position x="-100.387" y="98.447" z="0.0" />
+         <position x="-101.761" y="94.023" z="0.0" />
+         <position x="-102.822" y="89.514" z="0.0" />
+         <position x="-103.566" y="84.942" z="0.0" />
+         <position x="-103.989" y="80.329" z="0.0" />
+         <position x="-104.089" y="75.687" z="0.0" />
+         <position x="-104.033" y="70.687" z="0.0" />
+         <position x="-103.977" y="65.687" z="0.0" />
+         <position x="-103.921" y="60.688" z="0.0" />
+         <position x="-103.865" y="55.688" z="0.0" />
+         <position x="-103.809" y="50.688" z="0.0" />
+         <position x="-103.733" y="43.939" z="0.0" />
+         <position x="-103.484" y="39.244" z="0.0" />
+         <position x="-102.027" y="35.057" z="0.0" />
+         <position x="-99.354" y="31.529" z="0.0" />
+         <position x="-95.716" y="29.079" z="0.0" />
+         <position x="-88.686" y="27.938" z="0.0" />
+         <position x="-83.686" y="27.952" z="0.0" />
+         <position x="-78.076" y="27.967" z="0.0" />
+         <!-- <position x="-73.076" y="27.981" z="0.0" />
+         <position x="-66.836" y="27.998" z="0.0" />
+         <position x="-61.836" y="28.012" z="0.0" />
+         <position x="-57.762" y="28.904" z="0.0" />
+         <position x="-54.566" y="31.555" z="0.0" />
+         <position x="-52.632" y="35.409" z="0.0" />
+         <position x="-52.187" y="42.565" z="0.0" /> -->
+      </waypoints>
+      <scenarios>
+         <scenario name="SignalizedJunctionRightTurn_1" type="SignalizedJunctionRightTurn">
+            <trigger_point x="-103.977" y="65.687" z="0.0" yaw="-89.358" />
+         </scenario>
+         <!-- <scenario name="SignalizedJunctionRightTurn_2" type="SignalizedJunctionRightTurn">
+            <trigger_point x="-78.076" y="27.967" z="0.0" yaw="0.159" />
+         </scenario> -->
+      </scenarios>
+   </route>
+</routes>

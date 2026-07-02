@@ -3,6 +3,7 @@ from .hyper_params import *
 from io_utils import print_debug
 import math
 import re
+import numpy as np
 
 # ------------------------------------------------------------------
 # Scenario → high-level maneuver goal (all 44 Bench2Drive scenario types)
@@ -402,7 +403,7 @@ def _build_unified_event_log(history, snapshots, infr, origin_f, frame_rate,
         s_str = _SPD_READABLE.get(s, s.lower())
         scene = _quick_scene_str(m)
         tag   = "[TARGET MANEUVER]" if i == target_idx else "[ACTION]         "
-        rows.append((t, tag, f"{d_str} {s_str} for {dur}s | {lane} | {scene}"))
+        rows.append((t, tag, f"{d_str} {s_str} for {dur}s | {lane} | {scene}", sf))
 
     # ── 2. Lane changes ───────────────────────────────────────────────────
     for frame_idx, m, event in snapshots:
@@ -413,59 +414,302 @@ def _build_unified_event_log(history, snapshots, infr, origin_f, frame_rate,
         to_lane   = _lane_at_time(t)           # lane after this change
         ctx       = _quick_scene_str(m)
         rows.append((t, f"[LANE→{event.upper():5s}]",
-                     f"merged {event} from {from_lane} into {to_lane} | scene: {ctx}"))
+                     f"merged {event} from {from_lane} into {to_lane} | scene: {ctx}", frame_idx))
 
     # ── 3. Infractions ────────────────────────────────────────────────────
     for event_str in infr.get('red_light', []):
         mp = _LOC_RE.search(event_str)
         t  = _nearest_snapshot_time(float(mp.group(1)), float(mp.group(2)),
                                     snapshots, origin_f, frame_rate) if mp else None
-        phase = _phase_at_frame(int(origin_f + (t or 0) * frame_rate), history, snapshots, origin_f, frame_rate)
-        rows.append((t or 999, "[INFRACTION]", f"ran_red_light | signal_state=red | phase={phase}"))
+        frame_num = int(origin_f + (t or 0) * frame_rate) if t else None
+        phase = _phase_at_frame(frame_num, history, snapshots, origin_f, frame_rate)
+        rows.append((t or 999, "[INFRACTION]", f"ran_red_light | signal_state=red | phase={phase}", frame_num))
 
     for event_str in infr.get('collisions_vehicle', []):
         mp    = _LOC_RE.search(event_str)
         m_id  = _ID_RE.search(event_str)
         t     = _nearest_snapshot_time(float(mp.group(1)), float(mp.group(2)),
                                        snapshots, origin_f, frame_rate) if mp else None
+        frame_num = int(origin_f + (t or 0) * frame_rate) if t else None
         obj   = f"vehicle_{m_id.group(1)}" if m_id else "vehicle_unknown"
-        phase = _phase_at_frame(int(origin_f + (t or 0) * frame_rate), history, snapshots, origin_f, frame_rate)
-        rows.append((t or 999, "[INFRACTION]", f"collision | object={obj} | phase={phase}"))
+        phase = _phase_at_frame(frame_num, history, snapshots, origin_f, frame_rate)
+        rows.append((t or 999, "[INFRACTION]", f"collision | object={obj} | phase={phase}", frame_num))
 
     for event_str in infr.get('collisions_pedestrian', []):
         mp    = _LOC_RE.search(event_str)
         m_id  = _ID_RE.search(event_str)
         t     = _nearest_snapshot_time(float(mp.group(1)), float(mp.group(2)),
                                        snapshots, origin_f, frame_rate) if mp else None
+        frame_num = int(origin_f + (t or 0) * frame_rate) if t else None
         obj   = f"pedestrian_{m_id.group(1)}" if m_id else "pedestrian_unknown"
-        rows.append((t or 999, "[INFRACTION]", f"collision | object={obj}"))
+        rows.append((t or 999, "[INFRACTION]", f"collision | object={obj}", frame_num))
     # TO DO
     # collision with other objects like road and etc, add later
 
     rows.sort(key=lambda x: x[0])
-    lines = [f"- t={t:>6.1f}s  {tag} {body}" for t, tag, body in rows]
+    lines = [f"- t={t:>6.1f}s  {tag} {body}" for t, tag, body, *_ in rows]
     log_str = "\n".join(lines) if lines else "No events recorded."
-    return log_str, rows   # rows: [(t_float, tag, body), ...]
+    return log_str, rows   # rows: [(t_float, tag, body, frame_num), ...]
 
 
 # ------------------------------------------------------------------
 # GT Event Log builder — structured schema
 # ------------------------------------------------------------------
 
-_AGENT_PROXIMITY_M      = 50.0   # agents within this distance are included
+_AGENT_PROXIMITY_M      = 20.0   # agents within this distance are included
 _TL_PROXIMITY_M         = 50.0   # traffic light distance threshold
 _STOP_SIGN_PROXIMITY_M  = 30.0   # stop sign distance threshold
 
 # Ego-action significance thresholds
 _STOP_SPEED_KMH              = 0.5
 _RESUME_SPEED_DELTA_KMH      = 1.0
-_ACCEL_SPEED_DELTA_KMH       = 3.0
-_ACCEL_MIN_DURATION_S        = 1.0
+_ACCEL_SPEED_DELTA_KMH       = 1.0
+
+# Acceleration-based thresholds (m/s²) — more robust than speed delta
+# These account for time duration automatically
+_ACCEL_THRESHOLD_MS2         = 0.3   # Significant acceleration (>0.3 m/s²)
+_DECEL_THRESHOLD_MS2         = -0.3  # Significant deceleration (<-0.3 m/s²)
+
+_ACCEL_MIN_DURATION_S        = 0.5
 _STOP_MIN_DURATION_S         = 0.5
-_KEEP_LANE_MIN_DURATION_S    = 3.0
+_KEEP_LANE_MIN_DURATION_S    = 1.0
 _TURN_HEADING_THRESHOLD_DEG  = 45.0
 _STRAIGHT_HEADING_THRESHOLD_DEG = 20.0
 _ADJACENT_FWD_THRESHOLD_M    = 5.0   # longitudinal window for "adjacent" label
+_INFRACTION_LOCATION_TOLERANCE_M = 5.0  # Tolerance for matching infraction locations to events
+
+
+def _load_checkpoint_infractions(checkpoint_path, scenario_name):
+    """Load infractions from checkpoint file for a specific scenario.
+
+    Returns dict with infraction types as keys and list of locations/details as values.
+    """
+    if not checkpoint_path:
+        return {}
+
+    try:
+        import json
+        with open(checkpoint_path) as f:
+            checkpoint = json.load(f)
+
+        # Find the scenario record
+        for record in checkpoint.get('_checkpoint', {}).get('records', []):
+            if record.get('save_name') == scenario_name:
+                infractions = record.get('infractions', {})
+                return infractions
+        return {}
+    except Exception as e:
+        print(f"Warning: Failed to load checkpoint infractions: {e}")
+        return {}
+
+
+def _match_infraction_to_event(infraction_location, event_agents):
+    """Match an infraction location to an agent in the event.
+
+    Returns agent_id if a match is found within tolerance, else None.
+    """
+    if not infraction_location or not event_agents:
+        return None
+
+    inf_x, inf_y = infraction_location[0], infraction_location[1]
+
+    for agent in event_agents:
+        # Agent position is approximate - use distance_m as proxy
+        # This is a simplified matching; ideally would use precise coordinates
+        if agent.get('distance_m', 999) < _INFRACTION_LOCATION_TOLERANCE_M:
+            return agent.get('agent_id')
+
+    return None
+
+
+def _parse_location_from_infraction(infr_str):
+    """Parse (x, y, z) coordinates from infraction string.
+
+    Format: "... at (x=..., y=..., z=...)"
+    Returns tuple (x, y, z) or None if not found.
+    """
+    import re
+    match = re.search(r'at \(x=([-\d.]+), y=([-\d.]+), z=([-\d.]+)\)', infr_str)
+    if match:
+        try:
+            return (float(match.group(1)), float(match.group(2)), float(match.group(3)))
+        except:
+            return None
+    return None
+
+
+def _find_infraction_timestamp(infraction_location, start_f, end_f, full_snapshots, origin_f, frame_rate, anno_dir=None):
+    """Find the exact timestamp when infraction occurred by searching all frames in event duration.
+
+    Searches through all frames from start_f to end_f using full_snapshots, and loads additional
+    frames from anno directory if provided to ensure complete frame coverage.
+
+    Args:
+        infraction_location: (x, y, z) tuple of infraction location
+        start_f, end_f: frame range for this event
+        full_snapshots: list of (frame_idx, measurement, event_type) tuples
+        origin_f: origin frame for time reference
+        frame_rate: frame rate for timestamp calculation
+        anno_dir: path to anno directory for loading additional frame data
+
+    Returns: timestamp in seconds when ego was closest to infraction location
+    """
+    if not infraction_location or not full_snapshots:
+        return None
+
+    import gzip
+    import json
+    from pathlib import Path
+
+    # Create a map of frame index to measurement for fast lookup from full_snapshots
+    frame_to_measurement = {fi: m for fi, m, _ in full_snapshots}
+
+    # Try to load additional frames from anno directory if provided
+    if anno_dir:
+        anno_path = Path(anno_dir)
+        if anno_path.exists():
+            for frame_file in sorted(anno_path.glob('*.json.gz')):
+                try:
+                    frame_num = int(frame_file.stem.split('.')[0])
+                    if start_f <= frame_num <= end_f and frame_num not in frame_to_measurement:
+                        with gzip.open(frame_file) as f:
+                            m = json.load(f)
+                            frame_to_measurement[frame_num] = m
+                except Exception:
+                    pass
+
+    best_distance = float('inf')
+    best_frame = None
+    frames_checked = []
+
+    # Search through ALL frames in the event range
+    for fi in range(start_f, end_f + 1):
+        # Get measurement for this frame (may not exist for every frame)
+        m = frame_to_measurement.get(fi)
+        if m is None:
+            continue
+
+        ego_x = m.get('x')
+        ego_y = m.get('y')
+        ego_z = m.get('z', 0.0)
+
+        if ego_x is None or ego_y is None:
+            continue
+
+        # Calculate distance to infraction location
+        dx = ego_x - infraction_location[0]
+        dy = ego_y - infraction_location[1]
+        dz = ego_z - infraction_location[2]
+        dist = math.sqrt(dx**2 + dy**2 + dz**2)
+
+        frames_checked.append((fi, round(dist, 2)))
+
+        # Track frame with minimum distance. When distances are very close (within 0.05m),
+        # prefer the later frame (closer to when collision is detected)
+        if dist < best_distance - 0.05 or (abs(dist - best_distance) <= 0.05 and fi > best_frame):
+            best_distance = dist
+            best_frame = fi
+
+    if best_frame is not None:
+        return round((best_frame - origin_f) / frame_rate, 1)
+
+    return None
+
+
+def _location_proximity(loc1, loc2, threshold_m=10.0):
+    """Check if two locations are within threshold_m of each other.
+
+    Args:
+        loc1: (x, y, z) tuple
+        loc2: (x, y, z) tuple
+        threshold_m: proximity threshold in meters
+
+    Returns: distance in meters, or None if locations invalid
+    """
+    if not loc1 or not loc2:
+        return None
+    try:
+        dx = loc1[0] - loc2[0]
+        dy = loc1[1] - loc2[1]
+        dz = loc1[2] - loc2[2]
+        dist = math.sqrt(dx**2 + dy**2 + dz**2)
+        return dist if dist <= threshold_m else None
+    except:
+        return None
+
+
+def _extract_infraction_for_event(infractions, ego_location, event_agents):
+    """Extract infraction details relevant to this event.
+
+    Matches by:
+    1. Agent involvement (for collisions)
+    2. Location proximity to ego
+    3. Temporal alignment
+
+    Returns tuple (infraction_type, infraction_dict) or (None, None)
+    """
+    if not infractions or not ego_location:
+        return None, None
+
+    import re
+
+    # Check collision infractions first (more specific)
+    collision_infr = infractions.get('collisions_vehicle', [])
+    if collision_infr and event_agents:
+        event_agent_ids = set(str(a.get('agent_id')) for a in event_agents)
+
+        for infr_str in collision_infr:
+            # Parse agent ID from collision string
+            # Format: "Agent collided against object with type=... and id=<id> at (x=..., y=..., z=...)"
+            id_match = re.search(r'id=(\d+)', infr_str)
+            if not id_match:
+                continue
+
+            agent_id = id_match.group(1)
+
+            # Check if this agent is in the event's agents_involved
+            if agent_id not in event_agent_ids:
+                continue
+
+            # Extract location from infraction string
+            infr_loc = _parse_location_from_infraction(infr_str)
+
+            # Check location proximity to ego
+            dist = _location_proximity(infr_loc, ego_location, threshold_m=15.0)
+            if dist is not None:
+                return 'collision_vehicle', {
+                    'type': 'collision_vehicle',
+                    'agent_id': agent_id,
+                    'distance_m': round(dist, 1),
+                    'evidence': infr_str
+                }
+
+    # Check red light infraction
+    red_light_infr = infractions.get('red_light', [])
+    if red_light_infr:
+        for infr_str in red_light_infr:
+            # Format: "Agent ran a red light <id> at (x=..., y=..., z=...)"
+            if 'red light' not in infr_str.lower():
+                continue
+
+            # Extract light location
+            tl_loc = _parse_location_from_infraction(infr_str)
+
+            # Check proximity to ego location
+            dist = _location_proximity(tl_loc, ego_location, threshold_m=20.0)
+            if dist is not None:
+                # Extract light ID
+                id_match = re.search(r'red light (\d+)', infr_str)
+                light_id = id_match.group(1) if id_match else 'unknown'
+
+                return 'ran_red_light', {
+                    'type': 'ran_red_light',
+                    'light_id': light_id,
+                    'distance_m': round(dist, 1),
+                    'evidence': infr_str
+                }
+
+    return None, None
 
 
 def _heading_delta_deg(theta_start, theta_end):
@@ -491,38 +735,70 @@ def _agent_type_from_bb(bb):
     return 'static'
 
 
-def _relative_position_of_agent(bb, ego_lane):
+def _transform_to_ego_coordinates(agent_world_loc, world2ego_matrix):
+    """Transform agent world coordinates to ego frame coordinates.
+
+    Args:
+        agent_world_loc: [x, y, z] in world coordinates
+        world2ego_matrix: 4x4 transformation matrix from world to ego frame
+
+    Returns:
+        (ex, ey, ez) - agent position in ego frame
     """
-    Return one of: ahead / behind / left / right / adjacent_left / adjacent_right.
+    try:
+        P_world = np.array(list(agent_world_loc) + [1])
+        M_world2ego = np.array(world2ego_matrix)
+        P_ego_homogeneous = M_world2ego @ P_world
+        return tuple(P_ego_homogeneous[:3])
+    except:
+        return 0, 0, 0
 
-    Lane-id convention (from existing _agent_relative_pos):
-        veh_lane > ego_lane  →  agent is to the LEFT of ego
-        veh_lane < ego_lane  →  agent is to the RIGHT of ego
-    position[0] is the ego-relative forward axis (positive = ahead).
+
+def _relative_position_of_agent(bb, ego_bb, threshold=1.0):
     """
-    veh_lane = bb.get('lane_id')
-    pos      = bb.get('position', [0, 0, 0])
-    fwd      = pos[0]
+    Return relative position as [lateral, longitudinal] using ego frame coordinates.
 
-    if ego_lane is not None and veh_lane is not None and veh_lane == ego_lane:
-        return 'ahead' if fwd >= 0 else 'behind'
+    Args:
+        bb: Agent bounding box
+        ego_bb: Ego vehicle bounding box (contains world2ego matrix)
+        threshold: Distance threshold in meters (default 1.0m)
 
-    if ego_lane is not None and veh_lane is not None:
-        lateral = 'left' if veh_lane > ego_lane else 'right'
-        return f'adjacent_{lateral}' if abs(fwd) <= _ADJACENT_FWD_THRESHOLD_M else lateral
+    Returns:
+        List [lateral, longitudinal] where:
+        - lateral: 'left', 'right', or 'aligned'
+        - longitudinal: 'ahead', 'behind', or 'aligned'
+    """
+    agent_loc = bb.get('location', [0, 0, 0])
+    world2ego = ego_bb.get('world2ego') if ego_bb else None
 
-    # Fallback: use raw lateral position component
-    lat = pos[1] if len(pos) > 1 else 0
-    if abs(lat) < 2.0:
-        return 'ahead' if fwd >= 0 else 'behind'
-    lateral = 'left' if lat < 0 else 'right'
-    return f'adjacent_{lateral}' if abs(fwd) <= _ADJACENT_FWD_THRESHOLD_M else lateral
+    if not world2ego:
+        return ['unknown', 'unknown']
+
+    ex, ey, ez = _transform_to_ego_coordinates(agent_loc, world2ego)
+
+    # Longitudinal — X axis (positive = ahead in ego frame)
+    if ex > threshold:
+        longitudinal = 'ahead'
+    elif ex < -threshold:
+        longitudinal = 'behind'
+    else:
+        longitudinal = 'aligned'
+
+    # Lateral — Y axis (positive Y = RIGHT in CARLA ego frame, negative Y = LEFT)
+    if ey > threshold:
+        lateral = 'right'
+    elif ey < -threshold:
+        lateral = 'left'
+    else:
+        lateral = 'aligned'
+
+    return [lateral, longitudinal]
 
 
 def _extract_agents_involved(m, proximity=_AGENT_PROXIMITY_M):
     """Return sorted list of agent dicts for all non-ego actors within proximity metres."""
     bbs = m.get('bounding_boxes', [])
-    _, ego_lane = _ego_lane_info(bbs)
+    ego_bb = next((bb for bb in bbs if bb.get('class') == 'ego_vehicle'), None)
     agents = []
     for bb in bbs:
         cls = bb.get('class', '')
@@ -532,7 +808,7 @@ def _extract_agents_involved(m, proximity=_AGENT_PROXIMITY_M):
         if dist > proximity:
             continue
         atype   = _agent_type_from_bb(bb)
-        rel_pos = _relative_position_of_agent(bb, ego_lane)
+        rel_pos = _relative_position_of_agent(bb, ego_bb)
         raw_spd = bb.get('speed')
         if atype == 'static':
             spd = None
@@ -540,13 +816,18 @@ def _extract_agents_involved(m, proximity=_AGENT_PROXIMITY_M):
             spd = None
         else:
             spd = round(float(raw_spd) * 3.6, 1)
-        agents.append({
+        agent_dict = {
             'agent_id':          str(bb.get('id', 'unknown')),
             'agent_type':        atype,
             'distance_m':        round(float(dist), 1),
             'relative_position': rel_pos,
             'agent_speed_kmh':   spd,
-        })
+        }
+        # Add lane_id if available
+        lane_id = bb.get('lane_id')
+        if lane_id is not None:
+            agent_dict['lane_id'] = lane_id
+        agents.append(agent_dict)
     agents.sort(key=lambda x: x['distance_m'])
     return agents
 
@@ -567,6 +848,63 @@ def _extract_tl_info(m, threshold=_TL_PROXIMITY_M):
     return state, round(float(tl.get('distance', 0.0)), 1)
 
 
+def _extract_tl_info_for_starting_state(m, threshold=50.0):
+    """For starting state: return nearest traffic light within threshold (50m), ignoring affects_ego flag."""
+    bbs = m.get('bounding_boxes', [])
+    tls = [b for b in bbs
+           if b.get('class') == 'traffic_light'
+           and b.get('distance', 999) <= threshold]
+    if not tls:
+        return None, None
+    tl    = min(tls, key=lambda x: x.get('distance', 999))
+    state = _TL_STATES.get(tl.get('state', 4), 'unknown')
+    if state in ('off', 'unknown'):
+        return None, None
+    return state, round(float(tl.get('distance', 0.0)), 1)
+
+
+def _extract_tl_info_for_junction(m, threshold=_TL_PROXIMITY_M):
+    """For junction events: return nearest traffic light in front with lateral offset <10m.
+
+    Uses ego frame coordinates: in front (ex>0) and centered (|ey|<10).
+    """
+    bbs = m.get('bounding_boxes', [])
+    ego_bb = next((bb for bb in bbs if bb.get('class') == 'ego_vehicle'), None)
+    if not ego_bb:
+        return None, None
+
+    world2ego = ego_bb.get('world2ego')
+    ego_loc = ego_bb.get('location', [0, 0, 0])
+    if not world2ego:
+        return None, None
+
+
+    tls_in_front = []
+    for bb in bbs:
+        if bb.get('class') != 'traffic_light':
+            continue
+
+        tl_loc = bb.get('location', [0, 0, 0])
+        ex, ey, ez = _transform_to_ego_coordinates(tl_loc, world2ego)
+        ego_dist = math.sqrt(ex**2 + ey**2)
+
+        # In front (positive X) and within lateral threshold (|Y| < 10m)
+        if ex <= 0 or abs(ey) >= 10.0:
+            continue
+
+        if ego_dist <= threshold:
+            tls_in_front.append((bb, ego_dist))
+
+    if not tls_in_front:
+        return None, None
+
+    tl, dist = min(tls_in_front, key=lambda x: x[1])
+    state = _TL_STATES.get(tl.get('state', 4), 'unknown')
+    if state in ('off', 'unknown'):
+        return None, None
+    return state, round(dist, 1)
+
+
 def _extract_stop_sign_info(m, threshold=_STOP_SIGN_PROXIMITY_M):
     """Return distance (m) to the nearest affecting stop sign, or None."""
     bbs = m.get('bounding_boxes', [])
@@ -582,89 +920,184 @@ def _extract_stop_sign_info(m, threshold=_STOP_SIGN_PROXIMITY_M):
 
 
 def _classify_ego_action(
-    dir_cmd, spd_cmd,
     start_speed_kmh, end_speed_kmh,
     duration_s, start_m, end_m,
-    last_action, lane_event, is_junction_phase,
+    last_action, lane_event, is_junction_phase, turn_event=None, accel_ms2=None,
 ):
     """
-    Classify the ego_action for one command phase using the priority table.
+    Classify the ego_action based on STATE TRANSITIONS from anno + measurement data.
+
+    Uses ONLY the actual measured data (anno files and measurement files),
+    not planner commands.
 
     Priority (highest → lowest):
-        turn_left / turn_right
-        continue_straight
-        lane_change_left / lane_change_right
-        stop
+        turn_left / turn_right (single action)
+        continue_straight + [accelerate/decelerate] (compound actions)
+        lane_change_left / lane_change_right (single action)
+        stop / creeping_forward
         resume_motion
-        accelerate
-        decelerate
-        keep_lane
+        keep_lane + [accelerate/decelerate] (compound actions)
 
-    Returns the action string or None if the phase should be skipped.
+    Args:
+        turn_event: 'turn_left' or 'turn_right' if a turn was detected, else None
+        accel_ms2: acceleration in m/s² for this phase
+
+    Returns a list of action strings, or None if the phase should be skipped.
+    Examples:
+        ['turn_right'] — simple turn
+        ['continue_straight', 'accelerate'] — junction with speed increase
+        ['keep_lane', 'decelerate'] — lane-keeping with braking
     """
     speed_delta = end_speed_kmh - start_speed_kmh
 
-    # ── 1. Junction actions (heading + road change) ───────────────────────
-    if is_junction_phase:
+    # Extract brake state from measurements (for validation)
+    start_brake = start_m.get('brake', False)
+    end_brake = end_m.get('brake', False)
+
+    # ── 1. Turn/Continue-straight maneuvers (detected by steering angle + junction transitions) ──
+    if turn_event == 'turn_left':
+        # Combine with acceleration if significant
+        if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
+            return ['turn_left', 'accelerate']
+        elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
+            return ['turn_left', 'decelerate']
+        return ['turn_left']
+    if turn_event == 'turn_right':
+        # Combine with acceleration if significant
+        if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
+            return ['turn_right', 'accelerate']
+        elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
+            return ['turn_right', 'decelerate']
+        return ['turn_right']
+    if turn_event == 'continue_straight':
+        # Combine with acceleration if significant
+        if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
+            return ['continue_straight', 'accelerate']
+        elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
+            return ['continue_straight', 'decelerate']
+        return ['continue_straight']
+
+    # ── 2. Junction actions (road change + heading change) ────────────────
+    if is_junction_phase and turn_event is None:  # Only if not already detected as turn
         start_road, _ = _ego_lane_info(start_m.get('bounding_boxes', []))
         end_road,   _ = _ego_lane_info(end_m.get('bounding_boxes', []))
         road_changed   = (start_road is not None and end_road is not None
                           and start_road != end_road)
 
-        # Primary: planner direction command (most reliable)
-        if dir_cmd == 'TURN_LEFT':
-            return 'turn_left'
-        if dir_cmd == 'TURN_RIGHT':
-            return 'turn_right'
-        if dir_cmd == 'GO_STRAIGHT' and road_changed:
-            return 'continue_straight'
-
-        # Fallback: heading delta from theta (requires road change as confirmation)
+        # Use heading delta to determine turn direction (fallback if turn not detected)
         if road_changed:
             hdelta = _heading_delta_deg(
                 start_m.get('theta', 0.0), end_m.get('theta', 0.0))
             if abs(hdelta) > _TURN_HEADING_THRESHOLD_DEG:
-                return 'turn_left' if hdelta > 0 else 'turn_right'
+                action = 'turn_left' if hdelta > 0 else 'turn_right'
+                # Combine with acceleration if significant
+                if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
+                    return [action, 'accelerate']
+                elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
+                    return [action, 'decelerate']
+                return [action]
             if abs(hdelta) < _STRAIGHT_HEADING_THRESHOLD_DEG:
-                return 'continue_straight'
+                # Combine with acceleration if significant
+                if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
+                    return ['continue_straight', 'accelerate']
+                elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
+                    return ['continue_straight', 'decelerate']
+                return ['continue_straight']
 
-    # ── 2. Lane changes ───────────────────────────────────────────────────
-    if lane_event == 'left' or dir_cmd == 'CHANGE_LANE_LEFT':
-        return 'lane_change_left'
-    if lane_event == 'right' or dir_cmd == 'CHANGE_LANE_RIGHT':
-        return 'lane_change_right'
+    # ── 3. Lane changes (from anno lane_id transitions) ───────────────────
+    if lane_event == 'left':
+        # Combine with acceleration if significant
+        if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
+            return ['lane_change_left', 'accelerate']
+        elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
+            return ['lane_change_left', 'decelerate']
+        return ['lane_change_left']
+    if lane_event == 'right':
+        # Combine with acceleration if significant
+        if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
+            return ['lane_change_right', 'accelerate']
+        elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
+            return ['lane_change_right', 'decelerate']
+        return ['lane_change_right']
 
-    # ── 3. Stop ───────────────────────────────────────────────────────────
+    # ── 4. Accelerate/Decelerate (acceleration magnitude) ────────────────────────
+    # Check these before stop, since a vehicle starting from stop and accelerating
+    # should be "accelerate", not "stop"
+    # Use acceleration thresholds for robustness (accounts for time window automatically)
+    significant_accel = False
+    if accel_ms2 is not None and duration_s >= _ACCEL_MIN_DURATION_S:
+        if accel_ms2 > _ACCEL_THRESHOLD_MS2:
+            significant_accel = True
+            # For junction events with significant acceleration, combine actions
+            if is_junction_phase and turn_event == 'continue_straight':
+                return 'accelerating_continue_straight'
+            return 'accelerate'
+        if accel_ms2 < _DECEL_THRESHOLD_MS2:
+            significant_accel = True
+            # For junction events with significant deceleration, combine actions
+            if is_junction_phase and turn_event == 'continue_straight':
+                return 'decelerating_continue_straight'
+            return 'decelerate'
+
+    # ── 5. Creeping forward vs Stop (low speed states) ──────────────────
+    # Creeping forward: slow forward motion with minimal acceleration (priority over stop)
+    # Accelerated by > 1 km/h but still moving slowly (< 3 km/h), minimal acceleration
+    if (speed_delta > 1.0 and end_speed_kmh < 3.0 and
+        accel_ms2 is not None and
+        _DECEL_THRESHOLD_MS2 <= accel_ms2 <= _ACCEL_THRESHOLD_MS2 and
+        duration_s >= _ACCEL_MIN_DURATION_S):
+        return ['creeping_forward']
+
+    # Stop: completely stopped or nearly stopped (< 0.5 km/h)
     if start_speed_kmh < _STOP_SPEED_KMH and duration_s >= _STOP_MIN_DURATION_S:
-        return 'stop'
+        # Skip insignificant "stop" if last action was also stop and vehicle still stopped
+        # This avoids redundant stop events with no meaningful change
+        last_action_primary = last_action[0] if isinstance(last_action, list) else last_action
+        if last_action_primary == 'stop' and end_speed_kmh < _STOP_SPEED_KMH:
+            return None  # Skip — already in stop state, no change
+        return ['stop']
 
-    # ── 4. Resume from stop ───────────────────────────────────────────────
-    if last_action == 'stop' and speed_delta > _RESUME_SPEED_DELTA_KMH:
-        return 'resume_motion'
+    # ── 6. Resume from stop ──────────────────────────────────────────────
+    last_action_primary = last_action[0] if isinstance(last_action, list) else last_action
+    if last_action_primary == 'stop' and speed_delta > _RESUME_SPEED_DELTA_KMH:
+        return ['resume_motion']
 
-    # ── 5. Accelerate ─────────────────────────────────────────────────────
-    if speed_delta > _ACCEL_SPEED_DELTA_KMH and duration_s >= _ACCEL_MIN_DURATION_S:
-        return 'accelerate'
+    # ── 7. Continue straight (in junction, no turn detected, stable speed) ──
+    if is_junction_phase and duration_s >= _KEEP_LANE_MIN_DURATION_S:
+        # Combine with acceleration if significant
+        if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
+            return ['continue_straight', 'accelerate']
+        elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
+            return ['continue_straight', 'decelerate']
+        return ['continue_straight']
 
-    # ── 6. Decelerate ─────────────────────────────────────────────────────
-    if speed_delta < -_ACCEL_SPEED_DELTA_KMH and duration_s >= _ACCEL_MIN_DURATION_S:
-        return 'decelerate'
-
-    # ── 7. Keep lane (lowest priority) ───────────────────────────────────
+    # ── 8. Keep lane (not in junction, no lane/road change, stable speed) ─
     if not is_junction_phase and duration_s >= _KEEP_LANE_MIN_DURATION_S:
-        return 'keep_lane'
+        # Combine with acceleration if significant
+        if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
+            return ['keep_lane', 'accelerate']
+        elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
+            return ['keep_lane', 'decelerate']
+        return ['keep_lane']
 
     return None  # below significance threshold — skip
 
 
-def _build_scene_snapshot(m, t_s, ego_action='keep_lane'):
-    """Return a single event dict representing the scene state at measurement m."""
+def _build_scene_snapshot(m, t_s, ego_action='keep_lane', frame_start=None, is_starting_state=False):
+    """Return a single event dict representing the scene state at measurement m.
+
+    Args:
+        is_starting_state: If True, extract nearest traffic light within 30m regardless of affects_ego flag.
+    """
     speed_kmh       = round(m.get('speed', 0.0) * 3.6, 1)
     bbs             = m.get('bounding_boxes', [])
     _, lane_id      = _ego_lane_info(bbs)
-    tl_state, tl_dist = _extract_tl_info(m)
+    if is_starting_state:
+        tl_state, tl_dist = _extract_tl_info_for_starting_state(m)
+    else:
+        tl_state, tl_dist = _extract_tl_info(m)
     ss_dist         = _extract_stop_sign_info(m)
-    return {
+    snapshot = {
         't_s':                      t_s,
         'duration_s':               None,
         'ego_action':               ego_action,
@@ -678,10 +1111,14 @@ def _build_scene_snapshot(m, t_s, ego_action='keep_lane'):
         'traffic_light_distance_m': tl_dist,
         'stop_sign_distance_m':     ss_dist,
     }
+    if frame_start is not None:
+        snapshot['frame_start'] = frame_start
+    return snapshot
 
 
 def build_gt_event_log(full_history, full_snapshots, origin_f, frame_rate,
-                        goal=None, completion_status=None, pre_m=None):
+                        goal=None, completion_status=None, pre_m=None,
+                        checkpoint_path=None, scenario_name=None, scenario_dir=None):
     """
     Build the full GT episode log.
 
@@ -706,42 +1143,80 @@ def build_gt_event_log(full_history, full_snapshots, origin_f, frame_rate,
         return {'episode': {'goal': {'maneuver': goal, 'completion_status': completion_status},
                              'events': []}}
 
+    # Compute anno_dir from scenario_dir
+    anno_dir = None
+    if scenario_dir:
+        from pathlib import Path
+        anno_path = Path(scenario_dir) / 'anno'
+        if anno_path.exists():
+            anno_dir = anno_path
+
     # ── Starting state (t=0, uses pre_m if available) ─────────────────────
     start_m = pre_m if pre_m is not None else _nearest_snapshot_m(origin_f, full_snapshots)
 
-    # Classify the initial action from the first phase so the starting-state
-    # entry carries a real label (e.g. "stop", "keep_lane") rather than a
-    # placeholder.  We use up to 2 s of the first phase as a look-ahead window.
-    _init_dir, _init_spd = full_history[0][1], full_history[0][2]
+    # Classify the initial action from the first measurement
+    # Uses the starting state to provide a real label (e.g. "stop", "keep_lane")
     _init_speed_kmh      = round(start_m.get('speed', 0.0) * 3.6, 1)
     _init_action = _classify_ego_action(
-        _init_dir, _init_spd,
         _init_speed_kmh, _init_speed_kmh,
         2.0,
         start_m, start_m,
         None, None, _in_junction(start_m),
+        accel_ms2=0.0,
     )
     if _init_action is None:
-        _init_action = 'stop' if _init_speed_kmh < _STOP_SPEED_KMH else 'keep_lane'
+        _init_action = ['stop'] if _init_speed_kmh < _STOP_SPEED_KMH else ['keep_lane']
 
-    events  = [_build_scene_snapshot(start_m, t_s=0.0, ego_action=_init_action)]
+    # Start with empty events list - first action phase will include all details
+    events = []
 
-    last_action = None
+    # Extract traffic light info from starting state for first event using junction detection
+    starting_tl_state, starting_tl_dist = _extract_tl_info_for_junction(start_m)
 
-    # ── Build command phases from history ─────────────────────────────────
+    # Initialize last_action to track action changes
+    last_action = _init_action[0] if isinstance(_init_action, list) else _init_action
+
+    # Load checkpoint infractions if available
+    infractions = _load_checkpoint_infractions(checkpoint_path, scenario_name) if checkpoint_path else {}
+
+    # ── Build action phases from snapshot boundaries ──────────────────────
+    # Snapshots mark where state changes occur (lane changes or measurement changes)
+    # Use them as phase boundaries instead of planner commands
+    # IMPORTANT: Only use action-relevant snapshots (lane changes, turns) as phase boundaries,
+    # not command changes (False events), as turns can span multiple command changes
     action_phases = []
-    cur_dir, cur_spd, phase_start = (
-        full_history[0][1], full_history[0][2], full_history[0][0])
-    for frame_idx, d, s in full_history[1:]:
-        if d != cur_dir or s != cur_spd:
-            action_phases.append((phase_start, frame_idx - 1, cur_dir, cur_spd))
-            cur_dir, cur_spd, phase_start = d, s, frame_idx
-    action_phases.append((phase_start, full_history[-1][0], cur_dir, cur_spd))
+    if full_snapshots:
+        # Filter to only action-relevant snapshots (not False/command changes)
+        action_snapshot_frames = sorted(set(
+            fi for fi, _, ev in full_snapshots
+            if ev is not False  # Only lane changes (left/right) and turns (turn_left/turn_right)
+        ))
 
-    # ── Index lane-change snapshot events by frame ────────────────────────
+        if action_snapshot_frames:
+            # Include gap from origin to first snapshot (if any)
+            if origin_f < action_snapshot_frames[0]:
+                action_phases.append((origin_f, action_snapshot_frames[0] - 1))
+
+            # Use action snapshots as phase boundaries
+            for i, start_f in enumerate(action_snapshot_frames):
+                end_f = action_snapshot_frames[i + 1] - 1 if i + 1 < len(action_snapshot_frames) else full_history[-1][0]
+                action_phases.append((start_f, end_f))
+        else:
+            # No action snapshots → treat entire route as one phase
+            action_phases = [(full_history[0][0], full_history[-1][0])]
+    else:
+        # Fallback: treat entire route as one phase
+        action_phases = [(full_history[0][0], full_history[-1][0])]
+
+    # ── Index lane-change and turn/continue_straight snapshot events by frame ──────────────
+    # Snapshots can be:
+    #   'left' / 'right' → lane changes
+    #   'turn_left' / 'turn_right' → turn maneuvers
+    #   'continue_straight' → junction traversal without turn
     lc_events = {fi: ev for fi, _, ev in full_snapshots if ev in ('left', 'right')}
+    turn_events = {fi: ev for fi, _, ev in full_snapshots if ev in ('turn_left', 'turn_right', 'continue_straight')}
 
-    for start_f, end_f, dir_cmd, spd_cmd in action_phases:
+    for start_f, end_f in action_phases:
         duration_s = round((end_f - start_f) / frame_rate, 2)
 
         start_m = _nearest_snapshot_m(start_f, full_snapshots)
@@ -756,6 +1231,12 @@ def build_gt_event_log(full_history, full_snapshots, origin_f, frame_rate,
             None,
         )
 
+        # Turn event in this phase window (turn_left or turn_right)
+        turn_event = next(
+            (ev for fi, ev in turn_events.items() if start_f <= fi <= end_f),
+            None,
+        )
+
         # Junction: True if any snapshot in range (or start/end) reports it
         phase_snapshots = [m for fi, m, _ in full_snapshots if start_f <= fi <= end_f]
         if phase_snapshots:
@@ -763,29 +1244,51 @@ def build_gt_event_log(full_history, full_snapshots, origin_f, frame_rate,
         else:
             is_junction_phase = _in_junction(start_m) or _in_junction(end_m)
 
+        # Calculate acceleration for this phase (m/s²)
+        accel_ms2 = (
+            round((end_speed_kmh - start_speed_kmh) / (duration_s * 3.6), 3)
+            if duration_s > 0 else 0.0
+        )
+
         action = _classify_ego_action(
-            dir_cmd, spd_cmd,
             start_speed_kmh, end_speed_kmh,
             duration_s, start_m, end_m,
             last_action, lane_event, is_junction_phase,
+            turn_event=turn_event,
+            accel_ms2=accel_ms2,
         )
         if action is None:
             continue
 
         last_action = action
 
-        accel_ms2 = (
-            round((end_speed_kmh - start_speed_kmh) / (duration_s * 3.6), 3)
-            if duration_s > 0 else 0.0
-        )
-
         bbs_start         = start_m.get('bounding_boxes', [])
         _, lane_id        = _ego_lane_info(bbs_start)
-        tl_state, tl_dist = _extract_tl_info(start_m)
-        ss_dist           = _extract_stop_sign_info(start_m)
 
-        events.append({
-            't_s':                      round((start_f - origin_f) / frame_rate, 1),
+        # Use starting state TL info for first event
+        if start_f == origin_f:
+            tl_state = starting_tl_state
+            tl_dist = starting_tl_dist
+        else:
+            # For junction events, extract traffic light info regardless of affects_ego flag
+            if _in_junction(start_m):
+                tl_state, tl_dist = _extract_tl_info_for_junction(start_m)
+            else:
+                tl_state, tl_dist = _extract_tl_info(start_m)
+
+        ss_dist           = _extract_stop_sign_info(start_m)
+        agents_involved = _extract_agents_involved(start_m)
+
+        # Check for infractions and critical decision points
+        # Ego location is stored as x, y at top level (not in 'location' field)
+        ego_location = (start_m.get('x'), start_m.get('y'), start_m.get('z', 0.0)) if start_m.get('x') is not None else None
+        infraction_type, infraction_data = _extract_infraction_for_event(infractions, ego_location, agents_involved)
+        t_s = round((start_f - origin_f) / frame_rate, 1)
+
+
+        event = {
+            'frame_start':              start_f,
+            't_s':                      t_s,
             'duration_s':               duration_s,
             'ego_action':               action,
             'speed_start_kmh':          start_speed_kmh,
@@ -793,11 +1296,38 @@ def build_gt_event_log(full_history, full_snapshots, origin_f, frame_rate,
             'acceleration_ms2':         accel_ms2,
             'lane_id':                  lane_id,
             'junction':                 _in_junction(start_m),
-            'agents_involved':          _extract_agents_involved(start_m),
+            'agents_involved':          agents_involved,
             'traffic_light_state':      tl_state,
             'traffic_light_distance_m': tl_dist,
             'stop_sign_distance_m':     ss_dist,
-        })
+            'is_critical_decision_point': infraction_type is not None,
+        }
+
+        # Add decision_point if critical
+        if infraction_type:
+            # Find actual infraction timestamp within event duration
+            infraction_location = None
+            if infraction_data:
+                # Try to extract location from evidence string
+                import re as regex_module
+                evidence = infraction_data.get('evidence', '')
+                loc_match = regex_module.search(r'at \(x=([-\d.]+), y=([-\d.]+), z=([-\d.]+)\)', evidence)
+                if loc_match:
+                    infraction_location = (float(loc_match.group(1)), float(loc_match.group(2)), float(loc_match.group(3)))
+
+            infraction_ts = _find_infraction_timestamp(infraction_location, start_f, end_f, full_snapshots, origin_f, frame_rate, anno_dir) if infraction_location else t_s
+
+            # Add timestamp to infraction data
+            if infraction_data:
+                infraction_data['timestamp'] = infraction_ts
+
+            event['decision_point'] = {
+                't_s': infraction_ts,  # Use actual infraction timestamp, not event start
+                'situation': f"junction={_in_junction(start_m)} | ego: {start_speed_kmh}km/h lane={lane_id}",
+                'infraction': infraction_data,
+            }
+
+        events.append(event)
 
     return {
         'episode': {
@@ -884,8 +1414,8 @@ def _agent_relative_pos(vehicle_id, target_f, snapshots):
         if bb.get("class") != "vehicle" or str(bb.get("id", "")) != str(vehicle_id):
             continue
         veh_lane = bb.get("lane_id")
-        if ego_lane is not None and veh_lane is not None and veh_lane != ego_lane:
-            return "left" if veh_lane > ego_lane else "right"
+        if ego_lane is not None and veh_lane is not None and abs(veh_lane) != abs(ego_lane):
+            return "right" if abs(veh_lane) > abs(ego_lane) else "left"
         pos = bb.get("position", [0, 0, 0])
         return "ahead" if pos[0] >= 0 else "behind"
     return None
@@ -924,8 +1454,8 @@ def _collision_type(vehicle_id, target_f, snapshots):
         pos      = bb.get("position", [0, 0, 0])
         fwd      = pos[0]  # positive = other vehicle is ahead of ego
 
-        if ego_lane is not None and veh_lane is not None and veh_lane != ego_lane:
-            side = "left" if veh_lane > ego_lane else "right"
+        if ego_lane is not None and veh_lane is not None and abs(veh_lane) != abs(ego_lane):
+            side = "right" if abs(veh_lane) > abs(ego_lane) else "left"
             if fwd > _VEHICLE_HALF_LEN_M:
                 return f"side_{side}_ego_front"
             if fwd < -_VEHICLE_HALF_LEN_M:
@@ -1005,12 +1535,15 @@ def _derive_location(scenario_type, starting_state, pre_m):
 
 def _build_events_list(event_rows, snapshots, origin_f, frame_rate):
     events = []
-    for t, tag, body in event_rows:
-        target_f = int(origin_f + t * frame_rate)
+    for row in event_rows:
+        t, tag, body = row[:3]
+        frame_num = row[3] if len(row) > 3 else int(origin_f + t * frame_rate)
+        target_f = frame_num
         snap_m = _nearest_snapshot_m(target_f, snapshots)
         ego_action = body.split("|")[0].strip()
         events.append({
             "t_s":        round(t, 1),
+            "frame_num":  frame_num,
             "ego_action": ego_action,
             "junction":   _in_junction(snap_m),
         })
@@ -1160,11 +1693,13 @@ def _derive_available_actions(tag, body, snap_m):
 def _build_decision_points(event_rows, snapshots, origin_f, frame_rate,
                             lane_changes, completion_status):
     dps = []
-    for t, tag, body in event_rows:
+    for row in event_rows:
+        t, tag, body = row[:3]
+        frame_num = row[3] if len(row) > 3 else int(origin_f + t * frame_rate)
         if not any(dt in tag for dt in ("LANE→", "TARGET MANEUVER", "INFRACTION")):
             continue
 
-        target_f = int(origin_f + t * frame_rate)
+        target_f = frame_num
         snap_m   = _nearest_snapshot_m(target_f, snapshots)
 
         if "LANE→" in tag:
@@ -1255,7 +1790,9 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
     _, init_lane_id = _ego_lane_info(init_m.get("bounding_boxes", []))
     current_lane = _lane_label(init_lane_id)
 
-    for t, tag, body in event_rows:
+    for row in event_rows:
+        t, tag, body = row[:3]
+        frame_num = row[3] if len(row) > 3 else int(origin_f + t * frame_rate)
         if "LANE→" not in tag:
             continue
         direction = "right" if "RIGHT" in tag else "left"
@@ -1266,7 +1803,7 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
             current_lane = "left lane"
         to_lane = current_lane
 
-        target_f = int(origin_f + t * frame_rate)
+        target_f = frame_num
         veh_id, gap = _nearest_vehicle_at(target_f, snapshots)
         snap_m = _nearest_snapshot_m(target_f, snapshots)
 
@@ -1400,10 +1937,12 @@ def extract_event_log_facts(event_rows, history, snapshots, infr, origin_f, fram
 
     # ── 4. Target maneuver ────────────────────────────────────────────────────
     target_maneuver = None
-    for t, tag, body in reversed(event_rows):
+    for row in reversed(event_rows):
+        t, tag, body = row[:3]
+        frame_num = row[3] if len(row) > 3 else int(origin_f + t * frame_rate)
         if "TARGET MANEUVER" not in tag:
             continue
-        target_f = int(origin_f + t * frame_rate)
+        target_f = frame_num
         m_at     = _nearest_snapshot_m(target_f, snapshots)
         bbs      = m_at.get("bounding_boxes", [])
         sig      = next(

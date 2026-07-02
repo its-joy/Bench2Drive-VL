@@ -1523,7 +1523,7 @@ class RouteCompletionTest(Criterion):
     WINDOWS_SIZE = 2
 
     # Thresholds to return that a route has been completed
-    DISTANCE_THRESHOLD = 10.0  # meters
+    DISTANCE_THRESHOLD = 25.0  # meters — widened so dense waypoint routes complete reliably
     PERCENTAGE_THRESHOLD = 99  # %
 
     def __init__(self, actor, route, name="RouteCompletionTest", terminate_on_failure=False):

@@ -349,6 +349,21 @@ def answer_behaviour_questions(self, ego_vehicle, other_vehicles, scene_data, cu
                     final_dir_cmd = dir_cmd.left_change
 
 
+    # ── LLM-enhanced answer using privileged collection data ─────────────
+    llm_client = getattr(self, 'llm_client', None)
+    if llm_client is not None:
+        prompt = llm_client.behaviour_answer_prompt(
+            measurements=current_measurement,
+            rule_answer=abstract_answer,
+            dir_cmd=final_dir_cmd,
+            spd_cmd=final_spd_cmd,
+            scenario_type=scenario,
+        )
+        llm_answer = llm_client.generate(prompt)
+        if llm_answer:
+            abstract_answer = llm_answer
+    # ─────────────────────────────────────────────────────────────────────
+
     self.add_qas_questions(qa_list=qas_conversation_behaviour,
                             qid=43,
                             chain=3,

@@ -100,7 +100,7 @@ class LeaderboardEvaluator(object):
 
     # Tunable parameters
     client_timeout = 10.0  # in seconds
-    frame_rate = 20.0      # in Hz
+    frame_rate = 10.0      # in Hz — match data_agent.py frame_rate to avoid wasted ticks
 
     def __init__(self, args, statistics_manager):
         """
