@@ -1,9 +1,13 @@
 from .offline_map_calculations import *
 from .hyper_params import *
+from .reasoning_context_templates import get_reasoning_context, build_cross_traffic_summary
 from io_utils import print_debug
 import math
 import re
 import numpy as np
+import gzip
+import json
+from pathlib import Path
 
 # ------------------------------------------------------------------
 # Scenario → high-level maneuver goal (all 44 Bench2Drive scenario types)
@@ -456,7 +460,7 @@ def _build_unified_event_log(history, snapshots, infr, origin_f, frame_rate,
 # GT Event Log builder — structured schema
 # ------------------------------------------------------------------
 
-_AGENT_PROXIMITY_M      = 20.0   # agents within this distance are included
+_AGENT_PROXIMITY_M      = 40.0   # agents within this distance are included
 _TL_PROXIMITY_M         = 50.0   # traffic light distance threshold
 _STOP_SIGN_PROXIMITY_M  = 30.0   # stop sign distance threshold
 
@@ -477,6 +481,7 @@ _TURN_HEADING_THRESHOLD_DEG  = 45.0
 _STRAIGHT_HEADING_THRESHOLD_DEG = 20.0
 _ADJACENT_FWD_THRESHOLD_M    = 5.0   # longitudinal window for "adjacent" label
 _INFRACTION_LOCATION_TOLERANCE_M = 5.0  # Tolerance for matching infraction locations to events
+_PHASE_END_EVENTS = {"turn_complete", "lane_change_complete"}
 
 
 def _load_checkpoint_infractions(checkpoint_path, scenario_name):
@@ -488,7 +493,6 @@ def _load_checkpoint_infractions(checkpoint_path, scenario_name):
         return {}
 
     try:
-        import json
         with open(checkpoint_path) as f:
             checkpoint = json.load(f)
 
@@ -503,32 +507,12 @@ def _load_checkpoint_infractions(checkpoint_path, scenario_name):
         return {}
 
 
-def _match_infraction_to_event(infraction_location, event_agents):
-    """Match an infraction location to an agent in the event.
-
-    Returns agent_id if a match is found within tolerance, else None.
-    """
-    if not infraction_location or not event_agents:
-        return None
-
-    inf_x, inf_y = infraction_location[0], infraction_location[1]
-
-    for agent in event_agents:
-        # Agent position is approximate - use distance_m as proxy
-        # This is a simplified matching; ideally would use precise coordinates
-        if agent.get('distance_m', 999) < _INFRACTION_LOCATION_TOLERANCE_M:
-            return agent.get('agent_id')
-
-    return None
-
-
 def _parse_location_from_infraction(infr_str):
     """Parse (x, y, z) coordinates from infraction string.
 
     Format: "... at (x=..., y=..., z=...)"
     Returns tuple (x, y, z) or None if not found.
     """
-    import re
     match = re.search(r'at \(x=([-\d.]+), y=([-\d.]+), z=([-\d.]+)\)', infr_str)
     if match:
         try:
@@ -536,6 +520,212 @@ def _parse_location_from_infraction(infr_str):
         except:
             return None
     return None
+
+
+def _analyze_collision(agent_id, collision_frame, collision_ts, full_snapshots, origin_f, frame_rate, action_phases, anno_dir):
+    """Analyze collision to determine type and cause.
+
+    Returns (collision_type, caused_by) where:
+    - collision_type: 'side_swipe', 'rear_end', 'rear_ended', 'unknown'
+    - caused_by: 'merging_without_sufficient_gap', 'ego_not_aware_of_agent',
+                 'ego_deceleration_insufficient'
+    """
+    collision_type = 'unknown'
+    caused_by = 'unknown'
+
+    if not collision_frame or not anno_dir:
+        return collision_type, caused_by
+
+    try:
+        # Load collision frame from anno, or search nearby frames if agent not found
+        anno = None
+        ego_bb = None
+        collided_bb = None
+
+        # Try collision frame first, then ±2 frames
+        for offset in [0, -1, -2, 1, 2]:
+            frame_num = collision_frame + offset
+            anno_path = Path(anno_dir) / f'{frame_num:05d}.json.gz'
+            if not anno_path.exists():
+                continue
+
+            with gzip.open(anno_path) as f:
+                anno = json.load(f)
+
+            ego_bb = next((bb for bb in anno.get('bounding_boxes', []) if bb.get('class') == 'ego_vehicle'), None)
+            collided_bb = next((bb for bb in anno.get('bounding_boxes', []) if str(bb.get('id')) == str(agent_id) and bb.get('class') == 'vehicle'), None)
+
+            if ego_bb and collided_bb:
+                break
+
+        if not ego_bb or not collided_bb or not anno:
+            return collision_type, caused_by
+
+        # Get relative position [lateral, longitudinal]
+        rel_pos = _relative_position_of_agent(collided_bb, ego_bb)
+
+        if rel_pos:
+            lateral, longitudinal = rel_pos[0], rel_pos[1]
+
+            # Determine collision type based on relative position
+            # rel_pos returns ['left'/'right'/'aligned', 'ahead'/'behind'/'aligned']
+            if longitudinal == 'aligned':  # Side by side
+                collision_type = 'side_swipe'
+            elif longitudinal == 'ahead':  # Vehicle ahead
+                collision_type = 'rear_end'
+            else:  # Vehicle behind
+                collision_type = 'rear_ended'
+
+        # Determine cause: check if within 2s of lane change initiation
+        # Find the exact frame where lane change was detected (in full_snapshots)
+        for start_f, end_f in action_phases:
+            for fi, _, ev in full_snapshots:
+                if start_f <= fi <= end_f and ev in ('left', 'right'):
+                    lane_change_initiation_t = round((fi - origin_f) / frame_rate, 1)
+                    # Check if collision is within 2s of actual lane change detection
+                    # (not 2s from event start, but 2s from when steering changed)
+                    if abs(collision_ts - lane_change_initiation_t) <= 2.0:
+                        caused_by = 'merging_without_sufficient_gap'
+                        return collision_type, caused_by
+
+        # If not a merging issue, check acceleration state
+        ego_accel = anno.get('acceleration', 0.0)  # m/s² (can be list [x, y, z] or scalar)
+        if isinstance(ego_accel, (list, tuple)):
+            ego_accel = ego_accel[0]  # Use forward acceleration (x-axis)
+
+        if ego_accel > 0.1:  # Ego accelerating or maintaining speed
+            caused_by = 'ego_not_aware_of_agent'
+        else:  # Ego decelerating/braking but insufficient
+            caused_by = 'ego_deceleration_insufficient'
+
+    except Exception as e:
+        pass
+
+    return collision_type, caused_by
+
+
+def _preprocess_infractions(infractions, full_snapshots, origin_f, frame_rate, anno_dir=None, action_phases=None):
+    """Pre-compute all infraction timestamps and pre-assign to events.
+
+    Returns dict mapping frame_range tuple (start_f, end_f) to list of infraction dicts.
+    """
+    if not infractions or not action_phases:
+        return {}
+
+    infraction_assignments = {}  # {(start_f, end_f): [infraction_dicts]}
+
+    # Extract all unique infraction locations with their metadata
+    all_infractions = []
+
+    # Collision infractions
+    for infr_str in infractions.get('collisions_vehicle', []):
+        loc = _parse_location_from_infraction(infr_str)
+        if loc:
+            all_infractions.append(('collision_vehicle', infr_str, loc))
+
+    # Red light infractions
+    for infr_str in infractions.get('red_light', []):
+        loc = _parse_location_from_infraction(infr_str)
+        if loc:
+            all_infractions.append(('ran_red_light', infr_str, loc))
+
+    if not all_infractions:
+        return {}
+
+    # For each infraction, find its timestamp by proximity matching
+    for infr_type, infr_str, infr_loc in all_infractions:
+        # Find frame closest to infraction location (search all frames)
+        best_distance = float('inf')
+        best_frame = None
+
+        # Load frames on-demand for proximity matching
+        frame_to_measurement = {fi: m for fi, m, _ in full_snapshots}
+
+        # Load additional frames from anno if available
+        if anno_dir:
+            anno_path = Path(anno_dir)
+            if anno_path.exists():
+                for frame_file in sorted(anno_path.glob('*.json.gz')):
+                    try:
+                        frame_num = int(frame_file.stem.split('.')[0])
+                        if frame_num not in frame_to_measurement:
+                            with gzip.open(frame_file) as f:
+                                m = json.load(f)
+                                frame_to_measurement[frame_num] = m
+                    except:
+                        pass
+
+        # Search all available frames
+        for fi, m in frame_to_measurement.items():
+            ego_x = m.get('x')
+            ego_y = m.get('y')
+            ego_z = m.get('z', 0.0)
+
+            if ego_x is None or ego_y is None:
+                continue
+
+            dx = ego_x - infr_loc[0]
+            dy = ego_y - infr_loc[1]
+            dz = ego_z - infr_loc[2]
+            dist = math.sqrt(dx**2 + dy**2 + dz**2)
+
+            if dist < best_distance - 0.05 or (abs(dist - best_distance) <= 0.05 and fi > best_frame):
+                best_distance = dist
+                best_frame = fi
+
+        if best_frame is None:
+            continue
+
+        infraction_ts = round((best_frame - origin_f) / frame_rate, 1)
+
+        # Build infraction dict
+        if infr_type == 'collision_vehicle':
+            id_match = re.search(r'id=(\d+)', infr_str)
+            agent_id = id_match.group(1) if id_match else None
+
+            # Analyze collision type and cause
+            collision_type, caused_by = _analyze_collision(
+                agent_id, best_frame, infraction_ts, full_snapshots,
+                origin_f, frame_rate, action_phases, anno_dir
+            )
+
+            infraction_dict = {
+                'type': 'collision_vehicle',
+                'timestamp': infraction_ts,
+                'infraction_log': infr_str,
+                'agent_id': agent_id,
+                'distance_m': round(best_distance, 1),
+                'collision_type': collision_type,
+                'caused_by': caused_by,
+                'infraction_fault': 'ego',
+            }
+        else:  # ran_red_light
+            id_match = re.search(r'red light (\d+)', infr_str)
+            light_id = id_match.group(1) if id_match else 'unknown'
+            infraction_dict = {
+                'type': 'ran_red_light',
+                'timestamp': infraction_ts,
+                'infraction_log': infr_str,
+                'distance_m': round(best_distance, 1),
+                'caused_by': 'ego_ignore_red_light',
+                'infraction_fault': 'ego',
+            }
+
+        # Find which event (phase) contains this infraction timestamp
+        for start_f, end_f in action_phases:
+            event_t_s = round((start_f - origin_f) / frame_rate, 1)
+            event_duration = round((end_f - start_f) / frame_rate, 2)
+            event_end_ts = event_t_s + event_duration
+
+            if event_t_s <= infraction_ts <= event_end_ts:
+                # This event contains the infraction
+                key = (start_f, end_f)
+                if key not in infraction_assignments:
+                    infraction_assignments[key] = []
+                infraction_assignments[key].append(infraction_dict)
+                break
+
+    return infraction_assignments
 
 
 def _find_infraction_timestamp(infraction_location, start_f, end_f, full_snapshots, origin_f, frame_rate, anno_dir=None):
@@ -557,21 +747,21 @@ def _find_infraction_timestamp(infraction_location, start_f, end_f, full_snapsho
     if not infraction_location or not full_snapshots:
         return None
 
-    import gzip
-    import json
-    from pathlib import Path
 
     # Create a map of frame index to measurement for fast lookup from full_snapshots
     frame_to_measurement = {fi: m for fi, m, _ in full_snapshots}
 
     # Try to load additional frames from anno directory if provided
+    # Load all frames in range to fill gaps, especially for infractions that occur
+    # just before events (expand search window)
     if anno_dir:
         anno_path = Path(anno_dir)
         if anno_path.exists():
+            search_start = max(0, start_f - 10)  # Expand backwards to catch early infractions
             for frame_file in sorted(anno_path.glob('*.json.gz')):
                 try:
                     frame_num = int(frame_file.stem.split('.')[0])
-                    if start_f <= frame_num <= end_f and frame_num not in frame_to_measurement:
+                    if search_start <= frame_num <= end_f and frame_num not in frame_to_measurement:
                         with gzip.open(frame_file) as f:
                             m = json.load(f)
                             frame_to_measurement[frame_num] = m
@@ -582,8 +772,10 @@ def _find_infraction_timestamp(infraction_location, start_f, end_f, full_snapsho
     best_frame = None
     frames_checked = []
 
-    # Search through ALL frames in the event range
-    for fi in range(start_f, end_f + 1):
+    # Search through ALL frames: expand range 5 frames before event start to catch
+    # infractions that trigger just before the event (e.g., at junction entry)
+    search_start = max(0, start_f - 5)
+    for fi in range(search_start, end_f + 1):
         # Get measurement for this frame (may not exist for every frame)
         m = frame_to_measurement.get(fi)
         if m is None:
@@ -638,88 +830,30 @@ def _location_proximity(loc1, loc2, threshold_m=10.0):
         return None
 
 
-def _extract_infraction_for_event(infractions, ego_location, event_agents):
-    """Extract infraction details relevant to this event.
-
-    Matches by:
-    1. Agent involvement (for collisions)
-    2. Location proximity to ego
-    3. Temporal alignment
-
-    Returns tuple (infraction_type, infraction_dict) or (None, None)
-    """
-    if not infractions or not ego_location:
-        return None, None
-
-    import re
-
-    # Check collision infractions first (more specific)
-    collision_infr = infractions.get('collisions_vehicle', [])
-    if collision_infr and event_agents:
-        event_agent_ids = set(str(a.get('agent_id')) for a in event_agents)
-
-        for infr_str in collision_infr:
-            # Parse agent ID from collision string
-            # Format: "Agent collided against object with type=... and id=<id> at (x=..., y=..., z=...)"
-            id_match = re.search(r'id=(\d+)', infr_str)
-            if not id_match:
-                continue
-
-            agent_id = id_match.group(1)
-
-            # Check if this agent is in the event's agents_involved
-            if agent_id not in event_agent_ids:
-                continue
-
-            # Extract location from infraction string
-            infr_loc = _parse_location_from_infraction(infr_str)
-
-            # Check location proximity to ego
-            dist = _location_proximity(infr_loc, ego_location, threshold_m=15.0)
-            if dist is not None:
-                return 'collision_vehicle', {
-                    'type': 'collision_vehicle',
-                    'agent_id': agent_id,
-                    'distance_m': round(dist, 1),
-                    'evidence': infr_str
-                }
-
-    # Check red light infraction
-    red_light_infr = infractions.get('red_light', [])
-    if red_light_infr:
-        for infr_str in red_light_infr:
-            # Format: "Agent ran a red light <id> at (x=..., y=..., z=...)"
-            if 'red light' not in infr_str.lower():
-                continue
-
-            # Extract light location
-            tl_loc = _parse_location_from_infraction(infr_str)
-
-            # Check proximity to ego location
-            dist = _location_proximity(tl_loc, ego_location, threshold_m=20.0)
-            if dist is not None:
-                # Extract light ID
-                id_match = re.search(r'red light (\d+)', infr_str)
-                light_id = id_match.group(1) if id_match else 'unknown'
-
-                return 'ran_red_light', {
-                    'type': 'ran_red_light',
-                    'light_id': light_id,
-                    'distance_m': round(dist, 1),
-                    'evidence': infr_str
-                }
-
-    return None, None
-
-
 def _heading_delta_deg(theta_start, theta_end):
     """Signed heading change in degrees, range (-180, 180].
-    Positive = CCW (left turn in standard math convention).
+
+    For the CARLA measurement theta used by this pipeline, positive deltas
+    correspond to right turns and negative deltas correspond to left turns.
     """
     delta = math.degrees(theta_end - theta_start)
     while delta >  180: delta -= 360
     while delta <= -180: delta += 360
     return delta
+
+
+def _turn_action_from_heading_delta(hdelta):
+    """Map a signed CARLA heading delta to a turn action."""
+    return 'turn_right' if hdelta > 0 else 'turn_left'
+
+
+def _append_accel_if_significant(action, accel_ms2):
+    """Return an ego_action list, optionally combined with acceleration state."""
+    if accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2:
+        return [action, 'accelerate']
+    if accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2:
+        return [action, 'decelerate']
+    return [action]
 
 
 def _agent_type_from_bb(bb):
@@ -823,6 +957,7 @@ def _extract_agents_involved(m, proximity=_AGENT_PROXIMITY_M):
             'relative_position': rel_pos,
             'agent_speed_kmh':   spd,
         }
+     
         # Add lane_id if available
         lane_id = bb.get('lane_id')
         if lane_id is not None:
@@ -919,6 +1054,373 @@ def _extract_stop_sign_info(m, threshold=_STOP_SIGN_PROXIMITY_M):
     return round(float(sign.get('distance', 0.0)), 1)
 
 
+def _determine_compliance_outcome(is_junction, tl_state, infraction_data, lane_correct,
+                                  maneuver='continue_straight'):
+    """Determine compliance_outcome based on infraction and traffic rules."""
+    if not (is_junction and tl_state is not None):
+        return None
+
+    compliance_outcome = {}
+
+    # Traffic light compliance
+    if infraction_data and infraction_data.get('type') == 'ran_red_light':
+        compliance_outcome['traffic_light'] = 'ran_red_light'
+    elif tl_state == 'red':
+        compliance_outcome['traffic_light'] = 'complied_with_red'
+    elif tl_state == 'yellow':
+        compliance_outcome['traffic_light'] = 'proceeded_at_yellow' if infraction_data else 'stopped_at_yellow'
+    else:  # green
+        compliance_outcome['traffic_light'] = 'complied_with_green'
+
+    # Lane position compliance
+    if lane_correct:
+        compliance_outcome['lane_position'] = f'correct_lane_{maneuver}'
+    else:
+        compliance_outcome['lane_position'] = f'wrong_lane_{maneuver}'
+
+    return compliance_outcome
+
+
+def _determine_inferred_cause(is_junction, action, infraction_data, agents_involved, risk_level=None, prior_event_collision=False):
+    """
+    Determine inferred_cause based on action and context.
+
+    For junctions (turns): executing_target_maneuver or forced_entry (on red light)
+    For lane changes:
+    - positioning_for_maneuver: changing lanes to prepare for upcoming turn/junction
+      (even if it results in collision due to gap misjudgment)
+    - obstacle_avoidance: changing lanes to respond to current/immediate threat (agents present, high risk, or recovery from prior collision)
+    - unsafe_gap: attempting to merge into a gap that's too small
+    """
+    # Handle turn actions in junctions
+    if is_junction and not ('lane_change' in action):
+        if infraction_data and infraction_data.get('type') == 'ran_red_light':
+            return 'forced_entry'
+        return 'executing_target_maneuver'
+
+    # Handle lane change actions (regardless of junction context)
+    if 'lane_change' in action:
+        # If collision detected, check the cause to understand intent
+        if infraction_data and infraction_data.get('type') == 'collision_vehicle':
+            caused_by = infraction_data.get('caused_by', '')
+            # Gap-related or deceleration failures = attempted positioning that failed
+            if any(x in caused_by for x in ['gap', 'merge', 'deceleration']):
+                return 'positioning_for_maneuver'
+            # Other collision types = reactive avoidance
+            return 'obstacle_avoidance'
+
+        # Recovery from prior collision = obstacle avoidance
+        if prior_event_collision and not infraction_data:
+            return 'obstacle_avoidance'
+
+        # High/critical risk with agents = currently avoiding blocking vehicle
+        if risk_level in ('critical', 'high') and agents_involved:
+            return 'obstacle_avoidance'
+
+        # With blocking agent (aligned ahead) = obstacle avoidance
+        if agents_involved:
+            for agent in agents_involved:
+                rel_pos = agent.get('relative_position', [])
+                if rel_pos and rel_pos[0] == 'aligned' and rel_pos[1] == 'ahead':
+                    return 'obstacle_avoidance'
+
+        # Medium/low risk or no agents = positioning for upcoming turn/maneuver
+        if risk_level in ('low', 'medium', None):
+            return 'positioning_for_maneuver'
+
+        # With agents but not high risk = likely positioning despite some traffic
+        if agents_involved:
+            return 'positioning_for_maneuver'
+
+        return 'unknown'
+
+    return None
+
+
+def _evaluate_action_appropriateness(risk_level, chosen_action, available_actions, infractions=None, lane_id=None):
+    """Evaluate whether the chosen action was appropriate for the risk situation.
+
+    Args:
+        risk_level: str, the overall risk level ('low', 'medium', 'high', 'critical')
+        chosen_action: str or dict, the action that was chosen
+        available_actions: list or dict, available actions at the time
+        infractions: dict or None, infraction data if any
+        lane_id: int or None, current lane ID for turn validation
+
+    Returns:
+        bool: True if action was appropriate, False otherwise
+    """
+    # If there's an infraction, the action was NOT appropriate
+    if infractions:
+        return False
+
+    # Check lane correctness for turn actions
+    if lane_id is not None:
+        maneuver = chosen_action if isinstance(chosen_action, str) else chosen_action.get('direction')
+        if maneuver == 'turn_right' and lane_id > -2:
+            # Right turn must be from lane -2 or more negative (rightmost)
+            return False
+        elif maneuver == 'turn_left' and lane_id < 2:
+            # Left turn must be from lane 2 or more positive (leftmost)
+            return False
+
+    # If action was not in available actions, it was NOT appropriate
+    if isinstance(available_actions, dict):
+        # Nested structure: check both axes
+        for axis in ['compliance', 'direction']:
+            if available_actions.get(axis) is not None:
+                if isinstance(chosen_action, dict):
+                    if chosen_action.get(axis) not in available_actions[axis]:
+                        return False
+    else:
+        # Flat structure: check if in list
+        if isinstance(chosen_action, str) and chosen_action not in available_actions:
+            return False
+
+    # High/critical risk without infraction suggests marginal appropriateness at best
+    # But without infraction, we assume the action was at least valid
+    if risk_level in ('high', 'critical'):
+        # Action was valid but in high-risk situation (marginal appropriateness)
+        # Consider it appropriate only if it's a defensive action
+        return True
+
+    # Low/medium risk with valid action = appropriate
+    return True
+
+
+def _get_available_actions(is_junction, maneuver, tl_state, ss_dist, risk_agents=None, infractions=None):
+    """Determine available actions for a critical decision point.
+
+    Args:
+        is_junction: bool, whether event is in a junction
+        maneuver: str, the action taken ('turn_left', 'lane_change_right', etc.)
+        tl_state: str or None, traffic light state ('red', 'yellow', 'green')
+        ss_dist: float or None, distance to stop sign
+        risk_agents: list, agents involved in risk assessment
+        infractions: dict, infraction data if any
+
+    Returns:
+        available_actions: dict (nested for junctions) or list (flat for lane changes)
+        chosen_action: str or dict
+    """
+    # Lane change: flat structure
+    if 'lane_change' in maneuver:
+        available = ['lane_change_left', 'lane_change_right', 'keep_lane']
+        # Add yield option if closing agent in target lane
+        if risk_agents and any(a.get('distance_m', 999) < 10 for a in risk_agents):
+            available.append('yield_to_approaching_traffic')
+        return available, maneuver
+
+    # Junction entry with traffic light: nested structure
+    if is_junction and tl_state is not None:
+        compliance_actions = ['stop_at_light', 'proceed_through_light']
+        direction_actions = ['continue_straight']
+        if maneuver == 'turn_left':
+            direction_actions = ['turn_left', 'turn_right', 'continue_straight']
+        elif maneuver == 'turn_right':
+            direction_actions = ['turn_right', 'turn_left', 'continue_straight']
+
+        available_actions = {
+            'compliance': compliance_actions,
+            'direction': direction_actions,
+        }
+
+        # Determine actual chosen compliance action from behavior
+        # If infraction shows ran_red_light, ego chose to proceed through red
+        if infractions and infractions.get('type') == 'ran_red_light':
+            chosen_compliance = 'proceed_through_light'
+        else:
+            # Otherwise, if moving through on green/yellow, also proceeded; if stopped, stopped
+            chosen_compliance = 'proceed_through_light'  # Default: ego is in junction, so it proceeded
+
+        chosen_action = {
+            'compliance': chosen_compliance,
+            'direction': maneuver,
+        }
+        return available_actions, chosen_action
+
+    # Junction entry with stop sign: nested structure
+    if is_junction and ss_dist is not None:
+        available_actions = {
+            'compliance': ['stop_at_sign', 'proceed_without_stopping'],
+            'direction': ['turn_left', 'turn_right', 'continue_straight']
+                         if maneuver in ['turn_left', 'turn_right']
+                         else ['continue_straight'],
+        }
+        chosen_action = {
+            'compliance': 'proceed_without_stopping',  # Ground truth from actual action
+            'direction': maneuver,
+        }
+        return available_actions, chosen_action
+
+    # Unsignalized junction: flat or nested with no compliance
+    if is_junction:
+        available_actions = {
+            'direction': ['turn_left', 'turn_right', 'continue_straight']
+                         if maneuver in ['turn_left', 'turn_right']
+                         else ['continue_straight'],
+        }
+        chosen_action = {
+            'direction': maneuver,
+        }
+        return available_actions, chosen_action
+
+    # Standalone stop sign: flat structure
+    if ss_dist is not None:
+        return ['stop_at_sign', 'proceed_without_stopping'], 'proceed_without_stopping'
+
+    # Default: single action
+    return [maneuver], maneuver
+
+
+def _determine_signalized_junction_risk(
+    signal_state, ego_speed_kmh, maneuver, lane_correct,
+    cross_traffic_speed_kmh=None, cross_traffic_gap_m=None, is_entry_frame=False,
+    speed_limit_kmh=50, infractions=None
+):
+    """
+    Determine risk level for signalized junction using two independent axes:
+    - Compliance risk: traffic rule adherence
+    - Situational risk: physical collision potential
+
+    Args:
+        signal_state: 'red', 'yellow', or 'green'
+        ego_speed_kmh: average speed through junction
+        maneuver: 'turn_left', 'turn_right', or 'continue_straight'
+        lane_correct: bool, whether in correct lane for maneuver
+        cross_traffic_speed_kmh: speed of closest crossing vehicle (or None)
+        cross_traffic_gap_m: gap to crossing vehicle (or None)
+        is_entry_frame: bool, whether this is entry transition frame
+        speed_limit_kmh: posted speed limit for speeding check
+        infractions: dict with infraction data, e.g. {'type': 'ran_red_light'}
+
+    Returns:
+        dict with 'compliance_risk', 'situational_risk', 'risk_level'
+    """
+    RISK_LEVELS = ['low', 'medium', 'high', 'critical']
+
+    # Detect compliance violations from infractions or behavior
+    ego_ran_red = False
+    ego_speeding = ego_speed_kmh > (speed_limit_kmh * 1.1)
+
+    if infractions and infractions.get('type') == 'ran_red_light':
+        ego_ran_red = True
+    elif signal_state == 'red' and ego_speed_kmh > 5:  # Proceeding = moving
+        ego_ran_red = True
+
+    # ─── COMPLIANCE RISK ─────────────────────────────────────────────
+    c_score = 0
+
+    # Matrix 1: Signal compliance
+    if signal_state == 'red' and ego_ran_red:
+        c_score += 3
+    elif signal_state == 'yellow' and ego_speed_kmh > 5:  # proceeded on yellow
+        c_score += 1
+    elif signal_state == 'green' and ego_speeding:
+        c_score += 1
+
+    # Matrix 4: Lane position (always applies, even on red)
+    if not lane_correct:
+        c_score += 2 if maneuver == 'turn_left' else 1
+
+    compliance_risk = RISK_LEVELS[min(c_score, 3)]
+
+    # ─── SITUATIONAL RISK ───────────────────────────────────────────
+    s_score = 0
+
+    # Matrix 2: Entry speed (suppressed when signal=red)
+    if is_entry_frame and signal_state != 'red':
+        if ego_speed_kmh < 15:
+            s_score += 1
+        elif ego_speed_kmh > 70:
+            s_score += 2
+        elif ego_speed_kmh > 50:
+            s_score += 1
+
+    # Matrix 3: Cross-traffic exposure (turns only, suppressed on red)
+    if maneuver in ['turn_left', 'turn_right'] and signal_state != 'red':
+        if cross_traffic_speed_kmh and cross_traffic_gap_m:
+            if cross_traffic_speed_kmh > 30:
+                if cross_traffic_gap_m < 10:
+                    s_score += 3
+                elif cross_traffic_gap_m < 20:
+                    s_score += 2
+                else:
+                    s_score += 1
+            elif cross_traffic_speed_kmh > 10:
+                if cross_traffic_gap_m < 10:
+                    s_score += 2
+                elif cross_traffic_gap_m < 20:
+                    s_score += 1
+
+    situational_risk = RISK_LEVELS[min(s_score, 3)]
+
+    # ─── OVERALL RISK ───────────────────────────────────────────────
+    risk_level = RISK_LEVELS[max(
+        RISK_LEVELS.index(compliance_risk),
+        RISK_LEVELS.index(situational_risk)
+    )]
+
+    return {
+        'compliance_risk': compliance_risk,
+        'situational_risk': situational_risk,
+        'risk_level': risk_level,
+    }
+
+
+def _determine_lane_change_risk(ego_speed_kmh, agent_speed_kmh, gap_m, agent_ahead=True):
+    """Determine risk level for lane change based on closing speed and gap.
+
+    Risk matrix:
+    Closing Speed | < 5m    | 5-10m  | 10-20m | > 20m
+    > 30 km/h     | critical| critical| high   | medium
+    15-30 km/h    | critical| high   | medium | low
+    5-15 km/h     | high    | medium | low    | low
+    < 5 km/h      | medium  | low    | low    | low
+
+    Args:
+        ego_speed_kmh: ego vehicle speed in km/h
+        agent_speed_kmh: target lane agent speed in km/h (can be None)
+        gap_m: gap distance to agent in meters
+        agent_ahead: bool, True if agent is ahead (ego frame x > 0), False if behind
+
+    Returns:
+        risk_level: 'critical', 'high', 'medium', or 'low'
+    """
+    if agent_speed_kmh is None:
+        agent_speed_kmh = 0.0
+
+    # Calculate closing speed accounting for agent direction
+    # Agent ahead: ego closing on agent = ego_speed - agent_speed (positive = closing)
+    # Agent behind: agent closing on ego = agent_speed - ego_speed (positive = closing)
+    if agent_ahead:
+        closing_speed = ego_speed_kmh - agent_speed_kmh
+    else:
+        closing_speed = agent_speed_kmh - ego_speed_kmh
+
+    # Determine gap category
+    if gap_m < 5:
+        gap_cat = 0
+    elif gap_m < 10:
+        gap_cat = 1
+    elif gap_m < 20:
+        gap_cat = 2
+    else:
+        gap_cat = 3
+
+    # Determine closing speed category and look up risk
+    if closing_speed > 30:
+        risks = ['critical', 'critical', 'high', 'medium']
+    elif closing_speed > 15:
+        risks = ['critical', 'high', 'medium', 'low']
+    elif closing_speed > 5:
+        risks = ['high', 'medium', 'low', 'low']
+    else:
+        risks = ['medium', 'low', 'low', 'low']
+
+    return risks[gap_cat]
+
+
 def _classify_ego_action(
     start_speed_kmh, end_speed_kmh,
     duration_s, start_m, end_m,
@@ -953,31 +1455,33 @@ def _classify_ego_action(
     # Extract brake state from measurements (for validation)
     start_brake = start_m.get('brake', False)
     end_brake = end_m.get('brake', False)
+    last_action_primary = last_action[0] if isinstance(last_action, list) else last_action
 
-    # ── 1. Turn/Continue-straight maneuvers (detected by steering angle + junction transitions) ──
+    # ── 1. Physical lane changes (from anno lane_id transitions) ─────────
+    # Lane changes can occur inside a broader junction phase.  Classify the
+    # lane transition before heading fallback so it is not swallowed as a turn.
+    if lane_event == 'left':
+        return _append_accel_if_significant('lane_change_left', accel_ms2)
+    if lane_event == 'right':
+        return _append_accel_if_significant('lane_change_right', accel_ms2)
+
+    # ── 2. Turn/Continue-straight maneuvers (detected by steering angle + junction transitions) ──
     if turn_event == 'turn_left':
-        # Combine with acceleration if significant
-        if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
-            return ['turn_left', 'accelerate']
-        elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
-            return ['turn_left', 'decelerate']
-        return ['turn_left']
+        return _append_accel_if_significant('turn_left', accel_ms2)
     if turn_event == 'turn_right':
-        # Combine with acceleration if significant
-        if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
-            return ['turn_right', 'accelerate']
-        elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
-            return ['turn_right', 'decelerate']
-        return ['turn_right']
+        return _append_accel_if_significant('turn_right', accel_ms2)
     if turn_event == 'continue_straight':
-        # Combine with acceleration if significant
-        if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
-            return ['continue_straight', 'accelerate']
-        elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
-            return ['continue_straight', 'decelerate']
-        return ['continue_straight']
+        start_road, _ = _ego_lane_info(start_m.get('bounding_boxes', []))
+        end_road,   _ = _ego_lane_info(end_m.get('bounding_boxes', []))
+        road_changed = (start_road is not None and end_road is not None
+                        and start_road != end_road)
+        hdelta = _heading_delta_deg(start_m.get('theta', 0.0),
+                                    end_m.get('theta', 0.0))
+        if road_changed and abs(hdelta) > _TURN_HEADING_THRESHOLD_DEG:
+            return _append_accel_if_significant(_turn_action_from_heading_delta(hdelta), accel_ms2)
+        return _append_accel_if_significant('continue_straight', accel_ms2)
 
-    # ── 2. Junction actions (road change + heading change) ────────────────
+    # ── 3. Junction actions (road change + heading change) ────────────────
     if is_junction_phase and turn_event is None:  # Only if not already detected as turn
         start_road, _ = _ego_lane_info(start_m.get('bounding_boxes', []))
         end_road,   _ = _ego_lane_info(end_m.get('bounding_boxes', []))
@@ -989,36 +1493,18 @@ def _classify_ego_action(
             hdelta = _heading_delta_deg(
                 start_m.get('theta', 0.0), end_m.get('theta', 0.0))
             if abs(hdelta) > _TURN_HEADING_THRESHOLD_DEG:
-                action = 'turn_left' if hdelta > 0 else 'turn_right'
-                # Combine with acceleration if significant
-                if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
-                    return [action, 'accelerate']
-                elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
-                    return [action, 'decelerate']
-                return [action]
+                action = _turn_action_from_heading_delta(hdelta)
+                return _append_accel_if_significant(action, accel_ms2)
             if abs(hdelta) < _STRAIGHT_HEADING_THRESHOLD_DEG:
-                # Combine with acceleration if significant
-                if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
-                    return ['continue_straight', 'accelerate']
-                elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
-                    return ['continue_straight', 'decelerate']
-                return ['continue_straight']
+                return _append_accel_if_significant('continue_straight', accel_ms2)
 
-    # ── 3. Lane changes (from anno lane_id transitions) ───────────────────
-    if lane_event == 'left':
-        # Combine with acceleration if significant
-        if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
-            return ['lane_change_left', 'accelerate']
-        elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
-            return ['lane_change_left', 'decelerate']
-        return ['lane_change_left']
-    if lane_event == 'right':
-        # Combine with acceleration if significant
-        if (accel_ms2 is not None and accel_ms2 > _ACCEL_THRESHOLD_MS2):
-            return ['lane_change_right', 'accelerate']
-        elif (accel_ms2 is not None and accel_ms2 < _DECEL_THRESHOLD_MS2):
-            return ['lane_change_right', 'decelerate']
-        return ['lane_change_right']
+    # ── 4. Moving lane-following phases ───────────────────────────────────
+    # If the vehicle is moving in a stable non-junction phase, preserve the
+    # lateral action as keep_lane and attach speed change as a modifier.
+    if (not is_junction_phase and duration_s >= _KEEP_LANE_MIN_DURATION_S
+            and start_speed_kmh >= _STOP_SPEED_KMH
+            and last_action_primary != 'stop'):
+        return _append_accel_if_significant('keep_lane', accel_ms2)
 
     # ── 4. Accelerate/Decelerate (acceleration magnitude) ────────────────────────
     # Check these before stop, since a vehicle starting from stop and accelerating
@@ -1052,13 +1538,11 @@ def _classify_ego_action(
     if start_speed_kmh < _STOP_SPEED_KMH and duration_s >= _STOP_MIN_DURATION_S:
         # Skip insignificant "stop" if last action was also stop and vehicle still stopped
         # This avoids redundant stop events with no meaningful change
-        last_action_primary = last_action[0] if isinstance(last_action, list) else last_action
         if last_action_primary == 'stop' and end_speed_kmh < _STOP_SPEED_KMH:
             return None  # Skip — already in stop state, no change
         return ['stop']
 
     # ── 6. Resume from stop ──────────────────────────────────────────────
-    last_action_primary = last_action[0] if isinstance(last_action, list) else last_action
     if last_action_primary == 'stop' and speed_delta > _RESUME_SPEED_DELTA_KMH:
         return ['resume_motion']
 
@@ -1146,7 +1630,6 @@ def build_gt_event_log(full_history, full_snapshots, origin_f, frame_rate,
     # Compute anno_dir from scenario_dir
     anno_dir = None
     if scenario_dir:
-        from pathlib import Path
         anno_path = Path(scenario_dir) / 'anno'
         if anno_path.exists():
             anno_dir = anno_path
@@ -1167,6 +1650,7 @@ def build_gt_event_log(full_history, full_snapshots, origin_f, frame_rate,
     if _init_action is None:
         _init_action = ['stop'] if _init_speed_kmh < _STOP_SPEED_KMH else ['keep_lane']
 
+    infractions_for_event = None
     # Start with empty events list - first action phase will include all details
     events = []
 
@@ -1180,26 +1664,48 @@ def build_gt_event_log(full_history, full_snapshots, origin_f, frame_rate,
     infractions = _load_checkpoint_infractions(checkpoint_path, scenario_name) if checkpoint_path else {}
 
     # ── Build action phases from snapshot boundaries ──────────────────────
-    # Snapshots mark where state changes occur (lane changes or measurement changes)
-    # Use them as phase boundaries instead of planner commands
-    # IMPORTANT: Only use action-relevant snapshots (lane changes, turns) as phase boundaries,
-    # not command changes (False events), as turns can span multiple command changes
+    # Snapshots mark where state changes occur.  Action snapshots start phases;
+    # phase-end markers close the preceding phase but do not create events.
     action_phases = []
     if full_snapshots:
-        # Filter to only action-relevant snapshots (not False/command changes)
-        action_snapshot_frames = sorted(set(
-            fi for fi, _, ev in full_snapshots
-            if ev is not False  # Only lane changes (left/right) and turns (turn_left/turn_right)
-        ))
+        boundary_events = []
+        seen_boundary_frames = set()
+        for fi, _, ev in sorted(full_snapshots, key=lambda x: x[0]):
+            if ev is False:
+                continue
+            if fi in seen_boundary_frames:
+                continue
+            boundary_events.append((fi, ev))
+            seen_boundary_frames.add(fi)
 
-        if action_snapshot_frames:
+        if boundary_events:
             # Include gap from origin to first snapshot (if any)
-            if origin_f < action_snapshot_frames[0]:
-                action_phases.append((origin_f, action_snapshot_frames[0] - 1))
+            if origin_f < boundary_events[0][0]:
+                action_phases.append((origin_f, boundary_events[0][0] - 1))
 
-            # Use action snapshots as phase boundaries
-            for i, start_f in enumerate(action_snapshot_frames):
-                end_f = action_snapshot_frames[i + 1] - 1 if i + 1 < len(action_snapshot_frames) else full_history[-1][0]
+            # Use action snapshots as phase starts; phase-end markers only end
+            # the previous phase at their exact frame.
+            for i, (start_f, start_ev) in enumerate(boundary_events):
+                if start_ev in _PHASE_END_EVENTS:
+                    next_action_f = None
+                    for next_f, next_ev in boundary_events[i + 1:]:
+                        if next_ev not in _PHASE_END_EVENTS:
+                            next_action_f = next_f
+                            break
+                    if next_action_f is None:
+                        continue
+
+                    gap_start = start_f + 1
+                    gap_end = next_action_f - 1
+                    if gap_start <= gap_end:
+                        action_phases.append((gap_start, gap_end))
+                    continue
+
+                if i + 1 < len(boundary_events):
+                    next_f, next_ev = boundary_events[i + 1]
+                    end_f = next_f if next_ev in _PHASE_END_EVENTS else next_f - 1
+                else:
+                    end_f = full_history[-1][0]
                 action_phases.append((start_f, end_f))
         else:
             # No action snapshots → treat entire route as one phase
@@ -1207,6 +1713,9 @@ def build_gt_event_log(full_history, full_snapshots, origin_f, frame_rate,
     else:
         # Fallback: treat entire route as one phase
         action_phases = [(full_history[0][0], full_history[-1][0])]
+
+    # Pre-compute infraction timestamps and assign to events
+    infraction_by_phase = _preprocess_infractions(infractions, full_snapshots, origin_f, frame_rate, anno_dir, action_phases)
 
     # ── Index lane-change and turn/continue_straight snapshot events by frame ──────────────
     # Snapshots can be:
@@ -1237,12 +1746,18 @@ def build_gt_event_log(full_history, full_snapshots, origin_f, frame_rate,
             None,
         )
 
-        # Junction: True if any snapshot in range (or start/end) reports it
+        # Junction: True if any snapshot in range (or start/end) reports it.
+        # Turn phases can intentionally start one frame before junction entry
+        # to preserve the approach-lane id, so use the first in-junction
+        # snapshot for junction-specific context.
         phase_snapshots = [m for fi, m, _ in full_snapshots if start_f <= fi <= end_f]
         if phase_snapshots:
-            is_junction_phase = any(_in_junction(m) for m in phase_snapshots)
+            junction_m = next((m for m in phase_snapshots if _in_junction(m)), None)
+            is_junction_phase = junction_m is not None
         else:
-            is_junction_phase = _in_junction(start_m) or _in_junction(end_m)
+            junction_m = start_m if _in_junction(start_m) else end_m if _in_junction(end_m) else None
+            is_junction_phase = junction_m is not None
+        event_context_m = junction_m if is_junction_phase else start_m
 
         # Calculate acceleration for this phase (m/s²)
         accel_ms2 = (
@@ -1271,61 +1786,301 @@ def build_gt_event_log(full_history, full_snapshots, origin_f, frame_rate,
             tl_dist = starting_tl_dist
         else:
             # For junction events, extract traffic light info regardless of affects_ego flag
-            if _in_junction(start_m):
-                tl_state, tl_dist = _extract_tl_info_for_junction(start_m)
+            if is_junction_phase:
+                tl_state, tl_dist = _extract_tl_info_for_junction(event_context_m)
             else:
                 tl_state, tl_dist = _extract_tl_info(start_m)
 
         ss_dist           = _extract_stop_sign_info(start_m)
-        agents_involved = _extract_agents_involved(start_m)
+        agents_involved = _extract_agents_involved(event_context_m)
 
-        # Check for infractions and critical decision points
-        # Ego location is stored as x, y at top level (not in 'location' field)
-        ego_location = (start_m.get('x'), start_m.get('y'), start_m.get('z', 0.0)) if start_m.get('x') is not None else None
-        infraction_type, infraction_data = _extract_infraction_for_event(infractions, ego_location, agents_involved)
         t_s = round((start_f - origin_f) / frame_rate, 1)
 
+        # Determine if this is a critical decision point (priority order)
+        is_critical = False
+
+        # 1. Signalized junction: junction with traffic light
+        if is_junction_phase and tl_state is not None:
+            is_critical = True
+
+        # 2. Emergency deceleration: acceleration < -1 m/s²
+        elif accel_ms2 < -1.0:
+            is_critical = True
+
+        # 3. Lane change: any lane change in action
+        elif action and any('lane_change' in str(a) for a in (action if isinstance(action, list) else [action])):
+            is_critical = True
+
+        # 4. Unsignalized junction: junction without traffic light
+        elif is_junction_phase and tl_state is None:
+            is_critical = True
+
+        # 5. Stop sign: presence of stop sign
+        elif ss_dist is not None:
+            is_critical = True
+
+        # 6. Resume after stop: transitioning from stop to motion
+        elif last_action == 'stop' and start_speed_kmh > 0:
+            is_critical = True
+
+
+
+        # Filter agents based on lane change direction
+        filtered_agents_for_event = agents_involved
+        if any('lane_change' in a for a in action):
+            is_merging_left = 'lane_change_left' in action
+            is_merging_right = 'lane_change_right' in action
+
+            if lane_id in (-1, 1) and agents_involved:
+                # Determine target lane from end measurement or midpoint of event
+                _, target_lane_id = _ego_lane_info(end_m.get('bounding_boxes', []))
+
+                # If target lane detection failed, try to infer from merge direction
+                if target_lane_id is None or target_lane_id == lane_id:
+                    if is_merging_right:
+                        target_lane_id = lane_id - 1  # One lane to the right (more negative)
+                    elif is_merging_left:
+                        target_lane_id = lane_id + 1  # One lane to the left (more positive)
+
+                # First filter by relative position and direction
+                if is_merging_right:
+                    # Keep: right/ahead, right/behind, aligned/ahead
+                    # Remove: left/*, aligned/behind
+                    filtered_agents_for_event = [a for a in agents_involved
+                                                  if not (a.get('relative_position', [None])[0] == 'left' or
+                                                         (a.get('relative_position', [None, None])[0] == 'aligned' and
+                                                          a.get('relative_position', [None, None])[1] == 'behind'))]
+                elif is_merging_left:
+                    # Keep: left/ahead, left/behind, aligned/ahead
+                    # Remove: right/*, aligned/behind
+                    filtered_agents_for_event = [a for a in agents_involved
+                                                  if not (a.get('relative_position', [None])[0] == 'right' or
+                                                         (a.get('relative_position', [None, None])[0] == 'aligned' and
+                                                          a.get('relative_position', [None, None])[1] == 'behind'))]
+
+                # Second filter: only keep agents in the target lane
+                if target_lane_id is not None:
+                    filtered_agents_for_event = [a for a in filtered_agents_for_event
+                                                  if a.get('lane_id') == target_lane_id]
 
         event = {
             'frame_start':              start_f,
+            'frame_end':                end_f,
             't_s':                      t_s,
+            't_end_s':                  round((end_f - origin_f) / frame_rate, 1),
             'duration_s':               duration_s,
             'ego_action':               action,
             'speed_start_kmh':          start_speed_kmh,
             'speed_end_kmh':            end_speed_kmh,
             'acceleration_ms2':         accel_ms2,
             'lane_id':                  lane_id,
-            'junction':                 _in_junction(start_m),
-            'agents_involved':          agents_involved,
+            'junction':                 is_junction_phase,
+            'agents_involved':          filtered_agents_for_event,
             'traffic_light_state':      tl_state,
             'traffic_light_distance_m': tl_dist,
             'stop_sign_distance_m':     ss_dist,
-            'is_critical_decision_point': infraction_type is not None,
+            'critical_decision_point':  is_critical,
         }
 
-        # Add decision_point if critical
-        if infraction_type:
-            # Find actual infraction timestamp within event duration
-            infraction_location = None
+        # Compute risk level based on event type
+        risk_level = None
+        risk_agents = None
+        risk_data = None  # For junction risk details
+
+        # Load pre-computed infractions for this event (used by all risk types)
+        phase_key = (start_f, end_f)
+        infractions_for_event = infraction_by_phase.get(phase_key, [])
+        infraction_data = infractions_for_event[0] if infractions_for_event else None
+
+        # Lane change risk
+        if any('lane_change' in a for a in action):
+            # Use pre-filtered agents (already filtered by merge direction)
+            filtered_agents = filtered_agents_for_event
+
+            # Find closest agent for risk assessment
+            if filtered_agents:
+                closest_agent = filtered_agents[0]
+                # Determine if agent is ahead or behind
+                rel_pos = closest_agent.get('relative_position', [None, 'behind'])
+                agent_ahead = rel_pos[1] == 'ahead' if len(rel_pos) > 1 else False
+
+                risk_level = _determine_lane_change_risk(
+                    start_speed_kmh,
+                    closest_agent.get('agent_speed_kmh', 0.0),
+                    closest_agent.get('distance_m', 20.0),
+                    agent_ahead=agent_ahead
+                )
+                risk_agents = [closest_agent]
+
+        # Signalized junction risk
+        elif is_junction_phase and tl_state is not None:
+            # Determine correct lane for maneuver
+            # abs(1) is center-adjacent, abs(2+) is outer lanes (correct for turns)
+            maneuver = action[0] if action else 'continue_straight'
+            lane_correct = True  # Default assume correct
+            if maneuver == 'turn_right':
+                # Rightmost lane for right turn: lane_id <= -2 (abs >= 2)
+                lane_correct = lane_id <= -2
+            elif maneuver == 'turn_left':
+                # Leftmost lane for left turn: lane_id >= 2 (abs >= 2)
+                lane_correct = lane_id >= 2
+
+            # Find closest cross-traffic agent
+            cross_traffic_speed = None
+            cross_traffic_gap = None
+            if agents_involved and maneuver in ['turn_left', 'turn_right']:
+                # Get closest agent with reasonable characteristics for cross-traffic
+                for agent in agents_involved:
+                    if agent.get('agent_speed_kmh', 0) > 0:  # Moving vehicle
+                        cross_traffic_speed = agent.get('agent_speed_kmh')
+                        cross_traffic_gap = agent.get('distance_m')
+                        if cross_traffic_gap <= 25:  # Within relevant range
+                            break
+
+            # Calculate junction risk (with infraction context)
+            risk_data = _determine_signalized_junction_risk(
+                signal_state=tl_state,
+                ego_speed_kmh=start_speed_kmh,
+                maneuver=maneuver,
+                lane_correct=lane_correct,
+                cross_traffic_speed_kmh=cross_traffic_speed,
+                cross_traffic_gap_m=cross_traffic_gap,
+                is_entry_frame=False,  # TODO: detect entry frame
+                infractions=infraction_data,
+            )
+            risk_level = risk_data['risk_level']
+
+        if is_critical is True:
+            # Determine available actions for this decision point
+            available_actions, chosen_action = _get_available_actions(
+                is_junction=is_junction_phase,
+                maneuver=action[0] if action else 'keep_lane',
+                tl_state=tl_state,
+                ss_dist=ss_dist,
+                risk_agents=risk_agents,
+                infractions=infraction_data
+            )
+
+            # Evaluate appropriateness of the chosen action
+            action_appropriate = _evaluate_action_appropriateness(
+                risk_level=risk_level,
+                chosen_action=chosen_action,
+                available_actions=available_actions,
+                infractions=infraction_data,
+                lane_id=lane_id
+            )
+
+            # Determine outcome based on infractions and maneuver completion
+            # failed: maneuver not completed OR critical rule violation
+            # completed_degraded: maneuver completed but caused infraction OR in high-risk situation
+            # completed_clean: maneuver completed without infractions or violations
             if infraction_data:
-                # Try to extract location from evidence string
-                import re as regex_module
-                evidence = infraction_data.get('evidence', '')
-                loc_match = regex_module.search(r'at \(x=([-\d.]+), y=([-\d.]+), z=([-\d.]+)\)', evidence)
-                if loc_match:
-                    infraction_location = (float(loc_match.group(1)), float(loc_match.group(2)), float(loc_match.group(3)))
+                # Maneuver was completed but caused an infraction
+                outcome = 'completed_degraded'
+            elif action_appropriate and (risk_level is None or risk_level in ('low', 'medium')):
+                # Maneuver completed cleanly: no violations, no infraction, appropriate action, low/medium risk or unknown risk
+                outcome = 'completed_clean'
+            else:
+                # Maneuver completed but in high-risk situation (no infraction, but still risky)
+                outcome = 'completed_degraded'
 
-            infraction_ts = _find_infraction_timestamp(infraction_location, start_f, end_f, full_snapshots, origin_f, frame_rate, anno_dir) if infraction_location else t_s
+            risk_dict = {}
+            # Add junction-specific risk details first if available
+            if risk_data:
+                risk_dict['compliance_risk'] = risk_data.get('compliance_risk')
+                risk_dict['situational_risk'] = risk_data.get('situational_risk')
 
-            # Add timestamp to infraction data
-            if infraction_data:
-                infraction_data['timestamp'] = infraction_ts
-
-            event['decision_point'] = {
-                't_s': infraction_ts,  # Use actual infraction timestamp, not event start
-                'situation': f"junction={_in_junction(start_m)} | ego: {start_speed_kmh}km/h lane={lane_id}",
+            # Add remaining risk fields
+            risk_dict.update({
+                'risk_level': risk_level,
+                'agents_involved': risk_agents,
+                'appropriate': action_appropriate,
+                'outcome': outcome,
                 'infraction': infraction_data,
-            }
+            })
+
+            # Determine compliance_outcome and inferred_cause
+            is_junction = is_junction_phase
+            compliance_outcome = _determine_compliance_outcome(
+                is_junction=is_junction,
+                tl_state=tl_state,
+                infraction_data=infraction_data,
+                lane_correct=(lane_id <= -2 if any('turn_right' in a for a in action)
+                             else lane_id >= 2 if any('turn_left' in a for a in action)
+                             else True),
+                maneuver=action[0] if action else 'continue_straight',
+            )
+
+            # Check if prior event had a collision (for recovery detection)
+            prior_event_collision = False
+            if events and len(events) > 0:
+                prior_event = events[-1]
+                if 'decision_point' in prior_event and prior_event['decision_point']:
+                    prior_risk = prior_event['decision_point'][0].get('risk', {})
+                    prior_infraction = prior_risk.get('infraction', {})
+                    prior_event_collision = (prior_infraction and prior_infraction.get('type') == 'collision_vehicle')
+
+            inferred_cause = _determine_inferred_cause(
+                is_junction=is_junction,
+                action=action[0] if action else '',
+                infraction_data=infraction_data,
+                agents_involved=risk_agents,
+                risk_level=risk_level,
+                prior_event_collision=prior_event_collision
+            )
+
+            # Generate reasoning_context
+            reasoning_context = None
+            if is_junction and tl_state:
+                # Junction with traffic light
+                ctx_data = {
+                    'speed_start_kmh': start_speed_kmh,
+                    'traffic_light_distance_m': tl_dist,
+                    'speed_end_kmh': end_speed_kmh,
+                    'cross_traffic_summary': build_cross_traffic_summary(agents_involved),
+                }
+                if compliance_outcome and 'traffic_light' in compliance_outcome:
+                    reasoning_context = get_reasoning_context(
+                        'traffic_light',
+                        compliance_outcome['traffic_light'],
+                        ctx_data
+                    )
+            elif 'lane_change' in (action[0] if action else ''):
+                # Lane change
+                ctx_data = {
+                    'direction': 'left' if 'lane_change_left' in action else 'right',
+                    'speed_start_kmh': start_speed_kmh,
+                    'target_agent_gap': risk_agents[0].get('distance_m', 'N/A') if risk_agents else 'N/A',
+                    'blocking_agent_gap': risk_agents[0].get('distance_m', 'N/A') if risk_agents else 'N/A',
+                    'target_agent_summary': f"id={risk_agents[0]['agent_id']} at {risk_agents[0]['distance_m']}m" if risk_agents else 'none',
+                    'blocking_agent_id': risk_agents[0]['agent_id'] if risk_agents else 'N/A',
+                    'closing_speed': 'N/A',
+                }
+                if inferred_cause:
+                    reasoning_context = get_reasoning_context(
+                        'lane_change',
+                        inferred_cause,
+                        ctx_data
+                    )
+
+            event['decision_point'] = [
+                {
+                    't_s': t_s,
+                    'available_actions': available_actions,
+                    'chosen_action': chosen_action,
+                    'compliance_outcome': compliance_outcome,
+                    'inferred_cause': inferred_cause,
+                    'reasoning_context': reasoning_context,
+                    'risk': risk_dict
+                }
+            ]
+
+            # Append any additional infractions beyond the first one
+            if infractions_for_event and len(infractions_for_event) > 1:
+                for additional_infraction in infractions_for_event[1:]:
+                    event['decision_point'].append({
+                        'infraction': additional_infraction,
+                    })
 
         events.append(event)
 
@@ -2226,7 +2981,6 @@ class PostActionTracker:
         self.last_facts        = facts
         self.last_gt_event_log = facts.get('gt_event_log', [])
 
-        import json
         print_debug(
             f"[PostActionTracker] GT event log built for {completed} "
             f"({len(seq_history)} frames, {len(self.last_gt_event_log)} events)\n"

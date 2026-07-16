@@ -28,9 +28,9 @@
         },
 "USE_GT": [24]
     },
-"CONTROL_RATE": 0.5,
+"CONTROL_RATE": 2,
 "MODEL_NAME": "Qwen2.5VL",
-"MODEL_PATH": "/models/Qwen2.5-VL-3B-Instruct",
+"MODEL_PATH": "Qwen/Qwen2.5-VL-7B-Instruct",
 "GPU_ID": 1,
 "PORT": 7023,
 "IN_CARLA": true,

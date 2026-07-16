@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='utf-8'?>
+<routes>
+  <route id="0" town="Town10HD">
+    <weathers>
+      <weather route_percentage="0" cloudiness="5.0" precipitation="0.0" precipitation_deposits="0.0" wetness="0.0" wind_intensity="10.0" sun_azimuth_angle="-1.0" sun_altitude_angle="90.0" fog_density="2.0" />
+      <weather route_percentage="100" cloudiness="5.0" precipitation="0.0" precipitation_deposits="0.0" wetness="0.0" wind_intensity="10.0" sun_azimuth_angle="-1.0" sun_altitude_angle="15.0" fog_density="2.0" />
+    </weathers>
+    <waypoints>
+      <position x="-2.857681" y="66.244896" z="0.0" />
+      <position x="-7.857679" y="66.238503" z="0.0" />
+      <position x="-12.857672" y="66.232109" z="0.0" />
+      <position x="-17.857668" y="66.225716" z="0.0" />
+      <position x="-27.017662" y="66.214005" z="0.0" />
+      <position x="-31.54738" y="65.699066" z="0.0" />
+      <position x="-35.750042" y="64.02803" z="0.0" />
+      <position x="-39.21616" y="61.349251" z="0.0" />
+      <position x="-41.246799" y="57.656635" z="0.0" />
+      <position x="-41.660969" y="51.705544" z="0.0" />
+      <position x="-41.686775" y="42.53558" z="0.0" />
+      <position x="-41.714912" y="32.535618" z="0.0" />
+      <position x="-41.728981" y="27.535639" z="0.0" />
+      <position x="-41.743053" y="22.53566" z="0.0" />
+      <position x="-41.757122" y="17.535679" z="0.0" />
+      <position x="-41.771194" y="12.535698" z="0.0" />
+      <position x="-41.785263" y="7.535717" z="0.0" />
+      <position x="-41.811264" y="-1.704244" z="0.0" />
+      <position x="-41.825336" y="-6.704224" z="0.0" />
+      <position x="-41.820019" y="-4.814774" z="0.0" />
+      <position x="-41.840149" y="-17.160385" z="0.0" />
+      <position x="-45.18914" y="-37.186226" z="0.0" />
+      <position x="-45.142799" y="-43.327644" z="0.0" />
+      <position x="-45.105072" y="-48.327465" z="0.0" />
+      <position x="-45.979977" y="-53.812416" z="0.0" />
+      <position x="-48.5914" y="-58.71452" z="0.0" />
+      <position x="-52.675068" y="-62.4977" z="0.0" />
+      <position x="-57.797558" y="-64.692894" z="0.0" />
+      <position x="-67.081741" y="-65.193367" z="0.0" />
+      <position x="-72.162018" y="-65.207405" z="0.0" />
+    </waypoints>
+    <scenarios>
+      <scenario name="ParkingExit_1" type="ParkingExit">
+        <trigger_point x="-1.27" y="61.68" z="0.0" yaw="0" />
+      </scenario>
+    </scenarios>
+  </route>
+</routes>

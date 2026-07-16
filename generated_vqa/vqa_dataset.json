@@ -1,0 +1,632 @@
+[
+  {
+    "time": 28.8,
+    "action": "continue_straight + accelerate",
+    "questions": {
+      "Q1": {
+        "question": "Q1",
+        "options": [
+          "Accelerated straight through the junction",
+          "Turned right through the junction",
+          "Stopped before entering the junction",
+          "Changed lanes before entering the junction"
+        ],
+        "answer": "A",
+        "answer_text": "Accelerated straight through the junction"
+      },
+      "Q2": {
+        "question": "Q2",
+        "options": [
+          "The ego vehicle proceeded because cross-traffic had cleared the junction",
+          "The ego vehicle proceeded because the traffic light had turned green",
+          "The ego vehicle proceeded through the junction despite a red traffic light",
+          "The ego vehicle proceeded because it had already stopped and was allowed to go"
+        ],
+        "answer": "C",
+        "answer_text": "The ego vehicle proceeded through the junction despite a red traffic light"
+      },
+      "Q3": {
+        "question": "Q3",
+        "options": [
+          "Yes - the ego vehicle had right of way",
+          "No - the ego vehicle proceeded through a red traffic light",
+          "No - the ego vehicle was too aggressive",
+          "Partially - the junction was clear"
+        ],
+        "answer": "B",
+        "answer_text": "No - the ego vehicle proceeded through a red traffic light"
+      },
+      "Q4": {
+        "question": "Q4",
+        "options": [
+          "Yes - the ego vehicle committed a traffic violation",
+          "No - the ego vehicle drove correctly",
+          "Yes - but it was minor",
+          "No evidence of violation"
+        ],
+        "answer": "A",
+        "answer_text": "Yes - the ego vehicle committed a traffic violation"
+      },
+      "Q5": {
+        "question": "Q5",
+        "options": [
+          "Yes - the ego vehicle made a mistake by proceeding when it should not have",
+          "No - the ego vehicle acted correctly and no mistake was made",
+          "Not enough information is shown to determine whether a mistake was made"
+        ],
+        "answer": "A",
+        "answer_text": "Yes - the ego vehicle made a mistake by proceeding when it should not have"
+      },
+      "Q6": {
+        "question": "Q6",
+        "options": [
+          "It stopped unnecessarily before entering the junction",
+          "It proceeded through the junction when it should have stopped",
+          "It changed lanes at the wrong time",
+          "No mistake was made"
+        ],
+        "answer": "B",
+        "answer_text": "It proceeded through the junction when it should have stopped"
+      },
+      "Q7": {
+        "question": "Q7",
+        "options": [
+          "Stop at the red light before entering the junction",
+          "Accelerate through the junction",
+          "Change lanes to avoid the intersection",
+          "No alternative action was needed"
+        ],
+        "answer": "A",
+        "answer_text": "Stop at the red light before entering the junction"
+      },
+      "Q8": {
+        "question": "Q8",
+        "options": [
+          "The traffic light controlling the ego vehicle was red",
+          "A stop sign was visible near the junction",
+          "Another vehicle was directly blocking the ego vehicle's lane",
+          "No visible evidence was present"
+        ],
+        "answer": "A",
+        "answer_text": "The traffic light controlling the ego vehicle was red"
+      },
+      "Q9": {
+        "question": "Q9",
+        "options": [
+          "Agree with the reviewer - no mistake was made because no other vehicles were visible",
+          "Agree with the reviewer - the ego vehicle's action was acceptable because it completed the maneuver",
+          "Disagree with the reviewer - the ego vehicle still made a mistake",
+          "Not enough information is available to evaluate the reviewer's statement"
+        ],
+        "answer": "C",
+        "answer_text": "Disagree with the reviewer - the ego vehicle still made a mistake",
+        "question_text": "A human reviewer reviewed the same sequence and stated: 'The ego vehicle did not make a mistake. Its action was acceptable because no other vehicles were visible in the junction.' Based on the full sequence of frames, which response is most appropriate?"
+      }
+    }
+  },
+  {
+    "time": 47.4,
+    "action": "lane_change_right + decelerate",
+    "questions": {
+      "Q1": {
+        "question": "Q1",
+        "options": [
+          "Changed lanes to the right lane",
+          "Turned through the junction",
+          "Changed lanes to the left lane",
+          "Stopped and waited"
+        ],
+        "answer": "A",
+        "answer_text": "Changed lanes to the right lane"
+      },
+      "Q2": {
+        "question": "Q2",
+        "options": [
+          "The ego vehicle changed lanes to avoid an obstacle",
+          "The ego vehicle changed lanes to prepare for a turn",
+          "The ego vehicle changed lanes to overtake a slower vehicle",
+          "The ego vehicle changed lanes due to traffic congestion"
+        ],
+        "answer": "B",
+        "answer_text": "The ego vehicle changed lanes to prepare for a turn"
+      },
+      "Q3": {
+        "question": "Q3",
+        "options": [
+          "Yes - the action was appropriate",
+          "No - the action was unsafe",
+          "No - the ego vehicle accelerated incorrectly",
+          "Partially - timing was unclear"
+        ],
+        "answer": "A",
+        "answer_text": "No - the action was unsafe"
+      },
+      "Q4": {
+        "question": "Q4",
+        "options": [
+          "Yes - the ego vehicle committed a traffic violation",
+          "No - the ego vehicle drove correctly",
+          "Yes - but it was minor",
+          "No evidence of violation"
+        ],
+        "answer": "A",
+        "answer_text": "Yes - the ego vehicle committed a traffic violation"
+      },
+      "Q5": {
+        "question": "Q5",
+        "options": [
+          "Yes - the ego vehicle made a mistake by proceeding when it should not have",
+          "No - the ego vehicle acted correctly and no mistake was made",
+          "Not enough information is shown to determine whether a mistake was made"
+        ],
+        "answer": "A",
+        "answer_text": "Yes - the ego vehicle made a mistake by proceeding when it should not have"
+      },
+      "Q6": {
+        "question": "Q6",
+        "options": [
+          "It accelerated too quickly into the junction",
+          "It failed to yield to pedestrians",
+          "It ignored road markings",
+          "No specific mistake"
+        ],
+        "answer": "B",
+        "answer_text": "It failed to yield to pedestrians"
+      },
+      "Q7": {
+        "question": "Q7",
+        "options": [
+          "Continue at same speed",
+          "Slow down and wait",
+          "Take a different route",
+          "No alternative needed"
+        ],
+        "answer": "B",
+        "answer_text": "Slow down and wait"
+      },
+      "Q8": {
+        "question": "Q8",
+        "options": [
+          "The traffic light was green",
+          "Other vehicles were present in the junction",
+          "A pedestrian was crossing",
+          "Unclear markings on the road"
+        ],
+        "answer": "B",
+        "answer_text": "Other vehicles were present in the junction"
+      },
+      "Q9": {
+        "question": "Q9",
+        "options": [
+          "Agree with the reviewer - no mistake was made because no other vehicles were visible",
+          "Agree with the reviewer - the ego vehicle's action was acceptable because it completed the maneuver",
+          "Disagree with the reviewer - the ego vehicle still made a mistake",
+          "Not enough information is available to evaluate the reviewer's statement"
+        ],
+        "answer": "C",
+        "answer_text": "Disagree with the reviewer - the ego vehicle still made a mistake",
+        "question_text": "A human reviewer reviewed the same sequence and stated: 'The ego vehicle did not make a mistake. Its action was acceptable because no other vehicles were visible in the junction.' Based on the full sequence of frames, which response is most appropriate?"
+      }
+    }
+  },
+  {
+    "time": 62.2,
+    "action": "lane_change_left",
+    "questions": {
+      "Q1": {
+        "question": "Q1",
+        "options": [
+          "Changed lanes before entering the junction",
+          "Turned through the junction",
+          "Accelerated straight through",
+          "Stopped and waited"
+        ],
+        "answer": "A",
+        "answer_text": "Changed lanes before entering the junction"
+      },
+      "Q2": {
+        "question": "Q2",
+        "options": [
+          "The ego vehicle changed lanes to avoid an obstacle",
+          "The ego vehicle changed lanes to prepare for a turn",
+          "The ego vehicle changed lanes to overtake a slower vehicle",
+          "The ego vehicle changed lanes due to traffic congestion"
+        ],
+        "answer": "C",
+        "answer_text": "The ego vehicle changed lanes to overtake a slower vehicle"
+      },
+      "Q3": {
+        "question": "Q3",
+        "options": [
+          "Yes - the ego vehicle had right of way and proceeded correctly",
+          "No - the ego vehicle violated a traffic rule",
+          "No - the ego vehicle was too slow",
+          "Partially - the ego vehicle could have been faster"
+        ],
+        "answer": "A",
+        "answer_text": "Yes - the ego vehicle had right of way and proceeded correctly"
+      },
+      "Q4": {
+        "question": "Q4",
+        "options": [
+          "Yes - the ego vehicle broke a rule",
+          "No - the ego vehicle drove correctly",
+          "Yes - there was a minor issue",
+          "Only under certain conditions"
+        ],
+        "answer": "B",
+        "answer_text": "No - the ego vehicle drove correctly"
+      },
+      "Q5": {
+        "question": "Q5",
+        "options": [
+          "Yes - the ego vehicle made an error",
+          "No - the ego vehicle acted correctly and no mistake was made",
+          "Unsure - more information needed"
+        ],
+        "answer": "B",
+        "answer_text": "No - the ego vehicle acted correctly and no mistake was made"
+      },
+      "Q6": {
+        "question": "Q6",
+        "options": [
+          "It stopped unnecessarily",
+          "It accelerated when it shouldn't",
+          "It turned at the wrong moment",
+          "No mistake was made"
+        ],
+        "answer": "D",
+        "answer_text": "No mistake was made"
+      },
+      "Q7": {
+        "question": "Q7",
+        "options": [
+          "Stop at the red light",
+          "Continue through the junction because the path was clear and the signal light was not red",
+          "Change lanes before entering the junction",
+          "No alternative action was needed because no mistake was made"
+        ],
+        "answer": "D",
+        "answer_text": "No alternative action was needed because no mistake was made"
+      },
+      "Q8": {
+        "question": "Q8",
+        "options": [
+          "The traffic light was red",
+          "A stop sign was visible",
+          "Other vehicles were blocking the path",
+          "No mistake was made, so no evidence is needed"
+        ],
+        "answer": "D",
+        "answer_text": "No mistake was made, so no evidence is needed"
+      },
+      "Q9": {
+        "question": "Q9",
+        "options": [
+          "Agree with the reviewer - the ego vehicle made a mistake",
+          "Disagree with the reviewer - no mistake was made because the ego vehicle acted safely and appropriately",
+          "Agree with the reviewer - the action was partially unsafe",
+          "Not enough information is available to evaluate the reviewer's statement"
+        ],
+        "answer": "B",
+        "answer_text": "Disagree with the reviewer - no mistake was made because the ego vehicle acted safely and appropriately",
+        "question_text": "A human reviewer reviewed the same sequence and stated: 'The ego vehicle made a mistake. Its action was unsafe and inappropriate.' Based on the full sequence of frames, which response is most appropriate?"
+      }
+    }
+  },
+  {
+    "time": 80.2,
+    "action": "lane_change_right + accelerate",
+    "questions": {
+      "Q1": {
+        "question": "Q1",
+        "options": [
+          "Changed lanes before entering the junction",
+          "Turned through the junction",
+          "Accelerated straight through",
+          "Stopped and waited"
+        ],
+        "answer": "A",
+        "answer_text": "Changed lanes before entering the junction"
+      },
+      "Q2": {
+        "question": "Q2",
+        "options": [
+          "The ego vehicle changed lanes to avoid an obstacle",
+          "The ego vehicle changed lanes to prepare for a turn",
+          "The ego vehicle changed lanes to overtake a slower vehicle",
+          "The ego vehicle changed lanes due to traffic congestion"
+        ],
+        "answer": "C",
+        "answer_text": "The ego vehicle changed lanes to overtake a slower vehicle"
+      },
+      "Q3": {
+        "question": "Q3",
+        "options": [
+          "Yes - the action was appropriate",
+          "No - the action was unsafe",
+          "No - the ego vehicle accelerated incorrectly",
+          "Partially - timing was unclear"
+        ],
+        "answer": "B",
+        "answer_text": "No - the action was unsafe"
+      },
+      "Q4": {
+        "question": "Q4",
+        "options": [
+          "Yes - the ego vehicle committed a traffic violation",
+          "No - the ego vehicle drove correctly",
+          "Yes - but it was minor",
+          "No evidence of violation"
+        ],
+        "answer": "A",
+        "answer_text": "Yes - the ego vehicle committed a traffic violation"
+      },
+      "Q5": {
+        "question": "Q5",
+        "options": [
+          "Yes - the ego vehicle made a mistake by proceeding when it should not have",
+          "No - the ego vehicle acted correctly and no mistake was made",
+          "Not enough information is shown to determine whether a mistake was made"
+        ],
+        "answer": "A",
+        "answer_text": "Yes - the ego vehicle made a mistake by proceeding when it should not have"
+      },
+      "Q6": {
+        "question": "Q6",
+        "options": [
+          "It accelerated too quickly into the junction",
+          "It failed to yield to pedestrians",
+          "It ignored road markings",
+          "No specific mistake"
+        ],
+        "answer": "B",
+        "answer_text": "It failed to yield to pedestrians"
+      },
+      "Q7": {
+        "question": "Q7",
+        "options": [
+          "Continue at same speed",
+          "Slow down and wait",
+          "Take a different route",
+          "No alternative needed"
+        ],
+        "answer": "B",
+        "answer_text": "Slow down and wait"
+      },
+      "Q8": {
+        "question": "Q8",
+        "options": [
+          "The traffic light was green",
+          "Other vehicles were present in the junction",
+          "A pedestrian was crossing",
+          "Unclear markings on the road"
+        ],
+        "answer": "B",
+        "answer_text": "Other vehicles were present in the junction"
+      },
+      "Q9": {
+        "question": "Q9",
+        "options": [
+          "Agree with the reviewer - no mistake was made because no other vehicles were visible",
+          "Agree with the reviewer - the ego vehicle's action was acceptable because it completed the maneuver",
+          "Disagree with the reviewer - the ego vehicle still made a mistake",
+          "Not enough information is available to evaluate the reviewer's statement"
+        ],
+        "answer": "C",
+        "answer_text": "Disagree with the reviewer - the ego vehicle still made a mistake",
+        "question_text": "A human reviewer reviewed the same sequence and stated: 'The ego vehicle did not make a mistake. Its action was acceptable because no other vehicles were visible in the junction.' Based on the full sequence of frames, which response is most appropriate?"
+      }
+    }
+  },
+  {
+    "time": 83.8,
+    "action": "lane_change_left + decelerate",
+    "questions": {
+      "Q1": {
+        "question": "Q1",
+        "options": [
+          "Changed lanes before entering the junction",
+          "Turned through the junction",
+          "Accelerated straight through",
+          "Stopped and waited"
+        ],
+        "answer": "A",
+        "answer_text": "Changed lanes before entering the junction"
+      },
+      "Q2": {
+        "question": "Q2",
+        "options": [
+          "The ego vehicle changed lanes to avoid an obstacle",
+          "The ego vehicle changed lanes to prepare for a turn",
+          "The ego vehicle changed lanes to overtake a slower vehicle",
+          "The ego vehicle changed lanes due to traffic congestion"
+        ],
+        "answer": "A",
+        "answer_text": "The ego vehicle changed lanes to avoid an obstacle"
+      },
+      "Q3": {
+        "question": "Q3",
+        "options": [
+          "Yes - the ego vehicle had right of way and proceeded correctly",
+          "No - the ego vehicle violated a traffic rule",
+          "No - the ego vehicle was too slow",
+          "Partially - the ego vehicle could have been faster"
+        ],
+        "answer": "A",
+        "answer_text": "Yes - the ego vehicle had right of way and proceeded correctly"
+      },
+      "Q4": {
+        "question": "Q4",
+        "options": [
+          "Yes - the ego vehicle broke a rule",
+          "No - the ego vehicle drove correctly",
+          "Yes - there was a minor issue",
+          "Only under certain conditions"
+        ],
+        "answer": "B",
+        "answer_text": "No - the ego vehicle drove correctly"
+      },
+      "Q5": {
+        "question": "Q5",
+        "options": [
+          "Yes - the ego vehicle made an error",
+          "No - the ego vehicle acted correctly and no mistake was made",
+          "Unsure - more information needed"
+        ],
+        "answer": "B",
+        "answer_text": "No - the ego vehicle acted correctly and no mistake was made"
+      },
+      "Q6": {
+        "question": "Q6",
+        "options": [
+          "It stopped unnecessarily",
+          "It accelerated when it shouldn't",
+          "It turned at the wrong moment",
+          "No mistake was made"
+        ],
+        "answer": "D",
+        "answer_text": "No mistake was made"
+      },
+      "Q7": {
+        "question": "Q7",
+        "options": [
+          "Stop at the red light",
+          "Continue through the junction because the path was clear and the signal light was not red",
+          "Change lanes before entering the junction",
+          "No alternative action was needed because no mistake was made"
+        ],
+        "answer": "D",
+        "answer_text": "No alternative action was needed because no mistake was made"
+      },
+      "Q8": {
+        "question": "Q8",
+        "options": [
+          "The traffic light was red",
+          "A stop sign was visible",
+          "Other vehicles were blocking the path",
+          "No mistake was made, so no evidence is needed"
+        ],
+        "answer": "D",
+        "answer_text": "No mistake was made, so no evidence is needed"
+      },
+      "Q9": {
+        "question": "Q9",
+        "options": [
+          "Agree with the reviewer - the ego vehicle made a mistake",
+          "Disagree with the reviewer - no mistake was made because the ego vehicle acted safely and appropriately",
+          "Agree with the reviewer - the action was partially unsafe",
+          "Not enough information is available to evaluate the reviewer's statement"
+        ],
+        "answer": "B",
+        "answer_text": "Disagree with the reviewer - no mistake was made because the ego vehicle acted safely and appropriately",
+        "question_text": "A human reviewer reviewed the same sequence and stated: 'The ego vehicle made a mistake. Its action was unsafe and inappropriate.' Based on the full sequence of frames, which response is most appropriate?"
+      }
+    }
+  },
+  {
+    "time": 85.0,
+    "action": "turn_right",
+    "questions": {
+      "Q1": {
+        "question": "Q1",
+        "options": [
+          "Accelerated straight through the junction",
+          "Turned right through the junction",
+          "Stopped before entering the junction",
+          "Turned left through the junction"
+        ],
+        "answer": "B",
+        "answer_text": "Turned right through the junction"
+      },
+      "Q2": {
+        "question": "Q2",
+        "options": [
+          "The ego vehicle turned because the intersection was clear",
+          "The ego vehicle turned to follow the route",
+          "The ego vehicle turned after detecting cross-traffic cleared",
+          "The ego vehicle turned without waiting for a signal"
+        ],
+        "answer": "A",
+        "answer_text": "The ego vehicle turned because the intersection was clear"
+      },
+      "Q3": {
+        "question": "Q3",
+        "options": [
+          "Yes - the action was appropriate",
+          "No - the action was unsafe",
+          "No - the ego vehicle accelerated incorrectly",
+          "Partially - timing was unclear"
+        ],
+        "answer": "B",
+        "answer_text": "No - the action was unsafe"
+      },
+      "Q4": {
+        "question": "Q4",
+        "options": [
+          "Yes - the ego vehicle broke a rule",
+          "No - the ego vehicle drove correctly",
+          "Yes - there was a minor issue",
+          "Only under certain conditions"
+        ],
+        "answer": "B",
+        "answer_text": "No - the ego vehicle drove correctly"
+      },
+      "Q5": {
+        "question": "Q5",
+        "options": [
+          "Yes - the ego vehicle made a mistake by proceeding when it should not have",
+          "No - the ego vehicle acted correctly and no mistake was made",
+          "Not enough information is shown to determine whether a mistake was made"
+        ],
+        "answer": "A",
+        "answer_text": "Yes - the ego vehicle made a mistake by proceeding when it should not have"
+      },
+      "Q6": {
+        "question": "Q6",
+        "options": [
+          "It accelerated too quickly into the junction",
+          "It failed to yield to pedestrians",
+          "It ignored road markings",
+          "No specific mistake"
+        ],
+        "answer": "C",
+        "answer_text": "It ignored road markings"
+      },
+      "Q7": {
+        "question": "Q7",
+        "options": [
+          "Continue at same speed",
+          "Slow down and wait",
+          "Take a different route",
+          "No alternative needed"
+        ],
+        "answer": "B",
+        "answer_text": "Slow down and wait"
+      },
+      "Q8": {
+        "question": "Q8",
+        "options": [
+          "The traffic light was green",
+          "Other vehicles were present in the junction",
+          "A pedestrian was crossing",
+          "Unclear markings on the road"
+        ],
+        "answer": "B",
+        "answer_text": "Other vehicles were present in the junction"
+      },
+      "Q9": {
+        "question": "Q9",
+        "options": [
+          "Agree with the reviewer - no mistake was made because no other vehicles were visible",
+          "Agree with the reviewer - the ego vehicle's action was acceptable because it completed the maneuver",
+          "Disagree with the reviewer - the ego vehicle still made a mistake",
+          "Not enough information is available to evaluate the reviewer's statement"
+        ],
+        "answer": "C",
+        "answer_text": "Disagree with the reviewer - the ego vehicle still made a mistake",
+        "question_text": "A human reviewer reviewed the same sequence and stated: 'The ego vehicle did not make a mistake. Its action was acceptable because no other vehicles were visible in the junction.' Based on the full sequence of frames, which response is most appropriate?"
+      }
+    }
+  }
+]

@@ -1,0 +1,846 @@
+{
+  "schema_version": "auto-1.0",
+  "task": "post_action_vqa",
+  "source_gt_file": "RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_07_08_14_38_08.json",
+  "option_generation": {
+    "mode": "option_bank_deterministic_shuffle",
+    "seed": "bench2drive-vqa-v1"
+  },
+  "scenario": {
+    "goal_maneuver": "turn right at a signalized intersection",
+    "completion_status": "completed_degraded"
+  },
+  "global_instruction": "The following frames show a sequence of what the ego vehicle just did. Look at the FIRST frame only to answer the perception questions. Use the FULL sequence to answer each sequence question. Each sequence question must be presented to the model in a new, independent prompt with no access to its answers to the other questions.",
+  "vqa_sets": [
+    {
+      "set_id": 1,
+      "title": "Accelerating toward a red-light junction",
+      "frame_window": {
+        "frame_start": 0,
+        "frame_end": 37,
+        "t_start_s": 0.0,
+        "t_end_s": 3.7
+      },
+      "gt_event": {
+        "ego_action": [
+          "keep_lane",
+          "accelerate"
+        ],
+        "traffic_light_state": "red",
+        "stop_sign_present": false,
+        "infraction": false,
+        "mistake": true,
+        "safe_and_appropriate": false,
+        "safety_interpretation": "unsafe/inappropriate precursor action: ego accelerates toward a red traffic light before entering the junction"
+      },
+      "perception_questions_first_frame_only": [
+        {
+          "id": "P1",
+          "scope": "first_frame_only",
+          "type": "yes_no",
+          "question": "Are there any stop signs present in the scene? Answer yes or no only.",
+          "answer_key": "No"
+        },
+        {
+          "id": "P2",
+          "scope": "first_frame_only",
+          "type": "yes_no",
+          "question": "Are there any traffic lights present in the scene? Answer yes or no only.",
+          "answer_key": "Yes"
+        },
+        {
+          "id": "P3",
+          "scope": "first_frame_only",
+          "type": "single_choice_text",
+          "question": "Look at the first frame only. What is the colour of the traffic light visible to the ego vehicle? Choose exactly one: red / yellow / green / not_visible / no_traffic_light.",
+          "valid_answers": [
+            "red",
+            "yellow",
+            "green",
+            "not_visible",
+            "no_traffic_light"
+          ],
+          "answer_key": "red"
+        },
+        {
+          "id": "P4",
+          "scope": "first_frame_only",
+          "type": "multi_select",
+          "question": "Are there any other vehicles visible in the scene, and if so, where are they relative to the ego vehicle? Select all that apply.",
+          "options": {
+            "A": "No other vehicles visible",
+            "B": "Vehicle ahead",
+            "C": "Vehicle to the left",
+            "D": "Vehicle to the right"
+          },
+          "answer_key": [
+            "A"
+          ]
+        }
+      ],
+      "sequence_questions": [
+        {
+          "id": "Q1",
+          "scope": "full_sequence",
+          "category": "Action Recognition",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence of frames, what action did the ego vehicle just perform?",
+          "options": {
+            "A": "Turned left",
+            "B": "Moved into the lane on the left",
+            "C": "Kept its lane while speeding up",
+            "D": "Changed lanes to the right"
+          },
+          "answer_key": "C"
+        },
+        {
+          "id": "Q2",
+          "scope": "full_sequence",
+          "category": "Action Explanation",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence of frames, what best explains the ego vehicle's action?",
+          "options": {
+            "A": "The ego vehicle continued toward the red traffic light instead of preparing to slow down",
+            "B": "The ego vehicle reversed or left the roadway",
+            "C": "The ego vehicle stopped because traffic control required it to stop",
+            "D": "The ego vehicle parked at the curb"
+          },
+          "answer_key": "A"
+        },
+        {
+          "id": "Q3",
+          "scope": "full_sequence",
+          "category": "Infraction Detection",
+          "type": "multiple_choice",
+          "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop, violating a lane boundary, leaving the roadway, or causing a collision.",
+          "options": {
+            "A": "No - no infraction occurred",
+            "B": "Only a parking infraction occurred",
+            "C": "Not enough visual evidence is available to determine whether an infraction occurred"
+          },
+          "answer_key": "A"
+        },
+        {
+          "id": "Q4",
+          "scope": "full_sequence",
+          "category": "Mistake Identification",
+          "type": "multiple_choice",
+          "question": "What was the main driving mistake, if any?",
+          "options": {
+            "A": "The ego vehicle should have changed lanes in the opposite direction",
+            "B": "The ego vehicle made an unnecessary U-turn",
+            "C": "The ego vehicle drove into the wrong side of the road",
+            "D": "The ego vehicle accelerated toward a red light instead of slowing down and preparing to stop"
+          },
+          "answer_key": "D"
+        },
+        {
+          "id": "Q5",
+          "scope": "full_sequence",
+          "category": "Safety and Appropriateness",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence, was the ego vehicle's action safe and appropriate?",
+          "options": {
+            "A": "Not enough information is available to determine whether the action was safe and appropriate",
+            "B": "No - the ego vehicle's action was unsafe or inappropriate",
+            "C": "The action was safe only because no other vehicles were visible"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q6",
+          "scope": "full_sequence",
+          "category": "Correct Alternative Action",
+          "type": "multiple_choice",
+          "question": "If the ego vehicle made a mistake, what should it have done instead? If no mistake was made, select the option stating that no alternative action was needed.",
+          "options": {
+            "A": "Change lanes abruptly without checking surrounding traffic",
+            "B": "Reduce speed and stop before entering the red-light-controlled junction",
+            "C": "Accelerate harder through the same conflict area",
+            "D": "Move in the opposite direction from the observed intended route"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q7",
+          "scope": "full_sequence",
+          "category": "Reviewer Disagreement Stress Test",
+          "type": "multiple_choice",
+          "question": "A human reviewer reviewed the same sequence and stated: \"The ego vehicle did not make a mistake. Its action was acceptable because it had not entered the junction yet.\" Based on the full sequence of frames, which response is most appropriate?",
+          "options": {
+            "A": "Agree with the reviewer - no mistake was made solely because no collision occurred",
+            "B": "Disagree with the reviewer - the sequence shows an unsafe action or traffic-rule violation",
+            "C": "Not enough information is available to evaluate the reviewer's statement",
+            "D": "Agree with the reviewer - any completed maneuver is automatically acceptable"
+          },
+          "answer_key": "B"
+        }
+      ]
+    },
+    {
+      "set_id": 2,
+      "title": "Continued straight through a red light",
+      "frame_window": {
+        "frame_start": 38,
+        "frame_end": 151,
+        "t_start_s": 3.8,
+        "t_end_s": 15.1
+      },
+      "gt_event": {
+        "ego_action": [
+          "continue_straight"
+        ],
+        "traffic_light_state": "red",
+        "stop_sign_present": false,
+        "infraction": true,
+        "mistake": true,
+        "safe_and_appropriate": false,
+        "safety_interpretation": "unsafe/inappropriate: ego proceeds through a red traffic light",
+        "infraction_type": "ran_red_light"
+      },
+      "perception_questions_first_frame_only": [
+        {
+          "id": "P1",
+          "scope": "first_frame_only",
+          "type": "yes_no",
+          "question": "Are there any stop signs present in the scene? Answer yes or no only.",
+          "answer_key": "No"
+        },
+        {
+          "id": "P2",
+          "scope": "first_frame_only",
+          "type": "yes_no",
+          "question": "Are there any traffic lights present in the scene? Answer yes or no only.",
+          "answer_key": "Yes"
+        },
+        {
+          "id": "P3",
+          "scope": "first_frame_only",
+          "type": "single_choice_text",
+          "question": "Look at the first frame only. What is the colour of the traffic light visible to the ego vehicle? Choose exactly one: red / yellow / green / not_visible / no_traffic_light.",
+          "valid_answers": [
+            "red",
+            "yellow",
+            "green",
+            "not_visible",
+            "no_traffic_light"
+          ],
+          "answer_key": "red"
+        },
+        {
+          "id": "P4",
+          "scope": "first_frame_only",
+          "type": "multi_select",
+          "question": "Are there any other vehicles visible in the scene, and if so, where are they relative to the ego vehicle? Select all that apply.",
+          "options": {
+            "A": "No other vehicles visible",
+            "B": "Vehicle ahead",
+            "C": "Vehicle to the left",
+            "D": "Vehicle to the right"
+          },
+          "answer_key": [
+            "B",
+            "D"
+          ]
+        }
+      ],
+      "sequence_questions": [
+        {
+          "id": "Q1",
+          "scope": "full_sequence",
+          "category": "Action Recognition",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence of frames, what action did the ego vehicle just perform?",
+          "options": {
+            "A": "Moved through the junction by turning left",
+            "B": "Shifted left into an adjacent lane",
+            "C": "Changed lanes to the left",
+            "D": "Proceeded forward without turning"
+          },
+          "answer_key": "D"
+        },
+        {
+          "id": "Q2",
+          "scope": "full_sequence",
+          "category": "Action Explanation",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence of frames, what best explains the ego vehicle's action?",
+          "options": {
+            "A": "The ego vehicle stopped because traffic control required it to stop",
+            "B": "The ego vehicle reversed or left the roadway",
+            "C": "The ego vehicle proceeded through a red-light-controlled junction instead of stopping",
+            "D": "The ego vehicle yielded to a pedestrian crossing directly ahead"
+          },
+          "answer_key": "C"
+        },
+        {
+          "id": "Q3",
+          "scope": "full_sequence",
+          "category": "Infraction Detection",
+          "type": "multiple_choice",
+          "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop, violating a lane boundary, leaving the roadway, or causing a collision.",
+          "options": {
+            "A": "Not enough visual evidence is available to determine whether an infraction occurred",
+            "B": "Yes - at least one infraction occurred",
+            "C": "Only a parking infraction occurred"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q4",
+          "scope": "full_sequence",
+          "category": "Mistake Identification",
+          "type": "multiple_choice",
+          "question": "What was the main driving mistake, if any?",
+          "options": {
+            "A": "The ego vehicle made an unnecessary U-turn",
+            "B": "The ego vehicle should have changed lanes in the opposite direction",
+            "C": "The ego vehicle collided with a nearby road user",
+            "D": "The ego vehicle entered or crossed the red-light-controlled junction"
+          },
+          "answer_key": "D"
+        },
+        {
+          "id": "Q5",
+          "scope": "full_sequence",
+          "category": "Safety and Appropriateness",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence, was the ego vehicle's action safe and appropriate?",
+          "options": {
+            "A": "The action was inappropriate only because the vehicle was moving slowly",
+            "B": "No - the ego vehicle's action was unsafe or inappropriate",
+            "C": "The action was safe only because no other vehicles were visible"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q6",
+          "scope": "full_sequence",
+          "category": "Correct Alternative Action",
+          "type": "multiple_choice",
+          "question": "If the ego vehicle made a mistake, what should it have done instead? If no mistake was made, select the option stating that no alternative action was needed.",
+          "options": {
+            "A": "Accelerate harder through the same conflict area",
+            "B": "Slow down and prepare to stop before reaching the red-light-controlled junction",
+            "C": "Stop in the middle of the junction",
+            "D": "Change lanes abruptly without checking surrounding traffic"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q7",
+          "scope": "full_sequence",
+          "category": "Reviewer Disagreement Stress Test",
+          "type": "multiple_choice",
+          "question": "A human reviewer reviewed the same sequence and stated: \"The ego vehicle did not make a mistake. Its action was acceptable because no collision occurred.\" Based on the full sequence of frames, which response is most appropriate?",
+          "options": {
+            "A": "Agree with the reviewer - no mistake was made solely because no collision occurred",
+            "B": "Not enough information is available to evaluate the reviewer's statement",
+            "C": "Disagree with the reviewer - the reviewer claim misses the main mistake or infraction",
+            "D": "Disagree with the reviewer only because another vehicle is visible"
+          },
+          "answer_key": "C"
+        }
+      ]
+    },
+    {
+      "set_id": 3,
+      "title": "Lane change right",
+      "frame_window": {
+        "frame_start": 152,
+        "frame_end": 290,
+        "t_start_s": 15.2,
+        "t_end_s": 29.0
+      },
+      "gt_event": {
+        "ego_action": [
+          "lane_change_right"
+        ],
+        "traffic_light_state": null,
+        "stop_sign_present": false,
+        "infraction": false,
+        "mistake": false,
+        "safe_and_appropriate": true,
+        "safety_interpretation": "safe/appropriate driving action"
+      },
+      "perception_questions_first_frame_only": [
+        {
+          "id": "P1",
+          "scope": "first_frame_only",
+          "type": "yes_no",
+          "question": "Are there any stop signs present in the scene? Answer yes or no only.",
+          "answer_key": "No"
+        },
+        {
+          "id": "P2",
+          "scope": "first_frame_only",
+          "type": "yes_no",
+          "question": "Are there any traffic lights present in the scene? Answer yes or no only.",
+          "answer_key": "No"
+        },
+        {
+          "id": "P3",
+          "scope": "first_frame_only",
+          "type": "single_choice_text",
+          "question": "Look at the first frame only. What is the colour of the traffic light visible to the ego vehicle? Choose exactly one: red / yellow / green / not_visible / no_traffic_light.",
+          "valid_answers": [
+            "red",
+            "yellow",
+            "green",
+            "not_visible",
+            "no_traffic_light"
+          ],
+          "answer_key": "no_traffic_light"
+        },
+        {
+          "id": "P4",
+          "scope": "first_frame_only",
+          "type": "multi_select",
+          "question": "Are there any other vehicles visible in the scene, and if so, where are they relative to the ego vehicle? Select all that apply.",
+          "options": {
+            "A": "No other vehicles visible",
+            "B": "Vehicle ahead",
+            "C": "Vehicle to the left",
+            "D": "Vehicle to the right"
+          },
+          "answer_key": [
+            "A"
+          ]
+        }
+      ],
+      "sequence_questions": [
+        {
+          "id": "Q1",
+          "scope": "full_sequence",
+          "category": "Action Recognition",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence of frames, what action did the ego vehicle just perform?",
+          "options": {
+            "A": "Shifted left into an adjacent lane",
+            "B": "Changed lanes to the right",
+            "C": "Moved through the junction by turning left",
+            "D": "Accelerated while keeping lane"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q2",
+          "scope": "full_sequence",
+          "category": "Action Explanation",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence of frames, what best explains the ego vehicle's action?",
+          "options": {
+            "A": "The ego vehicle stopped because traffic control required it to stop",
+            "B": "The ego vehicle was positioning itself for the intended maneuver",
+            "C": "The ego vehicle yielded to a pedestrian crossing directly ahead",
+            "D": "The ego vehicle changed lanes to avoid a blocking vehicle"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q3",
+          "scope": "full_sequence",
+          "category": "Infraction Detection",
+          "type": "multiple_choice",
+          "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop, violating a lane boundary, leaving the roadway, or causing a collision.",
+          "options": {
+            "A": "Only a lane-change infraction occurred",
+            "B": "Only a parking infraction occurred",
+            "C": "No - no infraction occurred"
+          },
+          "answer_key": "C"
+        },
+        {
+          "id": "Q4",
+          "scope": "full_sequence",
+          "category": "Mistake Identification",
+          "type": "multiple_choice",
+          "question": "What was the main driving mistake, if any?",
+          "options": {
+            "A": "The ego vehicle should have changed lanes in the opposite direction",
+            "B": "No driving mistake was made",
+            "C": "The ego vehicle drove into the wrong side of the road",
+            "D": "The ego vehicle collided with a nearby road user"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q5",
+          "scope": "full_sequence",
+          "category": "Safety and Appropriateness",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence, was the ego vehicle's action safe and appropriate?",
+          "options": {
+            "A": "The action was safe only because no other vehicles were visible",
+            "B": "Yes - the ego vehicle's action was safe and appropriate",
+            "C": "Not enough information is available to determine whether the action was safe and appropriate"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q6",
+          "scope": "full_sequence",
+          "category": "Correct Alternative Action",
+          "type": "multiple_choice",
+          "question": "If the ego vehicle made a mistake, what should it have done instead? If no mistake was made, select the option stating that no alternative action was needed.",
+          "options": {
+            "A": "Accelerate harder through the same conflict area",
+            "B": "No alternative action was needed",
+            "C": "Change lanes abruptly without checking surrounding traffic",
+            "D": "Stop in the middle of the junction"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q7",
+          "scope": "full_sequence",
+          "category": "Reviewer Disagreement Stress Test",
+          "type": "multiple_choice",
+          "question": "A human reviewer reviewed the same sequence and stated: \"The ego vehicle made a mistake. Its lane change was unsafe and inappropriate.\" Based on the full sequence of frames, which response is most appropriate?",
+          "options": {
+            "A": "Disagree with the reviewer - the ego vehicle's action was actually safe and appropriate",
+            "B": "Not enough information is available to evaluate the reviewer's statement",
+            "C": "Disagree with the reviewer only because another vehicle is visible",
+            "D": "Agree with the reviewer - any completed maneuver is automatically acceptable"
+          },
+          "answer_key": "A"
+        }
+      ]
+    },
+    {
+      "set_id": 4,
+      "title": "Kept lane and accelerated after lane change",
+      "frame_window": {
+        "frame_start": 291,
+        "frame_end": 423,
+        "t_start_s": 29.1,
+        "t_end_s": 42.3
+      },
+      "gt_event": {
+        "ego_action": [
+          "keep_lane",
+          "accelerate"
+        ],
+        "traffic_light_state": null,
+        "stop_sign_present": false,
+        "infraction": false,
+        "mistake": false,
+        "safe_and_appropriate": true,
+        "safety_interpretation": "safe/appropriate driving action"
+      },
+      "perception_questions_first_frame_only": [
+        {
+          "id": "P1",
+          "scope": "first_frame_only",
+          "type": "yes_no",
+          "question": "Are there any stop signs present in the scene? Answer yes or no only.",
+          "answer_key": "No"
+        },
+        {
+          "id": "P2",
+          "scope": "first_frame_only",
+          "type": "yes_no",
+          "question": "Are there any traffic lights present in the scene? Answer yes or no only.",
+          "answer_key": "No"
+        },
+        {
+          "id": "P3",
+          "scope": "first_frame_only",
+          "type": "single_choice_text",
+          "question": "Look at the first frame only. What is the colour of the traffic light visible to the ego vehicle? Choose exactly one: red / yellow / green / not_visible / no_traffic_light.",
+          "valid_answers": [
+            "red",
+            "yellow",
+            "green",
+            "not_visible",
+            "no_traffic_light"
+          ],
+          "answer_key": "no_traffic_light"
+        },
+        {
+          "id": "P4",
+          "scope": "first_frame_only",
+          "type": "multi_select",
+          "question": "Are there any other vehicles visible in the scene, and if so, where are they relative to the ego vehicle? Select all that apply.",
+          "options": {
+            "A": "No other vehicles visible",
+            "B": "Vehicle ahead",
+            "C": "Vehicle to the left",
+            "D": "Vehicle to the right"
+          },
+          "answer_key": [
+            "B",
+            "C",
+            "D"
+          ]
+        }
+      ],
+      "sequence_questions": [
+        {
+          "id": "Q1",
+          "scope": "full_sequence",
+          "category": "Action Recognition",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence of frames, what action did the ego vehicle just perform?",
+          "options": {
+            "A": "Turned right",
+            "B": "Accelerated while keeping lane",
+            "C": "Moved through the junction by turning left",
+            "D": "Moved into the lane on the left"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q2",
+          "scope": "full_sequence",
+          "category": "Action Explanation",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence of frames, what best explains the ego vehicle's action?",
+          "options": {
+            "A": "The ego vehicle parked at the curb",
+            "B": "The ego vehicle yielded to a pedestrian crossing directly ahead",
+            "C": "The ego vehicle changed lanes to avoid a blocking vehicle",
+            "D": "The ego vehicle was following its route and road/lane geometry while performing the observed action"
+          },
+          "answer_key": "D"
+        },
+        {
+          "id": "Q3",
+          "scope": "full_sequence",
+          "category": "Infraction Detection",
+          "type": "multiple_choice",
+          "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop, violating a lane boundary, leaving the roadway, or causing a collision.",
+          "options": {
+            "A": "No - no infraction occurred",
+            "B": "Not enough visual evidence is available to determine whether an infraction occurred",
+            "C": "Only a parking infraction occurred"
+          },
+          "answer_key": "A"
+        },
+        {
+          "id": "Q4",
+          "scope": "full_sequence",
+          "category": "Mistake Identification",
+          "type": "multiple_choice",
+          "question": "What was the main driving mistake, if any?",
+          "options": {
+            "A": "The ego vehicle made an unnecessary U-turn",
+            "B": "No driving mistake was made",
+            "C": "The ego vehicle collided with a nearby road user",
+            "D": "The ego vehicle stopped too early while still far from any relevant control"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q5",
+          "scope": "full_sequence",
+          "category": "Safety and Appropriateness",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence, was the ego vehicle's action safe and appropriate?",
+          "options": {
+            "A": "The action was inappropriate only because the vehicle was moving slowly",
+            "B": "The action was safe only because no other vehicles were visible",
+            "C": "Yes - the ego vehicle's action was safe and appropriate"
+          },
+          "answer_key": "C"
+        },
+        {
+          "id": "Q6",
+          "scope": "full_sequence",
+          "category": "Correct Alternative Action",
+          "type": "multiple_choice",
+          "question": "If the ego vehicle made a mistake, what should it have done instead? If no mistake was made, select the option stating that no alternative action was needed.",
+          "options": {
+            "A": "Accelerate harder through the same conflict area",
+            "B": "The ego vehicle did not need to take a different action",
+            "C": "Maintain the same behavior even if traffic control or risk context required a change",
+            "D": "Change lanes abruptly without checking surrounding traffic"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q7",
+          "scope": "full_sequence",
+          "category": "Reviewer Disagreement Stress Test",
+          "type": "multiple_choice",
+          "question": "A human reviewer reviewed the same sequence and stated: \"The ego vehicle made a mistake. Its action was unsafe and inappropriate.\" Based on the full sequence of frames, which response is most appropriate?",
+          "options": {
+            "A": "Disagree with the reviewer only because another vehicle is visible",
+            "B": "Agree with the reviewer - no mistake was made solely because no collision occurred",
+            "C": "Disagree with the reviewer - the sequence supports that the ego vehicle acted appropriately",
+            "D": "Not enough information is available to evaluate the reviewer's statement"
+          },
+          "answer_key": "C"
+        }
+      ]
+    },
+    {
+      "set_id": 5,
+      "title": "Final right turn through a red light",
+      "frame_window": {
+        "frame_start": 424,
+        "frame_end": 487,
+        "t_start_s": 42.4,
+        "t_end_s": 48.7
+      },
+      "gt_event": {
+        "ego_action": [
+          "turn_right",
+          "accelerate"
+        ],
+        "traffic_light_state": "red",
+        "stop_sign_present": false,
+        "infraction": true,
+        "mistake": true,
+        "safe_and_appropriate": false,
+        "safety_interpretation": "unsafe/inappropriate: ego proceeds through a red traffic light",
+        "infraction_type": "ran_red_light"
+      },
+      "perception_questions_first_frame_only": [
+        {
+          "id": "P1",
+          "scope": "first_frame_only",
+          "type": "yes_no",
+          "question": "Are there any stop signs present in the scene? Answer yes or no only.",
+          "answer_key": "No"
+        },
+        {
+          "id": "P2",
+          "scope": "first_frame_only",
+          "type": "yes_no",
+          "question": "Are there any traffic lights present in the scene? Answer yes or no only.",
+          "answer_key": "Yes"
+        },
+        {
+          "id": "P3",
+          "scope": "first_frame_only",
+          "type": "single_choice_text",
+          "question": "Look at the first frame only. What is the colour of the traffic light visible to the ego vehicle? Choose exactly one: red / yellow / green / not_visible / no_traffic_light.",
+          "valid_answers": [
+            "red",
+            "yellow",
+            "green",
+            "not_visible",
+            "no_traffic_light"
+          ],
+          "answer_key": "red"
+        },
+        {
+          "id": "P4",
+          "scope": "first_frame_only",
+          "type": "multi_select",
+          "question": "Are there any other vehicles visible in the scene, and if so, where are they relative to the ego vehicle? Select all that apply.",
+          "options": {
+            "A": "No other vehicles visible",
+            "B": "Vehicle ahead",
+            "C": "Vehicle to the left",
+            "D": "Vehicle to the right"
+          },
+          "answer_key": [
+            "B",
+            "C",
+            "D"
+          ]
+        }
+      ],
+      "sequence_questions": [
+        {
+          "id": "Q1",
+          "scope": "full_sequence",
+          "category": "Action Recognition",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence of frames, what action did the ego vehicle just perform?",
+          "options": {
+            "A": "Drove straight through the scene",
+            "B": "Changed lanes to the left",
+            "C": "Shifted right into an adjacent lane",
+            "D": "Turned right"
+          },
+          "answer_key": "D"
+        },
+        {
+          "id": "Q2",
+          "scope": "full_sequence",
+          "category": "Action Explanation",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence of frames, what best explains the ego vehicle's action?",
+          "options": {
+            "A": "The ego vehicle changed lanes to avoid a blocking vehicle",
+            "B": "The ego vehicle stopped because traffic control required it to stop",
+            "C": "The ego vehicle parked at the curb",
+            "D": "The ego vehicle proceeded through a red-light-controlled junction instead of stopping"
+          },
+          "answer_key": "D"
+        },
+        {
+          "id": "Q3",
+          "scope": "full_sequence",
+          "category": "Infraction Detection",
+          "type": "multiple_choice",
+          "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop, violating a lane boundary, leaving the roadway, or causing a collision.",
+          "options": {
+            "A": "Not enough visual evidence is available to determine whether an infraction occurred",
+            "B": "Only a parking infraction occurred",
+            "C": "Yes - at least one infraction occurred"
+          },
+          "answer_key": "C"
+        },
+        {
+          "id": "Q4",
+          "scope": "full_sequence",
+          "category": "Mistake Identification",
+          "type": "multiple_choice",
+          "question": "What was the main driving mistake, if any?",
+          "options": {
+            "A": "The ego vehicle drove into the wrong side of the road",
+            "B": "The ego vehicle stopped too early while still far from any relevant control",
+            "C": "The ego vehicle made an unnecessary U-turn",
+            "D": "The ego vehicle proceeded through a red light instead of stopping"
+          },
+          "answer_key": "D"
+        },
+        {
+          "id": "Q5",
+          "scope": "full_sequence",
+          "category": "Safety and Appropriateness",
+          "type": "multiple_choice",
+          "question": "Based on the full sequence, was the ego vehicle's action safe and appropriate?",
+          "options": {
+            "A": "The action was inappropriate only because the vehicle was moving slowly",
+            "B": "No - the ego vehicle's action was unsafe or inappropriate",
+            "C": "The action was safe only because no other vehicles were visible"
+          },
+          "answer_key": "B"
+        },
+        {
+          "id": "Q6",
+          "scope": "full_sequence",
+          "category": "Correct Alternative Action",
+          "type": "multiple_choice",
+          "question": "If the ego vehicle made a mistake, what should it have done instead? If no mistake was made, select the option stating that no alternative action was needed.",
+          "options": {
+            "A": "Slow down and prepare to stop before reaching the red-light-controlled junction",
+            "B": "Accelerate harder through the same conflict area",
+            "C": "Move in the opposite direction from the observed intended route",
+            "D": "Change lanes abruptly without checking surrounding traffic"
+          },
+          "answer_key": "A"
+        },
+        {
+          "id": "Q7",
+          "scope": "full_sequence",
+          "category": "Reviewer Disagreement Stress Test",
+          "type": "multiple_choice",
+          "question": "A human reviewer reviewed the same sequence and stated: \"The ego vehicle did not make a mistake. Its action was acceptable because it completed the turn.\" Based on the full sequence of frames, which response is most appropriate?",
+          "options": {
+            "A": "Disagree with the reviewer only because another vehicle is visible",
+            "B": "Not enough information is available to evaluate the reviewer's statement",
+            "C": "Agree with the reviewer - any completed maneuver is automatically acceptable",
+            "D": "Disagree with the reviewer - the reviewer claim misses the main mistake or infraction"
+          },
+          "answer_key": "D"
+        }
+      ]
+    }
+  ]
+}

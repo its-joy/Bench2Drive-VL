@@ -110,44 +110,47 @@ class ParkingExit(BasicScenario):
         Custom initialization
         """
 
-        # Spawn the actor in front of the ego
+        # Spawn the actor in front of the ego (optional -- if there's no room, e.g.
+        # static map decoration already occupying the spot, just skip it instead of
+        # aborting the whole scenario; the ego teleport below doesn't depend on it).
         front_points = self._parking_waypoint.next(
             self._front_vehicle_distance)
         if not front_points:
-            raise ValueError("Couldn't find viable position for the vehicle in front of the parking point")
+            print("[ParkingExit] Couldn't find viable position for the vehicle in front of the parking point, skipping it")
+        else:
+            self.parking_slots.append(front_points[0].transform.location)
 
-        self.parking_slots.append(front_points[0].transform.location)
+            actor_front = CarlaDataProvider.request_new_actor(
+                'vehicle.audi.a2', front_points[0].transform, rolename='scenario no lights')
+            if actor_front is None:
+                print("[ParkingExit] Couldn't spawn the vehicle in front of the parking point, skipping it")
+            else:
+                actor_front.apply_control(carla.VehicleControl(hand_brake=True))
+                self.other_actors.append(actor_front)
 
-        actor_front = CarlaDataProvider.request_new_actor(
-            'vehicle.*', front_points[0].transform, rolename='scenario no lights', attribute_filter=self._bp_attributes)
-        if actor_front is None:
-            raise ValueError("Couldn't spawn the vehicle in front of the parking point")
-        actor_front.apply_control(carla.VehicleControl(hand_brake=True))
-        self.other_actors.append(actor_front)
+                # And move it to the side
+                side_location = self._get_displaced_location(actor_front, front_points[0])
+                actor_front.set_location(side_location)
 
-        # And move it to the side
-        side_location = self._get_displaced_location(actor_front, front_points[0])
-        actor_front.set_location(side_location)
-
-        # Spawn the actor behind the ego
+        # Spawn the actor behind the ego (also optional, same reasoning as above)
         behind_points = self._parking_waypoint.previous(
             self._behind_vehicle_distance)
         if not behind_points:
-            raise ValueError("Couldn't find viable position for the vehicle behind the parking point")
+            print("[ParkingExit] Couldn't find viable position for the vehicle behind the parking point, skipping it")
+        else:
+            self.parking_slots.append(behind_points[0].transform.location)
 
-        self.parking_slots.append(behind_points[0].transform.location)
+            actor_behind = CarlaDataProvider.request_new_actor(
+                'vehicle.audi.a2', behind_points[0].transform, rolename='scenario no lights')
+            if actor_behind is None:
+                print("[ParkingExit] Couldn't spawn the vehicle behind the parking point, skipping it")
+            else:
+                actor_behind.apply_control(carla.VehicleControl(hand_brake=True))
+                self.other_actors.append(actor_behind)
 
-        actor_behind = CarlaDataProvider.request_new_actor(
-            'vehicle.*', behind_points[0].transform, rolename='scenario no lights', attribute_filter=self._bp_attributes)
-        if actor_behind is None:
-            actor_front.destroy()
-            raise ValueError("Couldn't spawn the vehicle behind the parking point")
-        actor_behind.apply_control(carla.VehicleControl(hand_brake=True))
-        self.other_actors.append(actor_behind)
-
-        # And move it to the side
-        side_location = self._get_displaced_location(actor_behind, behind_points[0])
-        actor_behind.set_location(side_location)
+                # And move it to the side
+                side_location = self._get_displaced_location(actor_behind, behind_points[0])
+                actor_behind.set_location(side_location)
 
         # Move the ego to its side position
         self._ego_location = self._get_displaced_location(self.ego_vehicles[0], self._parking_waypoint)
@@ -159,6 +162,7 @@ class ParkingExit(BasicScenario):
             'vehicle.*', self._reference_waypoint.transform, attribute_filter=self._bp_attributes)
         if actor_side is None:
             raise ValueError("Couldn't spawn the vehicle at the side of the parking point")
+        self._actor_side = actor_side
         self.other_actors.append(actor_side)
         self._tm.update_vehicle_lights(actor_side, True)
 
@@ -193,9 +197,9 @@ class ParkingExit(BasicScenario):
         root = py_trees.composites.Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE)
 
         side_actor_behavior = py_trees.composites.Sequence()
-        side_actor_behavior.add_child(ChangeAutoPilot(self.other_actors[2], True))
-        side_actor_behavior.add_child(DriveDistance(self.other_actors[2], self._side_end_distance))
-        side_actor_behavior.add_child(ActorTransformSetter(self.other_actors[2], self._end_side_transform, False))
+        side_actor_behavior.add_child(ChangeAutoPilot(self._actor_side, True))
+        side_actor_behavior.add_child(DriveDistance(self._actor_side, self._side_end_distance))
+        side_actor_behavior.add_child(ActorTransformSetter(self._actor_side, self._end_side_transform, False))
         side_actor_behavior.add_child(WaitForever())
         root.add_child(side_actor_behavior)
 

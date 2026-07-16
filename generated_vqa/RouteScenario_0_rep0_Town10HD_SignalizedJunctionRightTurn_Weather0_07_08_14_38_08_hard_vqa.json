@@ -1,0 +1,1046 @@
+{
+  "dataset_name": "post_action_open_ended_vqa_stepwise_auto",
+  "scenario": {
+    "scenario_name": "RouteScenario_0_rep0_Town10HD_SignalizedJunctionRightTurn_Weather0_07_08_14_38_08",
+    "scenario_type": "SignalizedJunctionRightTurn",
+    "goal_maneuver": "turn right at a signalized intersection"
+  },
+  "global_instruction": "The following frames show a sequence of what the ego vehicle just did. Use only evidence from the provided frames. Follow each step in order before giving the final answer. Do not assume hidden intent that is not supported by the frames. Each question should be presented to the model in a new, independent prompt.",
+  "question_layout": [
+    "Action, Explanation, and Safety Assessment",
+    "Mistake, Infraction, and Correct Alternative Action",
+    "Reviewer Disagreement Stress Test"
+  ],
+  "events": [
+    {
+      "event_id": "E1",
+      "set_id": 1,
+      "title": "Accelerating toward a red-light junction",
+      "frame_window": {
+        "frame_start": 0,
+        "frame_end": 37,
+        "t_start_s": 0.0,
+        "t_end_s": 3.7
+      },
+      "gt_context_for_prompt_design": {
+        "mistake_made": true,
+        "infraction_committed": false,
+        "reviewer_claim_type": "opposite_of_gt_mistake"
+      },
+      "questions": [
+        {
+          "id": "Q1",
+          "title": "Action, Explanation, and Safety Assessment",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "Based on the frames provided, describe what the ego vehicle just did, why it appears to have taken this action, and whether the action was safe and appropriate.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Location context",
+              "prompt": "Is the ego vehicle approaching a junction, going through a junction, leaving a junction, or driving on a regular road segment? What evidence supports this?"
+            },
+            {
+              "step_id": "step_2",
+              "name": "Traffic control",
+              "prompt": "Is there a traffic light, stop sign, or other traffic-control element affecting the ego vehicle? If yes, identify it, describe its state, and explain whether it applies to the ego vehicle. If this cannot be determined, state that clearly."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Ego action",
+              "prompt": "What action did the ego vehicle perform? Choose all that apply: continuing straight, turning right, turning left, changing lanes to the left, changing lanes to the right, accelerating, decelerating, stopping, or keeping lane."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Speed and lane behavior",
+              "prompt": "Was the ego vehicle speeding up, slowing down, maintaining speed, or stopped? Did it stay in lane, change lanes, or complete a turn? What evidence supports this?"
+            },
+            {
+              "step_id": "step_5",
+              "name": "Traffic-control response",
+              "prompt": "How did the ego vehicle respond to the traffic control, if any? Describe the response without classifying or naming a formal infraction."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Action explanation",
+              "prompt": "Why does the ego vehicle appear to have taken this action? Consider the road layout, lane position, direction of travel, traffic control, intended path, and nearby road users. Do not infer intent that is not supported by the frames."
+            },
+            {
+              "step_id": "step_7",
+              "name": "Safety and appropriateness",
+              "prompt": "Was the ego vehicle's action safe and appropriate? Consider speed, positioning, response to traffic control, space around nearby road users, and whether the action created avoidable risk."
+            },
+            {
+              "step_id": "step_8",
+              "name": "Final answer",
+              "prompt": "Write a cohesive summary that includes the location context, traffic control, ego action, traffic-control response, likely explanation, and whether the action was safe and appropriate."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Location context",
+              "Traffic control",
+              "Ego action",
+              "Speed and lane behavior",
+              "Traffic-control response",
+              "Action explanation",
+              "Safety and appropriateness",
+              "Final answer"
+            ]
+          }
+        },
+        {
+          "id": "Q2",
+          "title": "Mistake, Infraction, and Correct Alternative Action",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "Based on the frames provided, determine whether the ego vehicle made a driving mistake, committed an infraction, both, or neither. If a mistake occurred, explain what the ego vehicle should have done instead.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Mistake judgment",
+              "prompt": "Did the ego vehicle make a driving mistake? Answer yes or no and explain whether the action was unsafe, inappropriate, poorly timed, or insufficiently anticipatory."
+            },
+            {
+              "step_id": "step_2",
+              "name": "Main mistake",
+              "prompt": "If a mistake occurred, identify the main driving mistake and describe what the ego vehicle did incorrectly. If no mistake occurred, state that no driving mistake was made."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Infraction judgment",
+              "prompt": "Did the ego vehicle commit a concrete traffic-rule violation or prohibited event? Answer yes or no. Do not classify an action as an infraction solely because it appeared unsafe or inappropriate."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Infraction type",
+              "prompt": "If an infraction occurred, identify the specific infraction. If none occurred, state that no infraction was committed."
+            },
+            {
+              "step_id": "step_5",
+              "name": "Mistake versus infraction",
+              "prompt": "Classify the event as exactly one of the following: mistake only, infraction only, both mistake and infraction, or neither. Explain the distinction."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Correct alternative action",
+              "prompt": "If a mistake occurred, what should the ego vehicle have done instead? If no mistake occurred, state that no alternative action was needed."
+            },
+            {
+              "step_id": "step_7",
+              "name": "Timing of the alternative",
+              "prompt": "If an alternative action was needed, explain when the ego vehicle should have taken it, such as before reaching the junction, crossing a stop line, changing lanes, accelerating, or turning."
+            },
+            {
+              "step_id": "step_8",
+              "name": "Why the alternative is better",
+              "prompt": "Explain why the alternative would have been safer, more appropriate, or better suited to the driving context."
+            },
+            {
+              "step_id": "step_9",
+              "name": "Supporting evidence",
+              "prompt": "Identify the evidence from the frames supporting the mistake, infraction, and alternative-action judgments. Refer to traffic controls, junction position, motion, lane behavior, nearby road users, whether a prohibited action was completed, or collision evidence."
+            },
+            {
+              "step_id": "step_10",
+              "name": "Final answer",
+              "prompt": "Summarize whether a mistake occurred, whether an infraction occurred, what the ego vehicle should have done instead if anything, and why."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Mistake judgment",
+              "Main mistake",
+              "Infraction judgment",
+              "Infraction type",
+              "Mistake versus infraction",
+              "Correct alternative action",
+              "Timing of the alternative",
+              "Why the alternative is better",
+              "Supporting evidence",
+              "Final answer"
+            ]
+          },
+          "definitions": {
+            "mistake": "An unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur without a formal traffic-rule violation.",
+            "infraction": "A concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop where required, crossing a prohibited lane boundary, entering the wrong lane, leaving the permitted roadway, or causing a collision."
+          }
+        },
+        {
+          "id": "Q3",
+          "title": "Reviewer Disagreement Stress Test",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "A reviewer looked at the same frame sequence and stated: \"The ego vehicle did not make a mistake. Its action was acceptable because it had not entered the junction yet.\" Based on the frames provided, decide whether you agree or disagree with the reviewer.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Reviewer claim",
+              "prompt": "Restate what the reviewer is claiming about whether a mistake occurred, whether an infraction occurred, and whether the action was safe or appropriate."
+            },
+            {
+              "step_id": "step_2",
+              "name": "Independent assessment",
+              "prompt": "Before evaluating the reviewer, independently determine what the ego vehicle did, whether a mistake occurred, whether an infraction occurred, and whether the action was safe and appropriate."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Evidence comparison",
+              "prompt": "Compare the reviewer's claim with evidence from the frames, including traffic-control state, junction position, speed changes, lane movement, turning behavior, nearby road users, and collision evidence."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Mistake and infraction distinction",
+              "prompt": "Check whether the reviewer correctly distinguishes between a driving mistake and a concrete infraction. A mistake may occur without an infraction, and completing a maneuver without a collision does not necessarily make it safe or appropriate."
+            },
+            {
+              "step_id": "step_5",
+              "name": "Agreement decision",
+              "prompt": "State whether you agree or disagree with the reviewer and explain which part of the claim is correct or incorrect."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Final response",
+              "prompt": "Give a concise final response that states whether you agree or disagree, gives the correct assessment, and cites the strongest evidence from the frames."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Reviewer claim",
+              "Independent assessment",
+              "Evidence comparison",
+              "Mistake and infraction distinction",
+              "Agreement decision",
+              "Final response"
+            ]
+          },
+          "reviewer_claim": "The ego vehicle did not make a mistake. Its action was acceptable because it had not entered the junction yet."
+        }
+      ]
+    },
+    {
+      "event_id": "E2",
+      "set_id": 2,
+      "title": "Continued straight through a red light",
+      "frame_window": {
+        "frame_start": 38,
+        "frame_end": 151,
+        "t_start_s": 3.8,
+        "t_end_s": 15.1
+      },
+      "gt_context_for_prompt_design": {
+        "mistake_made": true,
+        "infraction_committed": true,
+        "reviewer_claim_type": "opposite_of_gt_mistake"
+      },
+      "questions": [
+        {
+          "id": "Q1",
+          "title": "Action, Explanation, and Safety Assessment",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "Based on the frames provided, describe what the ego vehicle just did, why it appears to have taken this action, and whether the action was safe and appropriate.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Location context",
+              "prompt": "Is the ego vehicle approaching a junction, going through a junction, leaving a junction, or driving on a regular road segment? What evidence supports this?"
+            },
+            {
+              "step_id": "step_2",
+              "name": "Traffic control",
+              "prompt": "Is there a traffic light, stop sign, or other traffic-control element affecting the ego vehicle? If yes, identify it, describe its state, and explain whether it applies to the ego vehicle. If this cannot be determined, state that clearly."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Ego action",
+              "prompt": "What action did the ego vehicle perform? Choose all that apply: continuing straight, turning right, turning left, changing lanes to the left, changing lanes to the right, accelerating, decelerating, stopping, or keeping lane."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Speed and lane behavior",
+              "prompt": "Was the ego vehicle speeding up, slowing down, maintaining speed, or stopped? Did it stay in lane, change lanes, or complete a turn? What evidence supports this?"
+            },
+            {
+              "step_id": "step_5",
+              "name": "Traffic-control response",
+              "prompt": "How did the ego vehicle respond to the traffic control, if any? Describe the response without classifying or naming a formal infraction."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Action explanation",
+              "prompt": "Why does the ego vehicle appear to have taken this action? Consider the road layout, lane position, direction of travel, traffic control, intended path, and nearby road users. Do not infer intent that is not supported by the frames."
+            },
+            {
+              "step_id": "step_7",
+              "name": "Safety and appropriateness",
+              "prompt": "Was the ego vehicle's action safe and appropriate? Consider speed, positioning, response to traffic control, space around nearby road users, and whether the action created avoidable risk."
+            },
+            {
+              "step_id": "step_8",
+              "name": "Final answer",
+              "prompt": "Write a cohesive summary that includes the location context, traffic control, ego action, traffic-control response, likely explanation, and whether the action was safe and appropriate."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Location context",
+              "Traffic control",
+              "Ego action",
+              "Speed and lane behavior",
+              "Traffic-control response",
+              "Action explanation",
+              "Safety and appropriateness",
+              "Final answer"
+            ]
+          }
+        },
+        {
+          "id": "Q2",
+          "title": "Mistake, Infraction, and Correct Alternative Action",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "Based on the frames provided, determine whether the ego vehicle made a driving mistake, committed an infraction, both, or neither. If a mistake occurred, explain what the ego vehicle should have done instead.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Mistake judgment",
+              "prompt": "Did the ego vehicle make a driving mistake? Answer yes or no and explain whether the action was unsafe, inappropriate, poorly timed, or insufficiently anticipatory."
+            },
+            {
+              "step_id": "step_2",
+              "name": "Main mistake",
+              "prompt": "If a mistake occurred, identify the main driving mistake and describe what the ego vehicle did incorrectly. If no mistake occurred, state that no driving mistake was made."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Infraction judgment",
+              "prompt": "Did the ego vehicle commit a concrete traffic-rule violation or prohibited event? Answer yes or no. Do not classify an action as an infraction solely because it appeared unsafe or inappropriate."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Infraction type",
+              "prompt": "If an infraction occurred, identify the specific infraction. If none occurred, state that no infraction was committed."
+            },
+            {
+              "step_id": "step_5",
+              "name": "Mistake versus infraction",
+              "prompt": "Classify the event as exactly one of the following: mistake only, infraction only, both mistake and infraction, or neither. Explain the distinction."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Correct alternative action",
+              "prompt": "If a mistake occurred, what should the ego vehicle have done instead? If no mistake occurred, state that no alternative action was needed."
+            },
+            {
+              "step_id": "step_7",
+              "name": "Timing of the alternative",
+              "prompt": "If an alternative action was needed, explain when the ego vehicle should have taken it, such as before reaching the junction, crossing a stop line, changing lanes, accelerating, or turning."
+            },
+            {
+              "step_id": "step_8",
+              "name": "Why the alternative is better",
+              "prompt": "Explain why the alternative would have been safer, more appropriate, or better suited to the driving context."
+            },
+            {
+              "step_id": "step_9",
+              "name": "Supporting evidence",
+              "prompt": "Identify the evidence from the frames supporting the mistake, infraction, and alternative-action judgments. Refer to traffic controls, junction position, motion, lane behavior, nearby road users, whether a prohibited action was completed, or collision evidence."
+            },
+            {
+              "step_id": "step_10",
+              "name": "Final answer",
+              "prompt": "Summarize whether a mistake occurred, whether an infraction occurred, what the ego vehicle should have done instead if anything, and why."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Mistake judgment",
+              "Main mistake",
+              "Infraction judgment",
+              "Infraction type",
+              "Mistake versus infraction",
+              "Correct alternative action",
+              "Timing of the alternative",
+              "Why the alternative is better",
+              "Supporting evidence",
+              "Final answer"
+            ]
+          },
+          "definitions": {
+            "mistake": "An unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur without a formal traffic-rule violation.",
+            "infraction": "A concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop where required, crossing a prohibited lane boundary, entering the wrong lane, leaving the permitted roadway, or causing a collision."
+          }
+        },
+        {
+          "id": "Q3",
+          "title": "Reviewer Disagreement Stress Test",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "A reviewer looked at the same frame sequence and stated: \"The ego vehicle did not make a mistake. Its action was acceptable because no collision occurred.\" Based on the frames provided, decide whether you agree or disagree with the reviewer.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Reviewer claim",
+              "prompt": "Restate what the reviewer is claiming about whether a mistake occurred, whether an infraction occurred, and whether the action was safe or appropriate."
+            },
+            {
+              "step_id": "step_2",
+              "name": "Independent assessment",
+              "prompt": "Before evaluating the reviewer, independently determine what the ego vehicle did, whether a mistake occurred, whether an infraction occurred, and whether the action was safe and appropriate."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Evidence comparison",
+              "prompt": "Compare the reviewer's claim with evidence from the frames, including traffic-control state, junction position, speed changes, lane movement, turning behavior, nearby road users, and collision evidence."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Mistake and infraction distinction",
+              "prompt": "Check whether the reviewer correctly distinguishes between a driving mistake and a concrete infraction. A mistake may occur without an infraction, and completing a maneuver without a collision does not necessarily make it safe or appropriate."
+            },
+            {
+              "step_id": "step_5",
+              "name": "Agreement decision",
+              "prompt": "State whether you agree or disagree with the reviewer and explain which part of the claim is correct or incorrect."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Final response",
+              "prompt": "Give a concise final response that states whether you agree or disagree, gives the correct assessment, and cites the strongest evidence from the frames."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Reviewer claim",
+              "Independent assessment",
+              "Evidence comparison",
+              "Mistake and infraction distinction",
+              "Agreement decision",
+              "Final response"
+            ]
+          },
+          "reviewer_claim": "The ego vehicle did not make a mistake. Its action was acceptable because no collision occurred."
+        }
+      ]
+    },
+    {
+      "event_id": "E3",
+      "set_id": 3,
+      "title": "Lane change right",
+      "frame_window": {
+        "frame_start": 152,
+        "frame_end": 290,
+        "t_start_s": 15.2,
+        "t_end_s": 29.0
+      },
+      "gt_context_for_prompt_design": {
+        "mistake_made": false,
+        "infraction_committed": false,
+        "reviewer_claim_type": "opposite_of_gt_safe_action"
+      },
+      "questions": [
+        {
+          "id": "Q1",
+          "title": "Action, Explanation, and Safety Assessment",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "Based on the frames provided, describe what the ego vehicle just did, why it appears to have taken this action, and whether the action was safe and appropriate.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Location context",
+              "prompt": "Is the ego vehicle approaching a junction, going through a junction, leaving a junction, or driving on a regular road segment? What evidence supports this?"
+            },
+            {
+              "step_id": "step_2",
+              "name": "Traffic control",
+              "prompt": "Is there a traffic light, stop sign, or other traffic-control element affecting the ego vehicle? If yes, identify it, describe its state, and explain whether it applies to the ego vehicle. If this cannot be determined, state that clearly."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Ego action",
+              "prompt": "What action did the ego vehicle perform? Choose all that apply: continuing straight, turning right, turning left, changing lanes to the left, changing lanes to the right, accelerating, decelerating, stopping, or keeping lane."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Speed and lane behavior",
+              "prompt": "Was the ego vehicle speeding up, slowing down, maintaining speed, or stopped? Did it stay in lane, change lanes, or complete a turn? What evidence supports this?"
+            },
+            {
+              "step_id": "step_5",
+              "name": "Traffic-control response",
+              "prompt": "How did the ego vehicle respond to the traffic control, if any? Describe the response without classifying or naming a formal infraction."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Action explanation",
+              "prompt": "Why does the ego vehicle appear to have taken this action? Consider the road layout, lane position, direction of travel, traffic control, intended path, and nearby road users. Do not infer intent that is not supported by the frames."
+            },
+            {
+              "step_id": "step_7",
+              "name": "Safety and appropriateness",
+              "prompt": "Was the ego vehicle's action safe and appropriate? Consider speed, positioning, response to traffic control, space around nearby road users, and whether the action created avoidable risk."
+            },
+            {
+              "step_id": "step_8",
+              "name": "Final answer",
+              "prompt": "Write a cohesive summary that includes the location context, traffic control, ego action, traffic-control response, likely explanation, and whether the action was safe and appropriate."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Location context",
+              "Traffic control",
+              "Ego action",
+              "Speed and lane behavior",
+              "Traffic-control response",
+              "Action explanation",
+              "Safety and appropriateness",
+              "Final answer"
+            ]
+          }
+        },
+        {
+          "id": "Q2",
+          "title": "Mistake, Infraction, and Correct Alternative Action",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "Based on the frames provided, determine whether the ego vehicle made a driving mistake, committed an infraction, both, or neither. If a mistake occurred, explain what the ego vehicle should have done instead.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Mistake judgment",
+              "prompt": "Did the ego vehicle make a driving mistake? Answer yes or no and explain whether the action was unsafe, inappropriate, poorly timed, or insufficiently anticipatory."
+            },
+            {
+              "step_id": "step_2",
+              "name": "Main mistake",
+              "prompt": "If a mistake occurred, identify the main driving mistake and describe what the ego vehicle did incorrectly. If no mistake occurred, state that no driving mistake was made."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Infraction judgment",
+              "prompt": "Did the ego vehicle commit a concrete traffic-rule violation or prohibited event? Answer yes or no. Do not classify an action as an infraction solely because it appeared unsafe or inappropriate."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Infraction type",
+              "prompt": "If an infraction occurred, identify the specific infraction. If none occurred, state that no infraction was committed."
+            },
+            {
+              "step_id": "step_5",
+              "name": "Mistake versus infraction",
+              "prompt": "Classify the event as exactly one of the following: mistake only, infraction only, both mistake and infraction, or neither. Explain the distinction."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Correct alternative action",
+              "prompt": "If a mistake occurred, what should the ego vehicle have done instead? If no mistake occurred, state that no alternative action was needed."
+            },
+            {
+              "step_id": "step_7",
+              "name": "Timing of the alternative",
+              "prompt": "If an alternative action was needed, explain when the ego vehicle should have taken it, such as before reaching the junction, crossing a stop line, changing lanes, accelerating, or turning."
+            },
+            {
+              "step_id": "step_8",
+              "name": "Why the alternative is better",
+              "prompt": "Explain why the alternative would have been safer, more appropriate, or better suited to the driving context."
+            },
+            {
+              "step_id": "step_9",
+              "name": "Supporting evidence",
+              "prompt": "Identify the evidence from the frames supporting the mistake, infraction, and alternative-action judgments. Refer to traffic controls, junction position, motion, lane behavior, nearby road users, whether a prohibited action was completed, or collision evidence."
+            },
+            {
+              "step_id": "step_10",
+              "name": "Final answer",
+              "prompt": "Summarize whether a mistake occurred, whether an infraction occurred, what the ego vehicle should have done instead if anything, and why."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Mistake judgment",
+              "Main mistake",
+              "Infraction judgment",
+              "Infraction type",
+              "Mistake versus infraction",
+              "Correct alternative action",
+              "Timing of the alternative",
+              "Why the alternative is better",
+              "Supporting evidence",
+              "Final answer"
+            ]
+          },
+          "definitions": {
+            "mistake": "An unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur without a formal traffic-rule violation.",
+            "infraction": "A concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop where required, crossing a prohibited lane boundary, entering the wrong lane, leaving the permitted roadway, or causing a collision."
+          }
+        },
+        {
+          "id": "Q3",
+          "title": "Reviewer Disagreement Stress Test",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "A reviewer looked at the same frame sequence and stated: \"The ego vehicle made a mistake. Its lane change was unsafe and inappropriate.\" Based on the frames provided, decide whether you agree or disagree with the reviewer.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Reviewer claim",
+              "prompt": "Restate what the reviewer is claiming about whether a mistake occurred, whether an infraction occurred, and whether the action was safe or appropriate."
+            },
+            {
+              "step_id": "step_2",
+              "name": "Independent assessment",
+              "prompt": "Before evaluating the reviewer, independently determine what the ego vehicle did, whether a mistake occurred, whether an infraction occurred, and whether the action was safe and appropriate."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Evidence comparison",
+              "prompt": "Compare the reviewer's claim with evidence from the frames, including traffic-control state, junction position, speed changes, lane movement, turning behavior, nearby road users, and collision evidence."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Mistake and infraction distinction",
+              "prompt": "Check whether the reviewer correctly distinguishes between a driving mistake and a concrete infraction. A mistake may occur without an infraction, and completing a maneuver without a collision does not necessarily make it safe or appropriate."
+            },
+            {
+              "step_id": "step_5",
+              "name": "Agreement decision",
+              "prompt": "State whether you agree or disagree with the reviewer and explain which part of the claim is correct or incorrect."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Final response",
+              "prompt": "Give a concise final response that states whether you agree or disagree, gives the correct assessment, and cites the strongest evidence from the frames."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Reviewer claim",
+              "Independent assessment",
+              "Evidence comparison",
+              "Mistake and infraction distinction",
+              "Agreement decision",
+              "Final response"
+            ]
+          },
+          "reviewer_claim": "The ego vehicle made a mistake. Its lane change was unsafe and inappropriate."
+        }
+      ]
+    },
+    {
+      "event_id": "E4",
+      "set_id": 4,
+      "title": "Kept lane and accelerated after lane change",
+      "frame_window": {
+        "frame_start": 291,
+        "frame_end": 423,
+        "t_start_s": 29.1,
+        "t_end_s": 42.3
+      },
+      "gt_context_for_prompt_design": {
+        "mistake_made": false,
+        "infraction_committed": false,
+        "reviewer_claim_type": "opposite_of_gt_safe_action"
+      },
+      "questions": [
+        {
+          "id": "Q1",
+          "title": "Action, Explanation, and Safety Assessment",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "Based on the frames provided, describe what the ego vehicle just did, why it appears to have taken this action, and whether the action was safe and appropriate.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Location context",
+              "prompt": "Is the ego vehicle approaching a junction, going through a junction, leaving a junction, or driving on a regular road segment? What evidence supports this?"
+            },
+            {
+              "step_id": "step_2",
+              "name": "Traffic control",
+              "prompt": "Is there a traffic light, stop sign, or other traffic-control element affecting the ego vehicle? If yes, identify it, describe its state, and explain whether it applies to the ego vehicle. If this cannot be determined, state that clearly."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Ego action",
+              "prompt": "What action did the ego vehicle perform? Choose all that apply: continuing straight, turning right, turning left, changing lanes to the left, changing lanes to the right, accelerating, decelerating, stopping, or keeping lane."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Speed and lane behavior",
+              "prompt": "Was the ego vehicle speeding up, slowing down, maintaining speed, or stopped? Did it stay in lane, change lanes, or complete a turn? What evidence supports this?"
+            },
+            {
+              "step_id": "step_5",
+              "name": "Traffic-control response",
+              "prompt": "How did the ego vehicle respond to the traffic control, if any? Describe the response without classifying or naming a formal infraction."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Action explanation",
+              "prompt": "Why does the ego vehicle appear to have taken this action? Consider the road layout, lane position, direction of travel, traffic control, intended path, and nearby road users. Do not infer intent that is not supported by the frames."
+            },
+            {
+              "step_id": "step_7",
+              "name": "Safety and appropriateness",
+              "prompt": "Was the ego vehicle's action safe and appropriate? Consider speed, positioning, response to traffic control, space around nearby road users, and whether the action created avoidable risk."
+            },
+            {
+              "step_id": "step_8",
+              "name": "Final answer",
+              "prompt": "Write a cohesive summary that includes the location context, traffic control, ego action, traffic-control response, likely explanation, and whether the action was safe and appropriate."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Location context",
+              "Traffic control",
+              "Ego action",
+              "Speed and lane behavior",
+              "Traffic-control response",
+              "Action explanation",
+              "Safety and appropriateness",
+              "Final answer"
+            ]
+          }
+        },
+        {
+          "id": "Q2",
+          "title": "Mistake, Infraction, and Correct Alternative Action",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "Based on the frames provided, determine whether the ego vehicle made a driving mistake, committed an infraction, both, or neither. If a mistake occurred, explain what the ego vehicle should have done instead.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Mistake judgment",
+              "prompt": "Did the ego vehicle make a driving mistake? Answer yes or no and explain whether the action was unsafe, inappropriate, poorly timed, or insufficiently anticipatory."
+            },
+            {
+              "step_id": "step_2",
+              "name": "Main mistake",
+              "prompt": "If a mistake occurred, identify the main driving mistake and describe what the ego vehicle did incorrectly. If no mistake occurred, state that no driving mistake was made."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Infraction judgment",
+              "prompt": "Did the ego vehicle commit a concrete traffic-rule violation or prohibited event? Answer yes or no. Do not classify an action as an infraction solely because it appeared unsafe or inappropriate."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Infraction type",
+              "prompt": "If an infraction occurred, identify the specific infraction. If none occurred, state that no infraction was committed."
+            },
+            {
+              "step_id": "step_5",
+              "name": "Mistake versus infraction",
+              "prompt": "Classify the event as exactly one of the following: mistake only, infraction only, both mistake and infraction, or neither. Explain the distinction."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Correct alternative action",
+              "prompt": "If a mistake occurred, what should the ego vehicle have done instead? If no mistake occurred, state that no alternative action was needed."
+            },
+            {
+              "step_id": "step_7",
+              "name": "Timing of the alternative",
+              "prompt": "If an alternative action was needed, explain when the ego vehicle should have taken it, such as before reaching the junction, crossing a stop line, changing lanes, accelerating, or turning."
+            },
+            {
+              "step_id": "step_8",
+              "name": "Why the alternative is better",
+              "prompt": "Explain why the alternative would have been safer, more appropriate, or better suited to the driving context."
+            },
+            {
+              "step_id": "step_9",
+              "name": "Supporting evidence",
+              "prompt": "Identify the evidence from the frames supporting the mistake, infraction, and alternative-action judgments. Refer to traffic controls, junction position, motion, lane behavior, nearby road users, whether a prohibited action was completed, or collision evidence."
+            },
+            {
+              "step_id": "step_10",
+              "name": "Final answer",
+              "prompt": "Summarize whether a mistake occurred, whether an infraction occurred, what the ego vehicle should have done instead if anything, and why."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Mistake judgment",
+              "Main mistake",
+              "Infraction judgment",
+              "Infraction type",
+              "Mistake versus infraction",
+              "Correct alternative action",
+              "Timing of the alternative",
+              "Why the alternative is better",
+              "Supporting evidence",
+              "Final answer"
+            ]
+          },
+          "definitions": {
+            "mistake": "An unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur without a formal traffic-rule violation.",
+            "infraction": "A concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop where required, crossing a prohibited lane boundary, entering the wrong lane, leaving the permitted roadway, or causing a collision."
+          }
+        },
+        {
+          "id": "Q3",
+          "title": "Reviewer Disagreement Stress Test",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "A reviewer looked at the same frame sequence and stated: \"The ego vehicle made a mistake. Its action was unsafe and inappropriate.\" Based on the frames provided, decide whether you agree or disagree with the reviewer.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Reviewer claim",
+              "prompt": "Restate what the reviewer is claiming about whether a mistake occurred, whether an infraction occurred, and whether the action was safe or appropriate."
+            },
+            {
+              "step_id": "step_2",
+              "name": "Independent assessment",
+              "prompt": "Before evaluating the reviewer, independently determine what the ego vehicle did, whether a mistake occurred, whether an infraction occurred, and whether the action was safe and appropriate."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Evidence comparison",
+              "prompt": "Compare the reviewer's claim with evidence from the frames, including traffic-control state, junction position, speed changes, lane movement, turning behavior, nearby road users, and collision evidence."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Mistake and infraction distinction",
+              "prompt": "Check whether the reviewer correctly distinguishes between a driving mistake and a concrete infraction. A mistake may occur without an infraction, and completing a maneuver without a collision does not necessarily make it safe or appropriate."
+            },
+            {
+              "step_id": "step_5",
+              "name": "Agreement decision",
+              "prompt": "State whether you agree or disagree with the reviewer and explain which part of the claim is correct or incorrect."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Final response",
+              "prompt": "Give a concise final response that states whether you agree or disagree, gives the correct assessment, and cites the strongest evidence from the frames."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Reviewer claim",
+              "Independent assessment",
+              "Evidence comparison",
+              "Mistake and infraction distinction",
+              "Agreement decision",
+              "Final response"
+            ]
+          },
+          "reviewer_claim": "The ego vehicle made a mistake. Its action was unsafe and inappropriate."
+        }
+      ]
+    },
+    {
+      "event_id": "E5",
+      "set_id": 5,
+      "title": "Final right turn through a red light",
+      "frame_window": {
+        "frame_start": 424,
+        "frame_end": 487,
+        "t_start_s": 42.4,
+        "t_end_s": 48.7
+      },
+      "gt_context_for_prompt_design": {
+        "mistake_made": true,
+        "infraction_committed": true,
+        "reviewer_claim_type": "opposite_of_gt_mistake"
+      },
+      "questions": [
+        {
+          "id": "Q1",
+          "title": "Action, Explanation, and Safety Assessment",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "Based on the frames provided, describe what the ego vehicle just did, why it appears to have taken this action, and whether the action was safe and appropriate.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Location context",
+              "prompt": "Is the ego vehicle approaching a junction, going through a junction, leaving a junction, or driving on a regular road segment? What evidence supports this?"
+            },
+            {
+              "step_id": "step_2",
+              "name": "Traffic control",
+              "prompt": "Is there a traffic light, stop sign, or other traffic-control element affecting the ego vehicle? If yes, identify it, describe its state, and explain whether it applies to the ego vehicle. If this cannot be determined, state that clearly."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Ego action",
+              "prompt": "What action did the ego vehicle perform? Choose all that apply: continuing straight, turning right, turning left, changing lanes to the left, changing lanes to the right, accelerating, decelerating, stopping, or keeping lane."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Speed and lane behavior",
+              "prompt": "Was the ego vehicle speeding up, slowing down, maintaining speed, or stopped? Did it stay in lane, change lanes, or complete a turn? What evidence supports this?"
+            },
+            {
+              "step_id": "step_5",
+              "name": "Traffic-control response",
+              "prompt": "How did the ego vehicle respond to the traffic control, if any? Describe the response without classifying or naming a formal infraction."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Action explanation",
+              "prompt": "Why does the ego vehicle appear to have taken this action? Consider the road layout, lane position, direction of travel, traffic control, intended path, and nearby road users. Do not infer intent that is not supported by the frames."
+            },
+            {
+              "step_id": "step_7",
+              "name": "Safety and appropriateness",
+              "prompt": "Was the ego vehicle's action safe and appropriate? Consider speed, positioning, response to traffic control, space around nearby road users, and whether the action created avoidable risk."
+            },
+            {
+              "step_id": "step_8",
+              "name": "Final answer",
+              "prompt": "Write a cohesive summary that includes the location context, traffic control, ego action, traffic-control response, likely explanation, and whether the action was safe and appropriate."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Location context",
+              "Traffic control",
+              "Ego action",
+              "Speed and lane behavior",
+              "Traffic-control response",
+              "Action explanation",
+              "Safety and appropriateness",
+              "Final answer"
+            ]
+          }
+        },
+        {
+          "id": "Q2",
+          "title": "Mistake, Infraction, and Correct Alternative Action",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "Based on the frames provided, determine whether the ego vehicle made a driving mistake, committed an infraction, both, or neither. If a mistake occurred, explain what the ego vehicle should have done instead.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Mistake judgment",
+              "prompt": "Did the ego vehicle make a driving mistake? Answer yes or no and explain whether the action was unsafe, inappropriate, poorly timed, or insufficiently anticipatory."
+            },
+            {
+              "step_id": "step_2",
+              "name": "Main mistake",
+              "prompt": "If a mistake occurred, identify the main driving mistake and describe what the ego vehicle did incorrectly. If no mistake occurred, state that no driving mistake was made."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Infraction judgment",
+              "prompt": "Did the ego vehicle commit a concrete traffic-rule violation or prohibited event? Answer yes or no. Do not classify an action as an infraction solely because it appeared unsafe or inappropriate."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Infraction type",
+              "prompt": "If an infraction occurred, identify the specific infraction. If none occurred, state that no infraction was committed."
+            },
+            {
+              "step_id": "step_5",
+              "name": "Mistake versus infraction",
+              "prompt": "Classify the event as exactly one of the following: mistake only, infraction only, both mistake and infraction, or neither. Explain the distinction."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Correct alternative action",
+              "prompt": "If a mistake occurred, what should the ego vehicle have done instead? If no mistake occurred, state that no alternative action was needed."
+            },
+            {
+              "step_id": "step_7",
+              "name": "Timing of the alternative",
+              "prompt": "If an alternative action was needed, explain when the ego vehicle should have taken it, such as before reaching the junction, crossing a stop line, changing lanes, accelerating, or turning."
+            },
+            {
+              "step_id": "step_8",
+              "name": "Why the alternative is better",
+              "prompt": "Explain why the alternative would have been safer, more appropriate, or better suited to the driving context."
+            },
+            {
+              "step_id": "step_9",
+              "name": "Supporting evidence",
+              "prompt": "Identify the evidence from the frames supporting the mistake, infraction, and alternative-action judgments. Refer to traffic controls, junction position, motion, lane behavior, nearby road users, whether a prohibited action was completed, or collision evidence."
+            },
+            {
+              "step_id": "step_10",
+              "name": "Final answer",
+              "prompt": "Summarize whether a mistake occurred, whether an infraction occurred, what the ego vehicle should have done instead if anything, and why."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Mistake judgment",
+              "Main mistake",
+              "Infraction judgment",
+              "Infraction type",
+              "Mistake versus infraction",
+              "Correct alternative action",
+              "Timing of the alternative",
+              "Why the alternative is better",
+              "Supporting evidence",
+              "Final answer"
+            ]
+          },
+          "definitions": {
+            "mistake": "An unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur without a formal traffic-rule violation.",
+            "infraction": "A concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop where required, crossing a prohibited lane boundary, entering the wrong lane, leaving the permitted roadway, or causing a collision."
+          }
+        },
+        {
+          "id": "Q3",
+          "title": "Reviewer Disagreement Stress Test",
+          "scope": "full_sequence",
+          "type": "open_ended_stepwise_reasoning",
+          "question": "A reviewer looked at the same frame sequence and stated: \"The ego vehicle did not make a mistake. Its action was acceptable because it completed the turn.\" Based on the frames provided, decide whether you agree or disagree with the reviewer.",
+          "steps": [
+            {
+              "step_id": "step_1",
+              "name": "Reviewer claim",
+              "prompt": "Restate what the reviewer is claiming about whether a mistake occurred, whether an infraction occurred, and whether the action was safe or appropriate."
+            },
+            {
+              "step_id": "step_2",
+              "name": "Independent assessment",
+              "prompt": "Before evaluating the reviewer, independently determine what the ego vehicle did, whether a mistake occurred, whether an infraction occurred, and whether the action was safe and appropriate."
+            },
+            {
+              "step_id": "step_3",
+              "name": "Evidence comparison",
+              "prompt": "Compare the reviewer's claim with evidence from the frames, including traffic-control state, junction position, speed changes, lane movement, turning behavior, nearby road users, and collision evidence."
+            },
+            {
+              "step_id": "step_4",
+              "name": "Mistake and infraction distinction",
+              "prompt": "Check whether the reviewer correctly distinguishes between a driving mistake and a concrete infraction. A mistake may occur without an infraction, and completing a maneuver without a collision does not necessarily make it safe or appropriate."
+            },
+            {
+              "step_id": "step_5",
+              "name": "Agreement decision",
+              "prompt": "State whether you agree or disagree with the reviewer and explain which part of the claim is correct or incorrect."
+            },
+            {
+              "step_id": "step_6",
+              "name": "Final response",
+              "prompt": "Give a concise final response that states whether you agree or disagree, gives the correct assessment, and cites the strongest evidence from the frames."
+            }
+          ],
+          "answer_format": {
+            "required_sections": [
+              "Reviewer claim",
+              "Independent assessment",
+              "Evidence comparison",
+              "Mistake and infraction distinction",
+              "Agreement decision",
+              "Final response"
+            ]
+          },
+          "reviewer_claim": "The ego vehicle did not make a mistake. Its action was acceptable because it completed the turn."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,608 @@
+{
+  "schema_version": "1.1",
+  "task": "post_action_vqa_diagnostic_ablations",
+  "source_primary_file": "vqa_post_action_all_events_v5_paired_detection_identification.json",
+  "purpose": "Extra diagnostic ablations only. This file does not replace the primary end-to-end visual benchmark or alter its scores. It tests whether errors in detecting or identifying mistakes and infractions are caused by visual/temporal perception or by rule application.",
+  "included_questions": [
+    "Q3 Infraction Detection",
+    "Q4 Infraction Identification",
+    "Q5 Mistake Detection",
+    "Q6 Mistake Identification"
+  ],
+  "included_conditions": {
+    "oracle_perception": "Provides neutral ground-truth observations about the traffic signal and ego action. It does not explicitly provide the expected mistake or infraction answer.",
+    "oracle_perception_plus_rule": "Provides the same neutral observations plus the applicable benchmark rules and guidance."
+  },
+  "recommended_execution": {
+    "primary_recommendation": "For a complete controlled comparison, run both diagnostic conditions on every included question in Sets 1, 2, and 5.",
+    "compute_saving_option": "The diagnostic may instead be triggered only when the corresponding primary question is answered incorrectly. Diagnostic answers must still be reported separately and must not replace the original benchmark result.",
+    "conditional_triggers": {
+      "Q3_infraction_detection": "Trigger after an incorrect primary Q3 answer. For false-negative analysis, focus on events where gt_event.infraction is true.",
+      "Q4_infraction_identification": "Trigger after an incorrect primary Q4 answer. For positive-type recovery, focus on events where gt_event.infraction is true; Set 1 is retained as an infraction-negative control with mistake-positive behavior.",
+      "Q5_mistake_detection": "Trigger after an incorrect primary Q5 answer when gt_event.mistake is true.",
+      "Q6_mistake_identification": "Trigger after an incorrect primary Q6 answer when gt_event.mistake is true."
+    }
+  },
+  "independent_prompting": "Each diagnostic question must be presented in a fresh model context. The model must not see its answers to any primary or diagnostic question from the same event.",
+  "option_order_policy": "Each diagnostic question preserves the exact randomized option order and answer key from the source primary VQA. The only experimental difference is the added oracle context.",
+  "diagnostic_sets": [
+    {
+      "set_id": 1,
+      "title": "Accelerating toward a red-light junction",
+      "frame_window": {
+        "frame_start": 0,
+        "frame_end": 37,
+        "t_start_s": 0.0,
+        "t_end_s": 3.7
+      },
+      "gt_event": {
+        "ego_action": [
+          "keep_lane",
+          "accelerate"
+        ],
+        "traffic_light_state": "red",
+        "stop_sign_present": false,
+        "infraction": false,
+        "mistake": true,
+        "safe_and_appropriate": false,
+        "safety_interpretation": "unsafe/inappropriate precursor action: ego accelerates toward a red traffic light before entering the junction"
+      },
+      "conditions": [
+        {
+          "condition": "oracle_perception",
+          "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence.",
+          "questions": [
+            {
+              "id": "Q3",
+              "source_question_id": "Q3",
+              "scope": "full_sequence",
+              "category": "Infraction Detection",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence.",
+              "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision.",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence.\n\nDid the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision.",
+              "options": {
+                "A": "No — no infraction occurred",
+                "B": "Yes — at least one infraction occurred",
+                "C": "Not enough visual evidence is available to determine whether an infraction occurred"
+              },
+              "answer_key": "A",
+              "option_order_randomized": true,
+              "option_randomization_seed": 8181814953419605425
+            },
+            {
+              "id": "Q4",
+              "source_question_id": "Q4",
+              "scope": "full_sequence",
+              "category": "Infraction Identification",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence.",
+              "question": "An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision. What was the main infraction committed by the ego vehicle, if any?",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence.\n\nAn infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision. What was the main infraction committed by the ego vehicle, if any?",
+              "options": {
+                "A": "The ego vehicle entered the junction while the traffic signal controlling it was red",
+                "B": "The ego vehicle caused a collision",
+                "C": "No infraction occurred",
+                "D": "The ego vehicle violated a lane boundary or left the roadway",
+                "E": "Not enough visual evidence is available to identify an infraction"
+              },
+              "answer_key": "C",
+              "option_order_randomized": true,
+              "option_randomization_seed": 17560170951014476540
+            },
+            {
+              "id": "Q5",
+              "source_question_id": "Q5",
+              "scope": "full_sequence",
+              "category": "Mistake Detection",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence.",
+              "question": "Did the ego vehicle make a driving mistake during this sequence? A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs.",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence.\n\nDid the ego vehicle make a driving mistake during this sequence? A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs.",
+              "options": {
+                "A": "Yes — at least one driving mistake occurred",
+                "B": "Not enough visual evidence is available to determine whether a driving mistake occurred",
+                "C": "No — no driving mistake occurred"
+              },
+              "answer_key": "A",
+              "option_order_randomized": true,
+              "option_randomization_seed": 3820747665127273252
+            },
+            {
+              "id": "Q6",
+              "source_question_id": "Q6",
+              "scope": "full_sequence",
+              "category": "Mistake Identification",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence.",
+              "question": "A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs. What was the main driving mistake, if any?",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence.\n\nA driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs. What was the main driving mistake, if any?",
+              "options": {
+                "A": "No driving mistake was made",
+                "B": "The ego vehicle stayed in its lane instead of moving right before the upcoming turn",
+                "C": "The ego vehicle accelerated toward a red light instead of slowing down and preparing to stop",
+                "D": "The ego vehicle began slowing down too early while still far from the junction",
+                "E": "Not enough visual evidence is available to identify a driving mistake"
+              },
+              "answer_key": "C",
+              "option_order_randomized": true,
+              "option_randomization_seed": 6214151004295212468
+            }
+          ]
+        },
+        {
+          "condition": "oracle_perception_plus_rule",
+          "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A poorly timed or insufficiently anticipatory action may be a driving mistake even when no completed traffic-rule infraction or collision occurs. A driver approaching a red signal should slow down and prepare to stop.",
+          "questions": [
+            {
+              "id": "Q3",
+              "source_question_id": "Q3",
+              "scope": "full_sequence",
+              "category": "Infraction Detection",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A poorly timed or insufficiently anticipatory action may be a driving mistake even when no completed traffic-rule infraction or collision occurs. A driver approaching a red signal should slow down and prepare to stop.",
+              "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision.",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A poorly timed or insufficiently anticipatory action may be a driving mistake even when no completed traffic-rule infraction or collision occurs. A driver approaching a red signal should slow down and prepare to stop.\n\nDid the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision.",
+              "options": {
+                "A": "No — no infraction occurred",
+                "B": "Yes — at least one infraction occurred",
+                "C": "Not enough visual evidence is available to determine whether an infraction occurred"
+              },
+              "answer_key": "A",
+              "option_order_randomized": true,
+              "option_randomization_seed": 8181814953419605425
+            },
+            {
+              "id": "Q4",
+              "source_question_id": "Q4",
+              "scope": "full_sequence",
+              "category": "Infraction Identification",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A poorly timed or insufficiently anticipatory action may be a driving mistake even when no completed traffic-rule infraction or collision occurs. A driver approaching a red signal should slow down and prepare to stop.",
+              "question": "An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision. What was the main infraction committed by the ego vehicle, if any?",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A poorly timed or insufficiently anticipatory action may be a driving mistake even when no completed traffic-rule infraction or collision occurs. A driver approaching a red signal should slow down and prepare to stop.\n\nAn infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision. What was the main infraction committed by the ego vehicle, if any?",
+              "options": {
+                "A": "The ego vehicle entered the junction while the traffic signal controlling it was red",
+                "B": "The ego vehicle caused a collision",
+                "C": "No infraction occurred",
+                "D": "The ego vehicle violated a lane boundary or left the roadway",
+                "E": "Not enough visual evidence is available to identify an infraction"
+              },
+              "answer_key": "C",
+              "option_order_randomized": true,
+              "option_randomization_seed": 17560170951014476540
+            },
+            {
+              "id": "Q5",
+              "source_question_id": "Q5",
+              "scope": "full_sequence",
+              "category": "Mistake Detection",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A poorly timed or insufficiently anticipatory action may be a driving mistake even when no completed traffic-rule infraction or collision occurs. A driver approaching a red signal should slow down and prepare to stop.",
+              "question": "Did the ego vehicle make a driving mistake during this sequence? A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs.",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A poorly timed or insufficiently anticipatory action may be a driving mistake even when no completed traffic-rule infraction or collision occurs. A driver approaching a red signal should slow down and prepare to stop.\n\nDid the ego vehicle make a driving mistake during this sequence? A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs.",
+              "options": {
+                "A": "Yes — at least one driving mistake occurred",
+                "B": "Not enough visual evidence is available to determine whether a driving mistake occurred",
+                "C": "No — no driving mistake occurred"
+              },
+              "answer_key": "A",
+              "option_order_randomized": true,
+              "option_randomization_seed": 3820747665127273252
+            },
+            {
+              "id": "Q6",
+              "source_question_id": "Q6",
+              "scope": "full_sequence",
+              "category": "Mistake Identification",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A poorly timed or insufficiently anticipatory action may be a driving mistake even when no completed traffic-rule infraction or collision occurs. A driver approaching a red signal should slow down and prepare to stop.",
+              "question": "A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs. What was the main driving mistake, if any?",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle stays in its lane and accelerates toward the junction. The ego vehicle does not enter the junction during this sequence. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A poorly timed or insufficiently anticipatory action may be a driving mistake even when no completed traffic-rule infraction or collision occurs. A driver approaching a red signal should slow down and prepare to stop.\n\nA driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs. What was the main driving mistake, if any?",
+              "options": {
+                "A": "No driving mistake was made",
+                "B": "The ego vehicle stayed in its lane instead of moving right before the upcoming turn",
+                "C": "The ego vehicle accelerated toward a red light instead of slowing down and preparing to stop",
+                "D": "The ego vehicle began slowing down too early while still far from the junction",
+                "E": "Not enough visual evidence is available to identify a driving mistake"
+              },
+              "answer_key": "C",
+              "option_order_randomized": true,
+              "option_randomization_seed": 6214151004295212468
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "set_id": 2,
+      "title": "Continued straight through a red light",
+      "frame_window": {
+        "frame_start": 38,
+        "frame_end": 151,
+        "t_start_s": 3.8,
+        "t_end_s": 15.1
+      },
+      "gt_event": {
+        "ego_action": [
+          "continue_straight"
+        ],
+        "traffic_light_state": "red",
+        "stop_sign_present": false,
+        "infraction": true,
+        "infraction_type": "ran_red_light",
+        "mistake": true,
+        "safe_and_appropriate": false,
+        "safety_interpretation": "unsafe/inappropriate: ego proceeds through a red traffic light"
+      },
+      "conditions": [
+        {
+          "condition": "oracle_perception",
+          "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red.",
+          "questions": [
+            {
+              "id": "Q3",
+              "source_question_id": "Q3",
+              "scope": "full_sequence",
+              "category": "Infraction Detection",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red.",
+              "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision.",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red.\n\nDid the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision.",
+              "options": {
+                "A": "Yes — at least one infraction occurred",
+                "B": "No — no infraction occurred",
+                "C": "Not enough visual evidence is available to determine whether an infraction occurred"
+              },
+              "answer_key": "A",
+              "option_order_randomized": true,
+              "option_randomization_seed": 2754972217919563158
+            },
+            {
+              "id": "Q4",
+              "source_question_id": "Q4",
+              "scope": "full_sequence",
+              "category": "Infraction Identification",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red.",
+              "question": "An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision. What was the main infraction committed by the ego vehicle, if any?",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red.\n\nAn infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision. What was the main infraction committed by the ego vehicle, if any?",
+              "options": {
+                "A": "The ego vehicle caused a collision",
+                "B": "The ego vehicle violated a lane boundary or left the roadway",
+                "C": "The ego vehicle entered the junction while the traffic signal controlling it was red",
+                "D": "No infraction occurred",
+                "E": "Not enough visual evidence is available to identify an infraction"
+              },
+              "answer_key": "C",
+              "option_order_randomized": true,
+              "option_randomization_seed": 10472576289362577071
+            },
+            {
+              "id": "Q5",
+              "source_question_id": "Q5",
+              "scope": "full_sequence",
+              "category": "Mistake Detection",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red.",
+              "question": "Did the ego vehicle make a driving mistake during this sequence? A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs.",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red.\n\nDid the ego vehicle make a driving mistake during this sequence? A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs.",
+              "options": {
+                "A": "Yes — at least one driving mistake occurred",
+                "B": "No — no driving mistake occurred",
+                "C": "Not enough visual evidence is available to determine whether a driving mistake occurred"
+              },
+              "answer_key": "A",
+              "option_order_randomized": true,
+              "option_randomization_seed": 15648316425961432727
+            },
+            {
+              "id": "Q6",
+              "source_question_id": "Q6",
+              "scope": "full_sequence",
+              "category": "Mistake Identification",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red.",
+              "question": "A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs. What was the main driving mistake, if any?",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red.\n\nA driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs. What was the main driving mistake, if any?",
+              "options": {
+                "A": "The ego vehicle entered the junction while the traffic light was red",
+                "B": "No driving mistake was made",
+                "C": "Not enough visual evidence is available to identify a driving mistake",
+                "D": "The ego vehicle crossed the junction too slowly after receiving a green light",
+                "E": "The ego vehicle stopped too late but remained outside the junction"
+              },
+              "answer_key": "A",
+              "option_order_randomized": true,
+              "option_randomization_seed": 15532562989028221299
+            }
+          ]
+        },
+        {
+          "condition": "oracle_perception_plus_rule",
+          "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.",
+          "questions": [
+            {
+              "id": "Q3",
+              "source_question_id": "Q3",
+              "scope": "full_sequence",
+              "category": "Infraction Detection",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.",
+              "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision.",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.\n\nDid the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision.",
+              "options": {
+                "A": "Yes — at least one infraction occurred",
+                "B": "No — no infraction occurred",
+                "C": "Not enough visual evidence is available to determine whether an infraction occurred"
+              },
+              "answer_key": "A",
+              "option_order_randomized": true,
+              "option_randomization_seed": 2754972217919563158
+            },
+            {
+              "id": "Q4",
+              "source_question_id": "Q4",
+              "scope": "full_sequence",
+              "category": "Infraction Identification",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.",
+              "question": "An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision. What was the main infraction committed by the ego vehicle, if any?",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.\n\nAn infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision. What was the main infraction committed by the ego vehicle, if any?",
+              "options": {
+                "A": "The ego vehicle caused a collision",
+                "B": "The ego vehicle violated a lane boundary or left the roadway",
+                "C": "The ego vehicle entered the junction while the traffic signal controlling it was red",
+                "D": "No infraction occurred",
+                "E": "Not enough visual evidence is available to identify an infraction"
+              },
+              "answer_key": "C",
+              "option_order_randomized": true,
+              "option_randomization_seed": 10472576289362577071
+            },
+            {
+              "id": "Q5",
+              "source_question_id": "Q5",
+              "scope": "full_sequence",
+              "category": "Mistake Detection",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.",
+              "question": "Did the ego vehicle make a driving mistake during this sequence? A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs.",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.\n\nDid the ego vehicle make a driving mistake during this sequence? A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs.",
+              "options": {
+                "A": "Yes — at least one driving mistake occurred",
+                "B": "No — no driving mistake occurred",
+                "C": "Not enough visual evidence is available to determine whether a driving mistake occurred"
+              },
+              "answer_key": "A",
+              "option_order_randomized": true,
+              "option_randomization_seed": 15648316425961432727
+            },
+            {
+              "id": "Q6",
+              "source_question_id": "Q6",
+              "scope": "full_sequence",
+              "category": "Mistake Identification",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.",
+              "question": "A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs. What was the main driving mistake, if any?",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle continues straight and enters the junction while the signal is red. Applicable benchmark rules and guidance: entering the junction while the controlling traffic signal is red is an infraction. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.\n\nA driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs. What was the main driving mistake, if any?",
+              "options": {
+                "A": "The ego vehicle entered the junction while the traffic light was red",
+                "B": "No driving mistake was made",
+                "C": "Not enough visual evidence is available to identify a driving mistake",
+                "D": "The ego vehicle crossed the junction too slowly after receiving a green light",
+                "E": "The ego vehicle stopped too late but remained outside the junction"
+              },
+              "answer_key": "A",
+              "option_order_randomized": true,
+              "option_randomization_seed": 15532562989028221299
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "set_id": 5,
+      "title": "Final right turn through a red light",
+      "frame_window": {
+        "frame_start": 424,
+        "frame_end": 487,
+        "t_start_s": 42.4,
+        "t_end_s": 48.7
+      },
+      "gt_event": {
+        "ego_action": [
+          "turn_right",
+          "accelerate"
+        ],
+        "traffic_light_state": "red",
+        "stop_sign_present": false,
+        "infraction": true,
+        "infraction_type": "ran_red_light",
+        "mistake": true,
+        "safe_and_appropriate": false,
+        "safety_interpretation": "unsafe/inappropriate: ego turns right through a red traffic light"
+      },
+      "conditions": [
+        {
+          "condition": "oracle_perception",
+          "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red.",
+          "questions": [
+            {
+              "id": "Q3",
+              "source_question_id": "Q3",
+              "scope": "full_sequence",
+              "category": "Infraction Detection",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red.",
+              "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision.",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red.\n\nDid the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision.",
+              "options": {
+                "A": "Not enough visual evidence is available to determine whether an infraction occurred",
+                "B": "No — no infraction occurred",
+                "C": "Yes — at least one infraction occurred"
+              },
+              "answer_key": "C",
+              "option_order_randomized": true,
+              "option_randomization_seed": 5699962336954787777
+            },
+            {
+              "id": "Q4",
+              "source_question_id": "Q4",
+              "scope": "full_sequence",
+              "category": "Infraction Identification",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red.",
+              "question": "An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision. What was the main infraction committed by the ego vehicle, if any?",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red.\n\nAn infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision. What was the main infraction committed by the ego vehicle, if any?",
+              "options": {
+                "A": "Not enough visual evidence is available to identify an infraction",
+                "B": "The ego vehicle entered the junction while the traffic signal controlling it was red",
+                "C": "The ego vehicle caused a collision",
+                "D": "No infraction occurred",
+                "E": "The ego vehicle violated a lane boundary or left the roadway"
+              },
+              "answer_key": "B",
+              "option_order_randomized": true,
+              "option_randomization_seed": 16750453808747078148
+            },
+            {
+              "id": "Q5",
+              "source_question_id": "Q5",
+              "scope": "full_sequence",
+              "category": "Mistake Detection",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red.",
+              "question": "Did the ego vehicle make a driving mistake during this sequence? A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs.",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red.\n\nDid the ego vehicle make a driving mistake during this sequence? A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs.",
+              "options": {
+                "A": "Not enough visual evidence is available to determine whether a driving mistake occurred",
+                "B": "Yes — at least one driving mistake occurred",
+                "C": "No — no driving mistake occurred"
+              },
+              "answer_key": "B",
+              "option_order_randomized": true,
+              "option_randomization_seed": 5777855484633362406
+            },
+            {
+              "id": "Q6",
+              "source_question_id": "Q6",
+              "scope": "full_sequence",
+              "category": "Mistake Identification",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red.",
+              "question": "A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs. What was the main driving mistake, if any?",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red.\n\nA driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs. What was the main driving mistake, if any?",
+              "options": {
+                "A": "Not enough visual evidence is available to identify a driving mistake",
+                "B": "The ego vehicle entered the correct junction but used the wrong lane for the turn",
+                "C": "No driving mistake was made",
+                "D": "The ego vehicle turned right through the junction while the traffic light was red",
+                "E": "The ego vehicle turned right too slowly after receiving permission to proceed"
+              },
+              "answer_key": "D",
+              "option_order_randomized": true,
+              "option_randomization_seed": 2503733406365368772
+            }
+          ]
+        },
+        {
+          "condition": "oracle_perception_plus_rule",
+          "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red. Applicable benchmark rules and guidance: in this simulated benchmark, entering the junction while the controlling traffic signal is red is an infraction, including when turning right. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.",
+          "questions": [
+            {
+              "id": "Q3",
+              "source_question_id": "Q3",
+              "scope": "full_sequence",
+              "category": "Infraction Detection",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red. Applicable benchmark rules and guidance: in this simulated benchmark, entering the junction while the controlling traffic signal is red is an infraction, including when turning right. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.",
+              "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision.",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red. Applicable benchmark rules and guidance: in this simulated benchmark, entering the junction while the controlling traffic signal is red is an infraction, including when turning right. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.\n\nDid the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision.",
+              "options": {
+                "A": "Not enough visual evidence is available to determine whether an infraction occurred",
+                "B": "No — no infraction occurred",
+                "C": "Yes — at least one infraction occurred"
+              },
+              "answer_key": "C",
+              "option_order_randomized": true,
+              "option_randomization_seed": 5699962336954787777
+            },
+            {
+              "id": "Q4",
+              "source_question_id": "Q4",
+              "scope": "full_sequence",
+              "category": "Infraction Identification",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red. Applicable benchmark rules and guidance: in this simulated benchmark, entering the junction while the controlling traffic signal is red is an infraction, including when turning right. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.",
+              "question": "An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision. What was the main infraction committed by the ego vehicle, if any?",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red. Applicable benchmark rules and guidance: in this simulated benchmark, entering the junction while the controlling traffic signal is red is an infraction, including when turning right. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.\n\nAn infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering the junction against the traffic signal controlling the ego vehicle, failing to stop when required, violating a lane boundary, leaving the roadway, or causing a collision. What was the main infraction committed by the ego vehicle, if any?",
+              "options": {
+                "A": "Not enough visual evidence is available to identify an infraction",
+                "B": "The ego vehicle entered the junction while the traffic signal controlling it was red",
+                "C": "The ego vehicle caused a collision",
+                "D": "No infraction occurred",
+                "E": "The ego vehicle violated a lane boundary or left the roadway"
+              },
+              "answer_key": "B",
+              "option_order_randomized": true,
+              "option_randomization_seed": 16750453808747078148
+            },
+            {
+              "id": "Q5",
+              "source_question_id": "Q5",
+              "scope": "full_sequence",
+              "category": "Mistake Detection",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red. Applicable benchmark rules and guidance: in this simulated benchmark, entering the junction while the controlling traffic signal is red is an infraction, including when turning right. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.",
+              "question": "Did the ego vehicle make a driving mistake during this sequence? A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs.",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red. Applicable benchmark rules and guidance: in this simulated benchmark, entering the junction while the controlling traffic signal is red is an infraction, including when turning right. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.\n\nDid the ego vehicle make a driving mistake during this sequence? A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs.",
+              "options": {
+                "A": "Not enough visual evidence is available to determine whether a driving mistake occurred",
+                "B": "Yes — at least one driving mistake occurred",
+                "C": "No — no driving mistake occurred"
+              },
+              "answer_key": "B",
+              "option_order_randomized": true,
+              "option_randomization_seed": 5777855484633362406
+            },
+            {
+              "id": "Q6",
+              "source_question_id": "Q6",
+              "scope": "full_sequence",
+              "category": "Mistake Identification",
+              "type": "multiple_choice",
+              "prompt_context": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red. Applicable benchmark rules and guidance: in this simulated benchmark, entering the junction while the controlling traffic signal is red is an infraction, including when turning right. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.",
+              "question": "A driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs. What was the main driving mistake, if any?",
+              "diagnostic_prompt": "Observed facts: the traffic signal controlling the ego vehicle remains red. The ego vehicle turns right and enters the junction while the signal is red. Applicable benchmark rules and guidance: in this simulated benchmark, entering the junction while the controlling traffic signal is red is an infraction, including when turning right. A concrete traffic-rule infraction is also a driving mistake and is unsafe or inappropriate.\n\nA driving mistake is an unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur even when no formal traffic-rule violation or collision occurs. What was the main driving mistake, if any?",
+              "options": {
+                "A": "Not enough visual evidence is available to identify a driving mistake",
+                "B": "The ego vehicle entered the correct junction but used the wrong lane for the turn",
+                "C": "No driving mistake was made",
+                "D": "The ego vehicle turned right through the junction while the traffic light was red",
+                "E": "The ego vehicle turned right too slowly after receiving permission to proceed"
+              },
+              "answer_key": "D",
+              "option_order_randomized": true,
+              "option_randomization_seed": 2503733406365368772
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "interpretation_guide": {
+    "original_wrong_oracle_perception_correct": "The failure is primarily associated with visual perception or temporal grounding.",
+    "oracle_perception_wrong_oracle_rule_correct": "The model has access to the relevant facts but needs explicit benchmark-rule guidance.",
+    "both_oracle_conditions_wrong": "The failure is more consistent with judgment mapping, instruction following, answer-option selection, or a persistent no-mistake/no-infraction bias.",
+    "detection_correct_identification_wrong": "The model detects that a problem occurred but cannot identify the correct type.",
+    "detection_wrong_identification_correct": "The model is internally inconsistent or highly sensitive to question formulation."
+  },
+  "suggested_metrics": {
+    "oracle_perception_recovery_rate": "Number of primary errors corrected under oracle perception divided by the number of primary errors.",
+    "oracle_rule_recovery_rate": "Number of oracle-perception errors corrected after adding the rule divided by the number of oracle-perception errors.",
+    "detection_identification_consistency": "Percentage of paired detection and identification answers that produce logically compatible judgments.",
+    "positive_event_recall_by_condition": "Recall on mistake-positive or infraction-positive events, reported separately for the primary, oracle-perception, and oracle-perception-plus-rule conditions."
+  }
+}

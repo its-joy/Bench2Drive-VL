@@ -1,0 +1,180 @@
+{
+  "action_recognition": {
+    "correct": {
+      "keep_lane_accelerate": [
+        "Accelerated while keeping lane",
+        "Kept its lane while speeding up",
+        "Drove forward in the same lane while accelerating"
+      ],
+      "continue_straight": [
+        "Continued straight",
+        "Drove straight through the scene",
+        "Proceeded forward without turning"
+      ],
+      "lane_change_right": [
+        "Changed lanes to the right",
+        "Moved into the lane on the right",
+        "Shifted right into an adjacent lane"
+      ],
+      "lane_change_left": [
+        "Changed lanes to the left",
+        "Moved into the lane on the left",
+        "Shifted left into an adjacent lane"
+      ],
+      "turn_right": [
+        "Turned right",
+        "Completed a right turn",
+        "Moved through the junction by turning right"
+      ],
+      "turn_left": [
+        "Turned left",
+        "Completed a left turn",
+        "Moved through the junction by turning left"
+      ],
+      "keep_lane": [
+        "Kept lane",
+        "Stayed in its current lane",
+        "Maintained lane position"
+      ]
+    },
+    "distractors": [
+      "Stopped before the traffic light",
+      "Changed lanes to the right",
+      "Changed lanes to the left",
+      "Turned right through the junction",
+      "Turned left through the junction",
+      "Continued straight without changing lanes",
+      "Decelerated to a stop",
+      "Reversed or backed up"
+    ]
+  },
+  "action_explanation": {
+    "correct": {
+      "red_light_precursor": [
+        "The ego vehicle was accelerating toward the upcoming red-light-controlled junction while staying in its lane",
+        "The ego vehicle continued toward the red traffic light instead of preparing to slow down"
+      ],
+      "ran_red_light": [
+        "The ego vehicle proceeded through a red-light-controlled junction instead of stopping",
+        "The ego vehicle continued into or through the junction despite the red signal"
+      ],
+      "positioning_for_maneuver": [
+        "The ego vehicle was positioning itself for the intended maneuver",
+        "The ego vehicle moved according to the route and lane geometry needed for the maneuver"
+      ],
+      "default": [
+        "The ego vehicle was following its route and road/lane geometry while performing the observed action",
+        "The ego vehicle's motion matches the road layout and its apparent route through the scene"
+      ]
+    },
+    "distractors": [
+      "The ego vehicle stopped because traffic control required it to stop",
+      "The ego vehicle changed lanes to avoid a blocking vehicle",
+      "The ego vehicle reversed or left the roadway",
+      "The ego vehicle yielded to a pedestrian crossing directly ahead",
+      "The ego vehicle parked at the curb"
+    ]
+  },
+  "infraction_detection": {
+    "correct": {
+      "true": [
+        "Yes - at least one infraction occurred"
+      ],
+      "false": [
+        "No - no infraction occurred"
+      ]
+    },
+    "distractors": [
+      "Not enough visual evidence is available to determine whether an infraction occurred",
+      "Only a lane-change infraction occurred",
+      "Only a parking infraction occurred"
+    ]
+  },
+  "mistake_identification": {
+    "correct": {
+      "red_light_precursor": [
+        "The ego vehicle accelerated toward a red light instead of slowing down and preparing to stop",
+        "The ego vehicle failed to prepare for the red-light-controlled junction"
+      ],
+      "ran_red_light": [
+        "The ego vehicle proceeded through a red light instead of stopping",
+        "The ego vehicle entered or crossed the red-light-controlled junction"
+      ],
+      "generic_mistake": [
+        "The ego vehicle made an unsafe or inappropriate maneuver",
+        "The ego vehicle chose a poorly timed or unsafe action"
+      ],
+      "none": [
+        "No driving mistake was made",
+        "The ego vehicle did not make a driving mistake"
+      ]
+    },
+    "distractors": [
+      "The ego vehicle stopped too early while still far from any relevant control",
+      "The ego vehicle should have changed lanes in the opposite direction",
+      "The ego vehicle drove into the wrong side of the road",
+      "The ego vehicle collided with a nearby road user",
+      "The ego vehicle made an unnecessary U-turn"
+    ]
+  },
+  "safety_appropriateness": {
+    "correct": {
+      "true": [
+        "Yes - the ego vehicle's action was safe and appropriate"
+      ],
+      "false": [
+        "No - the ego vehicle's action was unsafe or inappropriate"
+      ]
+    },
+    "distractors": [
+      "Not enough information is available to determine whether the action was safe and appropriate",
+      "The action was safe only because no other vehicles were visible",
+      "The action was inappropriate only because the vehicle was moving slowly"
+    ]
+  },
+  "alternative_action": {
+    "correct": {
+      "stop_for_red": [
+        "Slow down and prepare to stop before reaching the red-light-controlled junction",
+        "Reduce speed and stop before entering the red-light-controlled junction"
+      ],
+      "generic_safe": [
+        "Slow down, maintain a safer position, and avoid the unsafe maneuver",
+        "Choose a safer maneuver and avoid creating unnecessary risk"
+      ],
+      "none": [
+        "No alternative action was needed",
+        "The ego vehicle did not need to take a different action"
+      ]
+    },
+    "distractors": [
+      "Maintain the same behavior even if traffic control or risk context required a change",
+      "Move in the opposite direction from the observed intended route",
+      "Accelerate harder through the same conflict area",
+      "Stop in the middle of the junction",
+      "Change lanes abruptly without checking surrounding traffic"
+    ]
+  },
+  "reviewer_response": {
+    "correct": {
+      "agree": [
+        "Agree with the reviewer - the reviewer claim is supported by the sequence",
+        "Agree with the reviewer - the ego vehicle's action was safe and appropriate"
+      ],
+      "disagree_safe": [
+        "Disagree with the reviewer - the ego vehicle's action was actually safe and appropriate",
+        "Disagree with the reviewer - the sequence supports that the ego vehicle acted appropriately"
+      ],
+      "disagree_mistake": [
+        "Disagree with the reviewer - the reviewer claim misses the main mistake or infraction",
+        "Disagree with the reviewer - the sequence shows an unsafe action or traffic-rule violation"
+      ]
+    },
+    "distractors": [
+      "Agree with the reviewer - no mistake was made solely because no collision occurred",
+      "Agree with the reviewer - any completed maneuver is automatically acceptable",
+      "Not enough information is available to evaluate the reviewer's statement",
+      "Disagree with the reviewer only because another vehicle is visible"
+    ]
+  }
+}

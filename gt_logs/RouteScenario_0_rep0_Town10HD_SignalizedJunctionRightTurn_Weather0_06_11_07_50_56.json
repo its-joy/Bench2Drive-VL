@@ -1,0 +1,702 @@
+{
+  "episode": {
+    "goal": {
+      "maneuver": "turn right at a signalized intersection",
+      "completion_status": "completed_degraded"
+    },
+    "events": [
+      {
+        "frame_start": 0,
+        "t_s": 0.0,
+        "duration_s": 14.3,
+        "ego_action": [
+          "creeping_forward"
+        ],
+        "speed_start_kmh": 0.0,
+        "speed_end_kmh": 1.1,
+        "acceleration_ms2": 0.021,
+        "lane_id": -1,
+        "junction": false,
+        "agents_involved": [
+          {
+            "agent_id": "65",
+            "agent_type": "vehicle",
+            "distance_m": 15.0,
+            "relative_position": [
+              "aligned",
+              "behind"
+            ],
+            "agent_speed_kmh": 0.0,
+            "lane_id": -1
+          },
+          {
+            "agent_id": "67",
+            "agent_type": "vehicle",
+            "distance_m": 15.4,
+            "relative_position": [
+              "right",
+              "behind"
+            ],
+            "agent_speed_kmh": 0.0,
+            "lane_id": -2
+          },
+          {
+            "agent_id": "66",
+            "agent_type": "vehicle",
+            "distance_m": 30.0,
+            "relative_position": [
+              "aligned",
+              "behind"
+            ],
+            "agent_speed_kmh": 0.0,
+            "lane_id": 1
+          },
+          {
+            "agent_id": "68",
+            "agent_type": "vehicle",
+            "distance_m": 30.3,
+            "relative_position": [
+              "right",
+              "behind"
+            ],
+            "agent_speed_kmh": 0.0,
+            "lane_id": 2
+          }
+        ],
+        "traffic_light_state": "red",
+        "traffic_light_distance_m": 43.0,
+        "stop_sign_distance_m": null,
+        "critical_decision_point": false
+      },
+      {
+        "frame_start": 144,
+        "t_s": 14.4,
+        "duration_s": 9.2,
+        "ego_action": [
+          "continue_straight",
+          "accelerate"
+        ],
+        "speed_start_kmh": 1.1,
+        "speed_end_kmh": 61.5,
+        "acceleration_ms2": 1.824,
+        "lane_id": -1,
+        "junction": true,
+        "agents_involved": [
+          {
+            "agent_id": "65",
+            "agent_type": "vehicle",
+            "distance_m": 10.2,
+            "relative_position": [
+              "aligned",
+              "behind"
+            ],
+            "agent_speed_kmh": 0.0,
+            "lane_id": -1
+          },
+          {
+            "agent_id": "86",
+            "agent_type": "vehicle",
+            "distance_m": 12.7,
+            "relative_position": [
+              "left",
+              "ahead"
+            ],
+            "agent_speed_kmh": 29.5,
+            "lane_id": 1
+          },
+          {
+            "agent_id": "83",
+            "agent_type": "vehicle",
+            "distance_m": 14.2,
+            "relative_position": [
+              "left",
+              "behind"
+            ],
+            "agent_speed_kmh": 29.1,
+            "lane_id": 2
+          },
+          {
+            "agent_id": "85",
+            "agent_type": "vehicle",
+            "distance_m": 19.4,
+            "relative_position": [
+              "left",
+              "ahead"
+            ],
+            "agent_speed_kmh": 28.7,
+            "lane_id": 2
+          },
+          {
+            "agent_id": "84",
+            "agent_type": "vehicle",
+            "distance_m": 20.1,
+            "relative_position": [
+              "left",
+              "behind"
+            ],
+            "agent_speed_kmh": 29.0,
+            "lane_id": 1
+          },
+          {
+            "agent_id": "66",
+            "agent_type": "vehicle",
+            "distance_m": 20.8,
+            "relative_position": [
+              "aligned",
+              "behind"
+            ],
+            "agent_speed_kmh": 1.2,
+            "lane_id": -1
+          },
+          {
+            "agent_id": "77",
+            "agent_type": "vehicle",
+            "distance_m": 33.3,
+            "relative_position": [
+              "right",
+              "ahead"
+            ],
+            "agent_speed_kmh": -0.1,
+            "lane_id": 1
+          },
+          {
+            "agent_id": "87",
+            "agent_type": "vehicle",
+            "distance_m": 35.7,
+            "relative_position": [
+              "left",
+              "ahead"
+            ],
+            "agent_speed_kmh": 13.8,
+            "lane_id": 1
+          },
+          {
+            "agent_id": "88",
+            "agent_type": "vehicle",
+            "distance_m": 38.8,
+            "relative_position": [
+              "left",
+              "ahead"
+            ],
+            "agent_speed_kmh": 20.2,
+            "lane_id": 2
+          }
+        ],
+        "traffic_light_state": "red",
+        "traffic_light_distance_m": 34.8,
+        "stop_sign_distance_m": null,
+        "critical_decision_point": true,
+        "decision_point": [
+          {
+            "t_s": 14.4,
+            "available_actions": {
+              "compliance": [
+                "stop_at_light",
+                "proceed_through_light"
+              ],
+              "direction": [
+                "continue_straight"
+              ]
+            },
+            "chosen_action": {
+              "compliance": "proceed_through_light",
+              "direction": "continue_straight"
+            },
+            "compliance_outcome": {
+              "traffic_light": "ran_red_light",
+              "lane_position": "correct_lane_straight"
+            },
+            "inferred_cause": "forced_entry",
+            "reasoning_context": "ego proceeded through junction at 1.1km/h with red traffic light at 34.8m; cross-traffic present: id=86 left/ahead 29.5km/h at 12.7m, id=83 left/behind 29.1km/h at 14.2m, id=85 left/ahead 28.7km/h at 19.4m",
+            "risk": {
+              "compliance_risk": "critical",
+              "situational_risk": "low",
+              "risk_level": "critical",
+              "agents_involved": null,
+              "appropriate": false,
+              "outcome": "completed_degraded",
+              "infraction": {
+                "type": "ran_red_light",
+                "timestamp": 23.5,
+                "infraction_log": "Agent ran a red light 45 at (x=-62.099, y=123.756, z=0.283)",
+                "distance_m": 9.6,
+                "caused_by": "ego_ignore_red_light",
+                "infraction_fault": "ego"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "frame_start": 237,
+        "t_s": 23.7,
+        "duration_s": 7.3,
+        "ego_action": [
+          "lane_change_right",
+          "decelerate"
+        ],
+        "speed_start_kmh": 61.5,
+        "speed_end_kmh": 3.0,
+        "acceleration_ms2": -2.226,
+        "lane_id": -1,
+        "junction": true,
+        "agents_involved": [
+          {
+            "agent_id": "68",
+            "agent_type": "vehicle",
+            "distance_m": 39.7,
+            "relative_position": [
+              "right",
+              "ahead"
+            ],
+            "agent_speed_kmh": -0.0,
+            "lane_id": -2
+          }
+        ],
+        "traffic_light_state": null,
+        "traffic_light_distance_m": null,
+        "stop_sign_distance_m": null,
+        "critical_decision_point": true,
+        "decision_point": [
+          {
+            "t_s": 23.7,
+            "available_actions": [
+              "lane_change_left",
+              "lane_change_right",
+              "keep_lane"
+            ],
+            "chosen_action": "lane_change_right",
+            "compliance_outcome": null,
+            "inferred_cause": "positioning_for_maneuver",
+            "reasoning_context": "ego changed right at 61.5km/h; no blocking agent in current lane; closest target lane agent: id=68 at 39.7m",
+            "risk": {
+              "risk_level": "medium",
+              "agents_involved": [
+                {
+                  "agent_id": "68",
+                  "agent_type": "vehicle",
+                  "distance_m": 39.7,
+                  "relative_position": [
+                    "right",
+                    "ahead"
+                  ],
+                  "agent_speed_kmh": -0.0,
+                  "lane_id": -2
+                }
+              ],
+              "appropriate": false,
+              "outcome": "completed_degraded",
+              "infraction": {
+                "type": "collision_vehicle",
+                "timestamp": 25.0,
+                "infraction_log": "Agent collided against object with type=vehicle.chevrolet.impala and id=68 at (x=-98.391, y=103.22, z=-0.004)",
+                "agent_id": "68",
+                "distance_m": 0.0,
+                "collision_type": "rear_end",
+                "caused_by": "merging_without_sufficient_gap",
+                "infraction_fault": "ego"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "frame_start": 311,
+        "t_s": 31.1,
+        "duration_s": 8.9,
+        "ego_action": [
+          "lane_change_left"
+        ],
+        "speed_start_kmh": 3.0,
+        "speed_end_kmh": 1.0,
+        "acceleration_ms2": -0.062,
+        "lane_id": -1,
+        "junction": false,
+        "agents_involved": [],
+        "traffic_light_state": null,
+        "traffic_light_distance_m": null,
+        "stop_sign_distance_m": null,
+        "critical_decision_point": true,
+        "decision_point": [
+          {
+            "t_s": 31.1,
+            "available_actions": [
+              "lane_change_left",
+              "lane_change_right",
+              "keep_lane"
+            ],
+            "chosen_action": "lane_change_left",
+            "compliance_outcome": null,
+            "inferred_cause": "obstacle_avoidance",
+            "reasoning_context": "ego changed left at 3.0km/h; agent N/A at N/Am ahead",
+            "risk": {
+              "risk_level": null,
+              "agents_involved": null,
+              "appropriate": true,
+              "outcome": "completed_clean",
+              "infraction": null
+            }
+          }
+        ]
+      },
+      {
+        "frame_start": 401,
+        "t_s": 40.1,
+        "duration_s": 1.7,
+        "ego_action": [
+          "lane_change_right",
+          "accelerate"
+        ],
+        "speed_start_kmh": 1.0,
+        "speed_end_kmh": 31.7,
+        "acceleration_ms2": 5.016,
+        "lane_id": -1,
+        "junction": false,
+        "agents_involved": [
+          {
+            "agent_id": "112",
+            "agent_type": "vehicle",
+            "distance_m": 4.7,
+            "relative_position": [
+              "right",
+              "behind"
+            ],
+            "agent_speed_kmh": 18.7,
+            "lane_id": -2
+          },
+          {
+            "agent_id": "108",
+            "agent_type": "vehicle",
+            "distance_m": 11.3,
+            "relative_position": [
+              "right",
+              "ahead"
+            ],
+            "agent_speed_kmh": 6.7,
+            "lane_id": -2
+          }
+        ],
+        "traffic_light_state": "green",
+        "traffic_light_distance_m": 48.8,
+        "stop_sign_distance_m": null,
+        "critical_decision_point": true,
+        "decision_point": [
+          {
+            "t_s": 40.1,
+            "available_actions": [
+              "lane_change_left",
+              "lane_change_right",
+              "keep_lane",
+              "yield_to_approaching_traffic"
+            ],
+            "chosen_action": "lane_change_right",
+            "compliance_outcome": null,
+            "inferred_cause": "positioning_for_maneuver",
+            "reasoning_context": "ego changed right at 1.0km/h; no blocking agent in current lane; closest target lane agent: id=112 at 4.7m",
+            "risk": {
+              "risk_level": "critical",
+              "agents_involved": [
+                {
+                  "agent_id": "112",
+                  "agent_type": "vehicle",
+                  "distance_m": 4.7,
+                  "relative_position": [
+                    "right",
+                    "behind"
+                  ],
+                  "agent_speed_kmh": 18.7,
+                  "lane_id": -2
+                }
+              ],
+              "appropriate": false,
+              "outcome": "completed_degraded",
+              "infraction": {
+                "type": "collision_vehicle",
+                "timestamp": 40.5,
+                "infraction_log": "Agent collided against object with type=vehicle.ford.mustang and id=112 at (x=-106.577, y=66.597, z=-0.006)",
+                "agent_id": "112",
+                "distance_m": 0.3,
+                "collision_type": "side_swipe",
+                "caused_by": "merging_without_sufficient_gap",
+                "infraction_fault": "ego"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "frame_start": 419,
+        "t_s": 41.9,
+        "duration_s": 0.5,
+        "ego_action": [
+          "lane_change_left",
+          "decelerate"
+        ],
+        "speed_start_kmh": 31.7,
+        "speed_end_kmh": 11.5,
+        "acceleration_ms2": -11.222,
+        "lane_id": -2,
+        "junction": false,
+        "agents_involved": [
+          {
+            "agent_id": "108",
+            "agent_type": "vehicle",
+            "distance_m": 6.3,
+            "relative_position": [
+              "aligned",
+              "ahead"
+            ],
+            "agent_speed_kmh": 16.7,
+            "lane_id": -1
+          },
+          {
+            "agent_id": "112",
+            "agent_type": "vehicle",
+            "distance_m": 14.3,
+            "relative_position": [
+              "aligned",
+              "behind"
+            ],
+            "agent_speed_kmh": 2.3,
+            "lane_id": -2
+          },
+          {
+            "agent_id": "114",
+            "agent_type": "vehicle",
+            "distance_m": 16.8,
+            "relative_position": [
+              "left",
+              "behind"
+            ],
+            "agent_speed_kmh": 25.9,
+            "lane_id": -1
+          },
+          {
+            "agent_id": "68",
+            "agent_type": "vehicle",
+            "distance_m": 27.5,
+            "relative_position": [
+              "right",
+              "ahead"
+            ],
+            "agent_speed_kmh": 25.2,
+            "lane_id": -2
+          },
+          {
+            "agent_id": "110",
+            "agent_type": "vehicle",
+            "distance_m": 31.4,
+            "relative_position": [
+              "right",
+              "ahead"
+            ],
+            "agent_speed_kmh": 24.2,
+            "lane_id": -1
+          },
+          {
+            "agent_id": "117",
+            "agent_type": "vehicle",
+            "distance_m": 31.8,
+            "relative_position": [
+              "left",
+              "behind"
+            ],
+            "agent_speed_kmh": 19.1,
+            "lane_id": -1
+          },
+          {
+            "agent_id": "122",
+            "agent_type": "vehicle",
+            "distance_m": 39.2,
+            "relative_position": [
+              "right",
+              "ahead"
+            ],
+            "agent_speed_kmh": 0.0,
+            "lane_id": 4
+          }
+        ],
+        "traffic_light_state": "green",
+        "traffic_light_distance_m": 29.6,
+        "stop_sign_distance_m": null,
+        "critical_decision_point": true,
+        "decision_point": [
+          {
+            "t_s": 41.9,
+            "available_actions": [
+              "lane_change_left",
+              "lane_change_right",
+              "keep_lane",
+              "yield_to_approaching_traffic"
+            ],
+            "chosen_action": "lane_change_left",
+            "compliance_outcome": null,
+            "inferred_cause": "obstacle_avoidance",
+            "reasoning_context": "ego changed left at 31.7km/h; agent 108 at 6.3m ahead",
+            "risk": {
+              "risk_level": "medium",
+              "agents_involved": [
+                {
+                  "agent_id": "108",
+                  "agent_type": "vehicle",
+                  "distance_m": 6.3,
+                  "relative_position": [
+                    "aligned",
+                    "ahead"
+                  ],
+                  "agent_speed_kmh": 16.7,
+                  "lane_id": -1
+                }
+              ],
+              "appropriate": true,
+              "outcome": "completed_clean",
+              "infraction": null
+            }
+          }
+        ]
+      },
+      {
+        "frame_start": 425,
+        "t_s": 42.5,
+        "duration_s": 24.3,
+        "ego_action": [
+          "turn_right"
+        ],
+        "speed_start_kmh": 11.5,
+        "speed_end_kmh": 27.2,
+        "acceleration_ms2": 0.179,
+        "lane_id": -1,
+        "junction": true,
+        "agents_involved": [
+          {
+            "agent_id": "108",
+            "agent_type": "vehicle",
+            "distance_m": 10.2,
+            "relative_position": [
+              "right",
+              "ahead"
+            ],
+            "agent_speed_kmh": 28.0,
+            "lane_id": -1
+          },
+          {
+            "agent_id": "114",
+            "agent_type": "vehicle",
+            "distance_m": 14.2,
+            "relative_position": [
+              "aligned",
+              "behind"
+            ],
+            "agent_speed_kmh": 20.5,
+            "lane_id": -1
+          },
+          {
+            "agent_id": "112",
+            "agent_type": "vehicle",
+            "distance_m": 16.8,
+            "relative_position": [
+              "right",
+              "behind"
+            ],
+            "agent_speed_kmh": 15.3,
+            "lane_id": -2
+          },
+          {
+            "agent_id": "117",
+            "agent_type": "vehicle",
+            "distance_m": 30.0,
+            "relative_position": [
+              "right",
+              "behind"
+            ],
+            "agent_speed_kmh": 0.0,
+            "lane_id": -1
+          },
+          {
+            "agent_id": "68",
+            "agent_type": "vehicle",
+            "distance_m": 31.4,
+            "relative_position": [
+              "right",
+              "ahead"
+            ],
+            "agent_speed_kmh": 21.6,
+            "lane_id": -2
+          },
+          {
+            "agent_id": "110",
+            "agent_type": "vehicle",
+            "distance_m": 34.7,
+            "relative_position": [
+              "right",
+              "ahead"
+            ],
+            "agent_speed_kmh": 20.7,
+            "lane_id": -1
+          },
+          {
+            "agent_id": "122",
+            "agent_type": "vehicle",
+            "distance_m": 35.9,
+            "relative_position": [
+              "right",
+              "ahead"
+            ],
+            "agent_speed_kmh": 0.0,
+            "lane_id": 4
+          },
+          {
+            "agent_id": "120",
+            "agent_type": "vehicle",
+            "distance_m": 38.7,
+            "relative_position": [
+              "right",
+              "ahead"
+            ],
+            "agent_speed_kmh": 0.0,
+            "lane_id": 5
+          }
+        ],
+        "traffic_light_state": "yellow",
+        "traffic_light_distance_m": 25.1,
+        "stop_sign_distance_m": null,
+        "critical_decision_point": true,
+        "decision_point": [
+          {
+            "t_s": 42.5,
+            "available_actions": {
+              "compliance": [
+                "stop_at_light",
+                "proceed_through_light"
+              ],
+              "direction": [
+                "turn_right",
+                "turn_left",
+                "continue_straight"
+              ]
+            },
+            "chosen_action": {
+              "compliance": "proceed_through_light",
+              "direction": "turn_right"
+            },
+            "compliance_outcome": {
+              "traffic_light": "stopped_at_yellow",
+              "lane_position": "wrong_lane_right_turn"
+            },
+            "inferred_cause": "executing_target_maneuver",
+            "reasoning_context": "ego stopped at yellow traffic light 25.1m ahead; speed reduced to 27.2km/h",
+            "risk": {
+              "compliance_risk": "high",
+              "situational_risk": "medium",
+              "risk_level": "high",
+              "agents_involved": null,
+              "appropriate": false,
+              "outcome": "completed_degraded",
+              "infraction": null
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

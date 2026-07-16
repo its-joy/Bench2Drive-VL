@@ -100,7 +100,7 @@ class LeaderboardEvaluator(object):
 
     # Tunable parameters
     client_timeout = 10.0  # in seconds
-    frame_rate = 10.0      # in Hz — match data_agent.py frame_rate to avoid wasted ticks
+    frame_rate = 20.0      # in Hz — match data_agent.py frame_rate to avoid wasted ticks
 
     def __init__(self, args, statistics_manager):
         """
@@ -485,7 +485,8 @@ class LeaderboardEvaluator(object):
         # Stop the scenario
         try:
             print("\033[1m> Stopping the route\033[0m", flush=True)
-            self.agent_instance.clean_unused_folders()
+            # Commented out to preserve raw RGB frames (rgb_front, rgb_back, etc.)
+            # self.agent_instance.clean_unused_folders()
             self.manager.stop_scenario()
             entry_status = "Finished"
             self._register_statistics(config.index, entry_status, crash_message)

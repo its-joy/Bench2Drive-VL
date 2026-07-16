@@ -201,8 +201,9 @@ class DataAgent(AutoPilot):
         
         # self._local_planner = LocalPlanner(self._vehicle, opt_dict={}, map_inst=self.world_map)
     
-    def clean_unused_folders(self):
-        delete_target_folders(self.save_path)
+    # def clean_unused_folders(self):
+    #     # Commented out to preserve raw RGB camera frames (rgb_front, rgb_back, etc.)
+    #     delete_target_folders(self.save_path)
 
     def generate_vqa(self, last_tick_data, last_measurement_data):
         if self.step // self.config.data_save_freq < 0:
