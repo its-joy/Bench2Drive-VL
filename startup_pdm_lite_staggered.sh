@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export WORKSPACE="${WORKSPACE:-${SCRIPT_DIR}}"
 
 export ROUTES="${ROUTES:-${WORKSPACE}/leaderboard/data/bench2drive_opposite_vehicle_taking_priority.xml}"
-export FAULT_CONFIG="${FAULT_CONFIG:-${WORKSPACE}/fault_injector/configs/signalized_right_turn/bench2drive_opposite_vehicle_taking_priority.json}"
+export FAULT_CONFIG="${FAULT_CONFIG:-${WORKSPACE}/fault_injector/configs/signalized_right_turn/clean_bench2drive_opposite_vehicle_taking_priority.json}"
 export REPETITIONS="${REPETITIONS:-1}"
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
@@ -25,7 +25,7 @@ DRY_RUN="${DRY_RUN:-0}"
 RUN_TIMESTAMP="${RUN_TIMESTAMP:-$(date +'%Y_%m_%d_%H_%M_%S')}"
 if [[ -z "${VARIANT_ID:-}" ]]; then
   case "$(basename "${FAULT_CONFIG}")" in
-    clean.json|clean_scenarios.json|clean_accident_two_ways.json|clean_vehicle_turning_route_pedestrian.json|clean_bench2drive220_vehicle_turning_route_pedestrian.json|clean_construction_obstacle_two_ways.json|clean_missing_appropriate_responses.json)
+    clean.json|clean_scenarios.json|clean_accident_two_ways.json|clean_vehicle_turning_route_pedestrian.json|clean_bench2drive220_vehicle_turning_route_pedestrian.json|clean_construction_obstacle_two_ways.json|clean_missing_appropriate_responses.json|clean_bench2drive_opposite_vehicle_taking_priority.json)
       export VARIANT_ID="clean"
       ;;
     late_turn_lane_entry.json)
