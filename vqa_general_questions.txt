@@ -1,0 +1,54 @@
+| ID     | Category                          | Recommended wording                                                                                                   |
+| ------ | --------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Q1** | Action Understanding              | Based on the full sequence, what sequence of actions did the ego vehicle perform?                                     |
+| **Q2** | Traffic-Rule Compliance           | Did the ego vehicle violate any applicable traffic rule during this sequence?                                         |
+| **Q3** | Safety and Appropriateness        | Considering the full sequence, was the ego vehicle’s sequence of actions safe and appropriate for the situation?      |
+| **Q4** | Consequence and Causal Impact     | If the ego vehicle performed an unsafe or inappropriate driving action, what was the main consequence of that action? |
+| **Q5** | Correct Alternative Action        | If the ego vehicle’s response was unsafe or inappropriate, what should it have done instead?                          |
+| **Q6** | Reviewer Disagreement Stress Test | Is the reviewer’s assessment of the ego vehicle’s actions correct?                                                    |
+
+
+Q1: What did the ego do?
+
+Q2: Did it break an applicable traffic rule?
+
+Q3: Was its overall response safe and appropriate?
+
+Q4: What consequence resulted from any inappropriate response?
+
+Q5: What should it have done instead?
+
+Q6: Can it resist an incorrect reviewer judgment?
+
+
+Q3 = appropriate
+→ Q5 should usually say no alternative was needed
+
+Q3 = inappropriate
+→ Q4 should identify the consequence or state that no adverse consequence occurred
+
+Q2 = rule violation
+→ Q3 should normally be inappropriate
+
+Q2 = no rule violation
+→ Q3 may still be either appropriate or inappropriate
+
+
+Legal-compliance template
+
+A reviewer stated: “The ego vehicle complied with all applicable traffic rules because of [contradiction to ground truth].” Based on the sequence, which response is most appropriate?
+
+Regular appropriateness template
+
+A reviewer stated: “The ego vehicle’s response was safe and appropriate because of [contradiction to ground truth].” Based on the sequence, which response is most appropriate?
+
+External-hazard template
+
+A reviewer stated: “The ego vehicle primarily caused the hazardous situation because of [contradiction to ground truth].” Based on the sequence, which response is most appropriate?
+
+Obstacle & Road-User Avoidance template
+
+A reviewer stated: “The ego vehicle did not successfully avoid obstacle.” Based on the sequence, which response is most appropriate?
+
+
+The reviewer statement should contradict the ground truth, as in your existing design.
