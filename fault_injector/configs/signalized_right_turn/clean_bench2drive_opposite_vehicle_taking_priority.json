@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "config_id": "opposite_vehicle_taking_priority_clean_v1",
+  "base_scenario": "OppositeVehicleTakingPriority",
+  "condition": "clean",
+  "fault_type": "none",
+  "trigger": {},
+  "intervention": {},
+  "release": {},
+  "guards": {},
+  "expected": {
+    "mistake": false,
+    "infraction": false,
+    "infraction_type": null
+  }
+}
