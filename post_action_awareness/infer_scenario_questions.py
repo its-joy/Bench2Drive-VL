@@ -51,143 +51,6 @@ TRAFFIC_LIGHT_LAYOUT_NOTE = (
 
 
 # -----------------------------------------------
-# Question Templates (indexed by decision type)
-# -----------------------------------------------
-
-QUESTION_TEMPLATES = {
-    "continue_straight": {
-        "Q0": "Before answering any further questions, state the following from the frames provided:\n\n"
-              "1. Are there any stop signs present in the scene? Answer yes or no only.\n"
-              "2. Are there any traffic lights present in the scene? Answer yes or no only.\n"
-              "3. If you answered yes to question 2, what colour is the traffic light? Select from: red / yellow / green / not visible. If you answered no to question 2, write N/A.\n"
-              "4. Are there any other vehicles visible in the scene, and if so, where are they relative to the ego vehicle? Select all that apply:\n"
-              "   - No other vehicles visible\n"
-              "   - Vehicle ahead\n"
-              "   - Vehicle behind\n"
-              "   - Vehicle to the left\n"
-              "   - Vehicle to the right\n"
-              "   - Vehicle in another position",
-        "Q51_easy": "Based on the frames provided, what action did the ego vehicle just perform? Answer with A, B, C, or D only.\n\n"
-                    "A) Accelerated straight through the junction\n"
-                    "B) Turned right through the junction\n"
-                    "C) Stopped before entering the junction\n"
-                    "D) Changed lanes before entering the junction",
-        "Q51_hard": "Based on the frames provided, describe what the ego vehicle just did.\n\n"
-                    "Include:\n"
-                    "- The type of action performed\n"
-                    "- The direction of any turn or lane change\n"
-                    "- Whether the vehicle was speeding up or slowing down\n"
-                    "- The approximate speed",
-        "Q52_easy": "Based on the frames provided, what best explains why the ego vehicle took this action? Answer with A, B, C, or D only.\n\n"
-                    "A) The traffic light turned green and the ego proceeded normally\n"
-                    "B) The ego proceeded through the junction despite a red traffic light\n"
-                    "C) The ego changed lanes to position for the right turn\n"
-                    "D) The ego stopped briefly then resumed when the road was clear",
-        "Q52_hard": "Based on the frames provided, explain why the ego vehicle took this action.\n\n"
-                    "- Cite specific things you can observe in the scene\n"
-                    "- Reference any relevant agents, signals, or road conditions\n"
-                    "- Do not guess intent – only describe what the evidence shows",
-        "Q53_easy": "Based on the frames provided, was the action the ego vehicle just performed safe and appropriate? Answer with A, B, C, or D only.\n\n"
-                    "A) Yes – the ego had right of way and proceeded correctly\n"
-                    "B) No – the ego violated a red traffic light\n"
-                    "C) No – the ego created an unsafe situation by accelerating too fast\n"
-                    "D) Partially – the ego was already committed to the junction",
-        "Q53_hard": "Based on the frames provided, was the action the ego vehicle just performed safe and compliant with traffic rules?\n\n"
-                    "- State your verdict: yes / no / partially\n"
-                    "- Cite the specific evidence that supports your verdict\n"
-                    "- If unsafe, identify what made it unsafe\n"
-                    "- If a traffic rule was violated, state which rule",
-    },
-    "lane_change": {
-        "Q0": "Before answering any further questions, state the following from the frames provided:\n\n"
-              "1. Are there any stop signs present in the scene? Answer yes or no only.\n"
-              "2. Are there any traffic lights present in the scene? Answer yes or no only.\n"
-              "3. If you answered yes to question 2, what colour is the traffic light? Select from: red / yellow / green / not visible. If you answered no to question 2, write N/A.\n"
-              "4. Are there any other vehicles visible in the scene, and if so, where are they relative to the ego vehicle? Select all that apply:\n"
-              "   - No other vehicles visible\n"
-              "   - Vehicle ahead\n"
-              "   - Vehicle behind\n"
-              "   - Vehicle to the left\n"
-              "   - Vehicle to the right\n"
-              "   - Vehicle in another position",
-        "Q51_easy": "Based on the frames provided, what action did the ego vehicle just perform? Answer with A, B, C, or D only.\n\n"
-                    "A) Changed lanes while adjusting speed\n"
-                    "B) Turned right or left at the junction\n"
-                    "C) Maintained its lane while adjusting speed\n"
-                    "D) Performed a combination of lane change and turn",
-        "Q51_hard": "Based on the frames provided, describe what the ego vehicle just did.\n\n"
-                    "Include:\n"
-                    "- The type of action performed (lane change direction or turn)\n"
-                    "- Which direction it moved (left/right)\n"
-                    "- Whether the vehicle was speeding up or slowing down\n"
-                    "- The speed at the start and end of the maneuver",
-        "Q52_easy": "Based on the frames provided, what best explains why the ego vehicle took this action? Answer with A, B, C, or D only.\n\n"
-                    "A) To position for an upcoming maneuver or turn\n"
-                    "B) To avoid a collision with another vehicle\n"
-                    "C) To respond to a traffic signal change\n"
-                    "D) To overtake a slower vehicle",
-        "Q52_hard": "Based on the frames provided, explain why the ego vehicle took this action.\n\n"
-                    "- Cite specific things you can observe in the scene\n"
-                    "- Reference any relevant agents (positions, speeds), signals, or road conditions\n"
-                    "- Do not guess intent – only describe what the evidence shows",
-        "Q53_easy": "Based on the frames provided, was the action the ego vehicle just performed safe and appropriate? Answer with A, B, C, or D only.\n\n"
-                    "A) Yes – the maneuver was executed correctly and safely\n"
-                    "B) No – the ego did not maintain sufficient gap to other traffic\n"
-                    "C) No – the ego collided with another vehicle\n"
-                    "D) Partially – the maneuver was necessary but poorly executed",
-        "Q53_hard": "Based on the frames provided, was the action the ego vehicle just performed safe and compliant with traffic rules?\n\n"
-                    "- State your verdict: yes / no / partially\n"
-                    "- Cite the specific evidence that supports your verdict\n"
-                    "- If unsafe, identify what made it unsafe\n"
-                    "- If a collision occurred, describe it",
-    },
-    "turn": {
-        "Q0": "Before answering any further questions, state the following from the frames provided:\n\n"
-              "1. Are there any stop signs present in the scene? Answer yes or no only.\n"
-              "2. Are there any traffic lights present in the scene? Answer yes or no only.\n"
-              "3. If you answered yes to question 2, what colour is the traffic light? Select from: red / yellow / green / not visible. If you answered no to question 2, write N/A.\n"
-              "4. Are there any other vehicles visible in the scene, and if so, where are they relative to the ego vehicle? Select all that apply:\n"
-              "   - No other vehicles visible\n"
-              "   - Vehicle ahead\n"
-              "   - Vehicle behind\n"
-              "   - Vehicle to the left\n"
-              "   - Vehicle to the right\n"
-              "   - Vehicle in another position",
-        "Q51_easy": "Based on the frames provided, what action did the ego vehicle just perform? Answer with A, B, C, or D only.\n\n"
-                    "A) Turned right at the junction while accelerating\n"
-                    "B) Turned left at the junction\n"
-                    "C) Continued straight through the junction\n"
-                    "D) Stopped at the junction before turning",
-        "Q51_hard": "Based on the frames provided, describe what the ego vehicle just did.\n\n"
-                    "Include:\n"
-                    "- The type of action performed (left turn, right turn, straight)\n"
-                    "- The direction of the turn\n"
-                    "- Whether the vehicle was speeding up or slowing down\n"
-                    "- The speed at the start and end of the turn",
-        "Q52_easy": "Based on the frames provided, what best explains why the ego vehicle took this action? Answer with A, B, C, or D only.\n\n"
-                    "A) The ego executed the intended turn at the junction\n"
-                    "B) The ego turned to avoid a vehicle blocking the straight path\n"
-                    "C) The ego turned because a traffic signal changed\n"
-                    "D) The ego turned to find an alternative route",
-        "Q52_hard": "Based on the frames provided, explain why the ego vehicle took this action.\n\n"
-                    "- Cite specific things you can observe in the scene\n"
-                    "- Reference any relevant agents, traffic signals, or road conditions\n"
-                    "- Do not guess intent – only describe what the evidence shows",
-        "Q53_easy": "Based on the frames provided, was the action the ego vehicle just performed safe and appropriate? Answer with A, B, C, or D only.\n\n"
-                    "A) Yes – the ego successfully completed the intended turn\n"
-                    "B) No – the ego turned from the wrong lane\n"
-                    "C) No – the ego should have stopped at the traffic signal\n"
-                    "D) Partially – the turn was completed but with traffic rule violations",
-        "Q53_hard": "Based on the frames provided, was the action the ego vehicle just performed safe and compliant with traffic rules?\n\n"
-                    "- State your verdict: yes / no / partially\n"
-                    "- Cite the specific evidence that supports your verdict\n"
-                    "- If unsafe, identify what made it unsafe\n"
-                    "- If a traffic rule was violated, state which rule",
-    },
-}
-
-
-# -----------------------------------------------
 # Helper Functions
 # -----------------------------------------------
 
@@ -669,6 +532,8 @@ def format_vqa_question(question_data: Dict[str, Any], hard_prompt_style: str = 
                 "\n\nAdditional hard-mode requirements for Q1:\n"
                 "- Separately identify: traffic-control state, ego action, speed trend, lane/turn behavior, "
                 "and whether the ego is before, inside, or after a junction.\n"
+                "- Also check for pedestrians, stop signs, static obstacles, emergency vehicles, and any "
+                "collision or near-conflict visible in the provided frames.\n"
                 "- Do not say a traffic light changes color unless you can cite the frame number(s) showing "
                 "the change. If the state is unclear, write unclear instead of guessing.\n"
 
@@ -680,15 +545,18 @@ def format_vqa_question(question_data: Dict[str, Any], hard_prompt_style: str = 
                 "or insufficiently anticipatory action, even if it did not result in a formal "
                 "traffic violation or collision. An infraction is a concrete traffic-rule "
                 "violation or prohibited event that actually occurred, such as entering against "
-                "a red light, failing to stop, violating a lane boundary, leaving the roadway, "
-                "or causing a collision.\n"
+                "a red light, failing to stop at a stop sign, failing to yield to pedestrians "
+                "or emergency vehicles, violating a lane boundary, leaving the roadway, or "
+                "causing a collision with a vehicle, pedestrian, static object, or road layout.\n"
                 "- Explicitly decide these four facts before the final judgment: "
-                "traffic control visible/state; ego position relative to the junction or stop line; "
-                "whether the ego continued/accelerated/stopped/turned; whether the prohibited action "
-                "was completed.\n"
+                "traffic control visible/state; ego position relative to the junction, stop line, "
+                "pedestrian, static obstacle, or emergency vehicle; whether the ego "
+                "continued/accelerated/stopped/turned/yielded; whether the prohibited action was completed.\n"
                 "- Apply these general rules: approaching or accelerating toward a red light can be a "
                 "driving mistake even before a formal infraction is completed; entering/crossing/turning "
                 "through a junction against an applicable red light is both a mistake and an infraction; "
+                "not stopping for a required stop sign, entering a pedestrian conflict zone without yielding, "
+                "hitting a static object, or failing to yield to an emergency vehicle can also be an infraction; "
                 "absence of collision does not by itself mean the action was safe or legal.\n"
                 "- Do not default to 'no mistake' or 'no infraction' because the motion looks smooth. "
                 "Base the judgment on traffic control, junction position, and completed action.\n"
@@ -1076,174 +944,6 @@ def infer_vqa_sets(route_dir: Path, model_tag: str,
     return results
 
 
-def infer_critical_decision_points(route_dir: Path, model_tag: str,
-                                   server_url: str, out_dir: Path,
-                                   question_types: List[str],
-                                   gt_log_path: Optional[Path] = None,
-                                   frame_stride: int = 1,
-                                   max_frames: int = 20) -> Optional[Dict]:
-    """Run inference for all critical decision points in a route."""
-
-    # Load GT log from specified path or search in route directory
-    if gt_log_path and gt_log_path.exists():
-        gt_log = json.load(open(gt_log_path))
-    else:
-        gt_log = load_gt_log(route_dir)
-        if not gt_log:
-            print(f"  [SKIP] No GT log found in {route_dir}")
-            return None
-
-    images_dir = route_dir / "camera" / "anno_rgb_front"
-    if not images_dir.exists():
-        print(f"  [SKIP] No camera images found in {images_dir}")
-        return None
-
-    events = gt_log.get("episode", {}).get("events", [])
-    cdp_events = [e for e in events if e.get("critical_decision_point", False)]
-
-    if not cdp_events:
-        print(f"  [SKIP] No critical decision points found")
-        return None
-
-    print(f"  Found {len(cdp_events)} critical decision point(s)")
-
-    scenario_name = route_dir.name
-    results = {
-        "scenario": scenario_name,
-        "route": route_dir.name,
-        "critical_decision_points": [],
-    }
-
-    # Convert duration from seconds to frame count
-    frame_rate_est = 5  # events use ~5 fps
-
-    for event_idx, event in enumerate(cdp_events, 1):
-        time_point = event["t_s"]
-        start_frame = event["frame_start"]
-        duration_s = event["duration_s"]
-        duration_frames = int(duration_s * frame_rate_est)
-        ego_action = event["ego_action"]
-        decision_point = event.get("decision_point", [{}])[0]
-
-        print(f"    CDP {event_idx}: t={time_point}s, frame {start_frame}, action={ego_action}")
-
-        # Sample images spanning the CDP duration with stride and max limits
-        images = sample_images_spanning_duration(images_dir, start_frame, duration_frames,
-                                                stride=frame_stride, max_frames=max_frames)
-        if not images:
-            print(f"      [SKIP] No images found in frame range [{start_frame}, {start_frame + duration_frames}]")
-            continue
-
-        print(f"      Sampled {len(images)} images")
-
-        # Debug: print frame numbers being sent
-        frame_numbers = [int(Path(img).stem) for img in images]
-        print(f"      Frame numbers: {frame_numbers[0]}...{frame_numbers[-1]} (first to last)")
-        if len(frame_numbers) <= 20:
-            print(f"      All frames: {frame_numbers}")
-
-        # Select question template
-        template_key = get_question_template(ego_action)
-        templates = QUESTION_TEMPLATES[template_key]
-
-        cdp_result = {
-            "time": time_point,
-            "frame_start": start_frame,
-            "duration_s": duration_s,
-            "ego_action": ego_action,
-            "decision_point_details": decision_point,
-            "answers": [],
-        }
-
-        # Ask each question
-        for qid in ["Q0", "Q51_easy", "Q51_hard", "Q52_easy", "Q52_hard", "Q53_easy", "Q53_hard"]:
-            q_type = "perception" if qid == "Q0" else ("easy" if "easy" in qid else "hard")
-
-            # Skip if not requested
-            if question_types and q_type not in question_types:
-                continue
-
-            question = templates[qid]
-
-            # Extract GT answer from decision_point
-            gt_answer = ""
-            if qid == "Q0":
-                # Generate GT answers in new format
-                stop_sign_dist = event.get("stop_sign_distance_m")
-                has_stop_signs = "yes" if stop_sign_dist is not None else "no"
-
-                traffic_light = event.get("traffic_light_state")
-                has_traffic_lights = "yes" if traffic_light is not None else "no"
-                tl_color = traffic_light.lower() if (has_traffic_lights == "yes" and traffic_light) else "N/A"
-
-                # Extract vehicle positions
-                agents = event.get("agents_involved", [])
-                vehicle_positions = set()
-                if not agents:
-                    vehicle_positions.add("No other vehicles visible")
-                else:
-                    for agent in agents:
-                        rel_pos = agent.get("relative_position", [])
-                        if not rel_pos or len(rel_pos) < 2:
-                            continue
-                        lateral, longitudinal = rel_pos[0], rel_pos[1]
-
-                        if longitudinal == "ahead":
-                            vehicle_positions.add("Vehicle ahead")
-                        elif longitudinal == "behind":
-                            vehicle_positions.add("Vehicle behind")
-
-                        if lateral == "left":
-                            vehicle_positions.add("Vehicle to the left")
-                        elif lateral == "right":
-                            vehicle_positions.add("Vehicle to the right")
-
-                vehicles_str = ", ".join(sorted(vehicle_positions)) if vehicle_positions else "No other vehicles visible"
-                gt_answer = f"1. {has_stop_signs} | 2. {has_traffic_lights} | 3. {tl_color} | 4. {vehicles_str}"
-            elif qid == "Q51_hard":
-                gt_answer = f"{' + '.join(ego_action)}, speed {event.get('speed_start_kmh', 0):.1f}→{event.get('speed_end_kmh', 0):.1f} km/h"
-            elif qid == "Q53_hard":
-                appropriate = decision_point.get("risk", {}).get("appropriate", None)
-                gt_answer = f"appropriate={appropriate}"
-
-            print(f"      {qid} ({q_type}) ... ", end="", flush=True)
-            print(f"[sending {len(images)} frames] ", end="", flush=True)
-
-            answer = ask_vlm(
-                question=question,
-                images_paths=images,
-                server_url=server_url,
-                scenario=scenario_name,
-                time_point=time_point,
-                qid=qid,
-                gt=gt_answer,
-            )
-
-            if answer is None:
-                answer = "[No response from model]"
-
-            print(f"✓ ({len(answer)} chars)")
-
-            cdp_result["answers"].append({
-                "qid": qid,
-                "type": q_type,
-                "question": question,
-                "answer": answer,
-                "gt": gt_answer,
-            })
-
-        results["critical_decision_points"].append(cdp_result)
-
-    # Save results
-    out_path = out_dir / model_tag / f"{scenario_name}_CDP_results.json"
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(out_path, "w") as f:
-        json.dump(results, f, indent=2)
-
-    print(f"    → saved {_display_path(out_path)}")
-    return results
-
 
 # -----------------------------------------------
 # CLI
@@ -1419,17 +1119,6 @@ def main():
                 hard_prompt_style=hard_prompt_style,
                 diagnostic_vqa_json_path=diagnostic_vqa_json_path,
                 vlm_server_root=args.vlm_server_root,
-            )
-        else: # remove later so vqa json is mandatory
-            result = infer_critical_decision_points(
-                route_dir=route_dir,
-                model_tag=args.model,
-                server_url=args.server_url,
-                out_dir=out_root,
-                question_types=question_types,
-                gt_log_path=gt_log_path,
-                frame_stride=args.frame_stride,
-                max_frames=args.max_frames,
             )
         if result:
             processed += 1

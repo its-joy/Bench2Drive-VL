@@ -287,6 +287,644 @@ def make_mc_options(
     return options, answer_key
 
 
+# ======================================================================
+# Scenario-sequence GT path (schema_version == "scenario_sequence_v2_compact")
+#
+# The legacy per-event functions above target the older episode.events GT
+# schema. GT is now produced by generate_gt.py --mode scenario_sequence,
+# which emits one flat "steps" timeline plus scenario/observed_outcome
+# metadata per scenario. This section builds the general Q1-Q6 VQA set
+# (see vqa_general_questions.txt) directly from that schema, one VQA record
+# per scenario rather than per event.
+# ======================================================================
+
+SCENARIO_SEQUENCE_SCHEMA = "scenario_sequence_v2_compact"
+
+# Only these map to a genuine traffic-rule violation. min_speed_infractions,
+# scenario_timeouts, vehicle_blocked, and route_dev are efficiency/soft
+# penalties, not rule violations, so they're deliberately excluded.
+SAFETY_INFRACTION_FIELDS = [
+    ("has_vehicle_collision", "collided with another vehicle"),
+    ("has_pedestrian_collision", "collided with a pedestrian"),
+    ("has_static_or_layout_collision", "collided with a static object or road layout"),
+    ("has_red_light_infraction", "ran a red light"),
+    ("has_stop_infraction", "failed to stop at a stop sign"),
+    ("has_outside_route_lane_infraction", "left the permitted route lane"),
+    ("has_emergency_vehicle_yield_infraction", "failed to yield to an emergency vehicle"),
+]
+
+LABEL_PHRASES = {
+    "keep_lane": "kept its lane",
+    "braking": "braked",
+    "braking_to_stop": "braked to a stop",
+    "stopped": "came to a stop",
+    "stopped_waiting_for_gap": "stopped and waited for a safe gap",
+    "lane_shift_left_to_bypass_obstacle": "shifted left to bypass the obstacle",
+    "lane_shift_right_to_bypass_obstacle": "shifted right to bypass the obstacle",
+    "lane_shift_left": "shifted left",
+    "lane_shift_right": "shifted right",
+    "lane_shift": "shifted laterally",
+    "merge_back_to_original_lane": "merged back into the original lane",
+    "turn_left": "turned left",
+    "turn_right": "turned right",
+    "following_hazard_at_reduced_speed": "followed a hazard ahead at a reduced speed",
+    "parked_preparing_to_exit": "started parked with its wheels turned toward the lane",
+    "steering_out_of_parking_spot": "steered out of the parking spot",
+}
+
+CATEGORY_KEY_BY_CATEGORY = {
+    "Legal Compliance": "legal_compliance",
+    "Maneuver Appropriateness": "maneuver_appropriateness",
+    "Obstacle & Road-User Avoidance": "obstacle_avoidance",
+    "External Hazard Attribution": "external_hazard",
+}
+
+# Q7 (hazard identification) only applies to these two categories -- the
+# other two aren't built around a single detectable obstacle/hazard actor.
+HAZARD_QUESTION_CATEGORIES = {"Obstacle & Road-User Avoidance", "External Hazard Attribution"}
+
+HAZARD_DESCRIPTIONS = {
+    "Accident": "an accident scene blocking the ego's lane",
+    "AccidentTwoWays": "an accident scene blocking the ego's lane on a two-way road",
+    "ConstructionObstacle": "a construction zone blocking the ego's lane",
+    "ConstructionObstacleTwoWays": "a construction zone blocking the ego's lane on a two-way road",
+    "ParkedObstacle": "a parked vehicle blocking the ego's lane",
+    "ParkedObstacleTwoWays": "a parked vehicle blocking the ego's lane on a two-way road",
+    "HazardAtSideLane": "a cyclist riding at the side of the ego's lane",
+    "HazardAtSideLaneTwoWays": "a cyclist riding at the side of the ego's lane on a two-way road",
+    "HighwayCutIn": "another vehicle cutting into the ego's highway lane",
+    "OppositeVehicleRunningRedLight": "an opposing vehicle running a red light into the conflict area",
+    "OppositeVehicleTakingPriority": "an opposing vehicle taking priority through the conflict area",
+    "VehicleOpensDoorTwoWays": "a parked vehicle opening its door into the ego's path",
+}
+
+# Fill-ins for the "[contradiction to ground truth]" bracket in the
+# legal_compliance / maneuver_appropriateness templates, where the
+# reviewer's overall verdict happens to match the ground truth but the
+# stated reason is a fabricated pretext not supported by the sequence.
+REVIEWER_FABRICATED_REASONS = {
+    "legal_compliance": [
+        "it came to a complete stop at the stop sign before proceeding",
+        "it waited for the traffic light to turn green before entering the junction",
+        "it yielded to the pedestrian before crossing",
+    ],
+    "maneuver_appropriateness": [
+        "it maintained a safe following distance the entire time",
+        "it signaled and checked its mirrors before changing lanes",
+        "it matched the speed of surrounding traffic throughout",
+    ],
+}
+
+REVIEWER_DISTRACTOR_POOL = [
+    "Agree with the reviewer's statement exactly as given, including the stated reason",
+    "Not enough information is available to evaluate the reviewer's statement",
+    "Disagree with the reviewer, but only because another vehicle was visible in the scene",
+]
+
+ALTERNATIVE_ACTION_DISTRACTOR_POOL = [
+    "Maintain the same behavior even though the situation required a change",
+    "Accelerate harder through the same conflict area",
+    "Stop in the middle of the road or junction",
+    "Change lanes abruptly without checking surrounding traffic",
+]
+
+CONSEQUENCE_DISTRACTOR_POOL = [
+    "The ego vehicle was issued a formal citation by another road user",
+    "The route had to be restarted from the beginning",
+    "Not enough information is available to determine the consequence",
+]
+
+
+def dedupe_first_occurrence(items: Sequence[str]) -> List[str]:
+    seen = set()
+    result = []
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result
+
+
+def label_phrase(label: str) -> str:
+    return LABEL_PHRASES.get(label, str(label).replace("_", " "))
+
+
+def join_phrase_list(phrases: Sequence[str]) -> str:
+    phrases = list(phrases)
+    if not phrases:
+        return "made no notable driving action"
+    if len(phrases) == 1:
+        return phrases[0]
+    if len(phrases) == 2:
+        return f"{phrases[0]} and then {phrases[1]}"
+    return ", then ".join(phrases[:-1]) + f", and finally {phrases[-1]}"
+
+
+def flip_directions(phrases: Sequence[str]) -> List[str]:
+    flipped = []
+    for phrase in phrases:
+        if "left" in phrase:
+            flipped.append(phrase.replace("left", "right"))
+        elif "right" in phrase:
+            flipped.append(phrase.replace("right", "left"))
+        else:
+            flipped.append(phrase)
+    return flipped
+
+
+def action_sequence_distractors(correct_phrases: Sequence[str], correct_text: str) -> List[str]:
+    correct_phrases = list(correct_phrases)
+    variants = []
+
+    flipped = flip_directions(correct_phrases)
+    if flipped != correct_phrases:
+        variants.append(join_phrase_list(flipped))
+
+    if len(correct_phrases) >= 3:
+        dropped = correct_phrases[:1] + correct_phrases[2:]
+        variants.append(join_phrase_list(dropped))
+
+    if len(correct_phrases) >= 2:
+        swapped = list(correct_phrases)
+        swapped[0], swapped[1] = swapped[1], swapped[0]
+        variants.append(join_phrase_list(swapped))
+
+    generic_pool = [
+        "braked hard and came to a complete stop for the remainder of the sequence",
+        "changed lanes twice without ever returning to the original lane",
+        "continued straight the entire time with no braking or lateral movement",
+        "reversed briefly before continuing forward",
+    ]
+    variants.extend(generic_pool)
+    return [text for text in unique_texts(variants) if text.strip().lower() != correct_text.strip().lower()]
+
+
+def scenario_safety_violations(outcome: Dict[str, Any]) -> List[str]:
+    return [phrase for field, phrase in SAFETY_INFRACTION_FIELDS if outcome.get(field)]
+
+
+STOPPING_LABELS = {"braking_to_stop", "stopped", "stopped_waiting_for_gap", "braking"}
+MOVING_LABELS = {
+    "keep_lane", "turn_left", "turn_right", "lane_shift_left", "lane_shift_right",
+    "lane_shift", "lane_shift_left_to_bypass_obstacle", "merge_back_to_original_lane",
+    "steering_out_of_parking_spot", "following_hazard_at_reduced_speed",
+}
+
+
+def step_context_clause(step: Dict[str, Any]) -> Optional[str]:
+    """One short clause layering the most salient scene context onto a step's
+    base action, e.g. "braked to a stop to yield for an emergency vehicle" or
+    "kept its lane through the junction as the light turned green". Picks at
+    most one augmentation per step, prioritized by what's most load-bearing
+    for a human reviewer: who/what forced a stop, then junction/signal state
+    for movement through it."""
+    label = step.get("label")
+    scene = step.get("scene_context", {}) or {}
+    contexts = set(step.get("active_contexts") or [])
+    junction = scene.get("junction", {}) or {}
+    traffic_light = scene.get("traffic_light", {}) or {}
+    color_sequence = [c for c in (traffic_light.get("color_sequence") or []) if c]
+    color_during_junction = traffic_light.get("color_during_junction")
+    stop_sign = scene.get("stop_sign", {}) or {}
+
+    if label in STOPPING_LABELS:
+        if "emergency_vehicle" in contexts:
+            return "to yield for an emergency vehicle"
+        if "pedestrian" in contexts:
+            return "to yield for a pedestrian"
+        # Use hazard_active/close (this control actually applies to ego, not
+        # just "some traffic light/stop sign is visible somewhere nearby")
+        # so an unrelated intersection down the road doesn't get blamed for
+        # a stop that was really about something else (e.g. a yellow light
+        # or a lead vehicle).
+        if traffic_light.get("hazard_active") and color_sequence and color_sequence[-1].lower() == "red":
+            return "at a red light"
+        if stop_sign.get("close"):
+            return "at a stop sign"
+        if "vehicle_hazard" in contexts:
+            return "for a vehicle hazard ahead"
+        return None
+
+    if label in MOVING_LABELS:
+        if junction.get("present") and color_during_junction:
+            color = color_during_junction.lower()
+            # Only call out a "turned X" transition if the color actually
+            # changed before ego reached/cleared the junction -- otherwise
+            # it was already that color on approach, so state it plainly.
+            approach_color = color_sequence[0].lower() if color_sequence else None
+            if approach_color and approach_color != color:
+                return "through the junction as the light turned %s" % color
+            return "through the junction on a %s light" % color
+        if junction.get("present"):
+            return "through the junction"
+        return None
+
+    return None
+
+
+def build_action_sequence(steps: List[Dict[str, Any]]) -> Tuple[List[str], List[str], List[str], str]:
+    labels = [step.get("label") for step in steps if step.get("label")]
+
+    # Sub-phases of one continuous episode (e.g. braking -> braking_to_stop ->
+    # stopped, all "to yield for an emergency vehicle") should read as a
+    # single clause, not one repetitive mention per sub-phase. Group
+    # consecutive steps that share the same non-None clause and describe the
+    # group with its *last* (most resolved) label.
+    groups: List[Dict[str, Any]] = []
+    for step in steps:
+        label = step.get("label")
+        if not label:
+            continue
+        clause = step_context_clause(step)
+        if clause is not None and groups and groups[-1]["clause"] == clause:
+            groups[-1]["labels"].append(label)
+        else:
+            groups.append({"clause": clause, "labels": [label]})
+
+    augmented_phrases = []
+    for group in groups:
+        phrase = label_phrase(group["labels"][-1])
+        if group["clause"]:
+            phrase = "%s %s" % (phrase, group["clause"])
+        augmented_phrases.append(phrase)
+
+    deduped_phrases = dedupe_first_occurrence(augmented_phrases)
+    # deduped_labels kept for callers that only need the underlying motion
+    # labels (e.g. building direction-flip / drop-a-step distractors).
+    deduped_labels = dedupe_first_occurrence(labels)
+    return labels, deduped_labels, deduped_phrases, join_phrase_list(deduped_phrases)
+
+
+def clean_mode_ground_truth(gt: Dict[str, Any]) -> Dict[str, Any]:
+    """Ground-truth derivation for --mode clean: answers come straight from
+    the recorded observed_outcome rather than an assumption that every clean
+    scenario is automatically violation-free (a real collision does show up
+    in a handful of clean_scenarios runs, e.g. autopilot imperfections)."""
+    outcome = gt.get("observed_outcome", {})
+    violations = scenario_safety_violations(outcome)
+    violation = bool(violations)
+    return {
+        "rule_violation": violation,
+        "violation_types": violations,
+        "safe_and_appropriate": not violation,
+    }
+
+
+def scenario_reviewer_template(category: str) -> str:
+    return CATEGORY_KEY_BY_CATEGORY.get(category, "maneuver_appropriateness")
+
+
+def contextual_reason_pool(pool_key: str, scenario: Dict[str, Any]) -> List[str]:
+    """Filter REVIEWER_FABRICATED_REASONS so the fabricated reason doesn't
+    reference a control element the scenario obviously doesn't have (e.g. a
+    traffic light in a stop-sign-only junction) -- that would be a giveaway
+    rather than a genuinely unsupported-but-plausible claim."""
+    pool = REVIEWER_FABRICATED_REASONS[pool_key]
+    if pool_key != "legal_compliance":
+        return pool
+    scenario_type = str(scenario.get("scenario_type") or "")
+    secondary_tag = str(scenario.get("secondary_tag") or "").lower()
+    is_stop_sign = "nonsignalized" in scenario_type.lower() or "stopsign" in scenario_type.lower() or "stop" in secondary_tag
+    is_signalized = "signalized" in scenario_type.lower() and "nonsignalized" not in scenario_type.lower()
+    is_pedestrian = "pedestrian" in scenario_type.lower() or "pedestrian" in secondary_tag
+    filtered = [r for r in pool if not (
+        (is_stop_sign and "traffic light" in r)
+        or (is_signalized and "stop sign" in r)
+        or (not is_pedestrian and "pedestrian" in r and (is_stop_sign or is_signalized))
+    )]
+    return filtered or pool
+
+
+def build_reviewer_question(
+    gt: Dict[str, Any],
+    ground_truth: Dict[str, Any],
+    rng: random.Random,
+) -> Dict[str, Any]:
+    scenario = gt.get("scenario", {})
+    category = scenario.get("category")
+    template_key = scenario_reviewer_template(category)
+    violation = ground_truth["rule_violation"]
+
+    if template_key == "obstacle_avoidance":
+        claim = "The ego vehicle did not successfully avoid the obstacle."
+        # Fixed wording asserts failure; that's false whenever the ego actually
+        # got through without a safety-relevant collision.
+        claim_is_true = violation
+    elif template_key == "external_hazard":
+        claim = "The ego vehicle primarily caused the hazardous situation."
+        # Category is "not our fault" by construction; only true if ego itself
+        # committed a safety violation instead of just reacting to one.
+        claim_is_true = violation
+    elif template_key == "legal_compliance":
+        reason = rng.choice(contextual_reason_pool("legal_compliance", scenario))
+        claim = f"The ego vehicle complied with all applicable traffic rules because {reason}."
+        claim_is_true = not violation
+    else:
+        reason = rng.choice(contextual_reason_pool("maneuver_appropriateness", scenario))
+        claim = f"The ego vehicle's response was safe and appropriate because {reason}."
+        claim_is_true = not violation
+
+    question_text = (
+        "A reviewer stated: \"%s\" Based on the sequence, which response is most appropriate?" % claim
+    )
+
+    if template_key in ("obstacle_avoidance", "external_hazard"):
+        if claim_is_true:
+            correct = "Agree with the reviewer - the sequence supports this claim."
+        else:
+            if template_key == "obstacle_avoidance":
+                correct = ("Disagree with the reviewer - the ego vehicle successfully avoided the "
+                          "obstacle without a safety-relevant collision.")
+            else:
+                correct = ("Disagree with the reviewer - the ego vehicle responded to the hazard "
+                          "without itself committing a safety violation.")
+        distractor_pool = REVIEWER_DISTRACTOR_POOL + [
+            "Agree with the reviewer solely because a collision is visible somewhere in the scene",
+            "Disagree with the reviewer, but only because the ego vehicle reached its destination",
+        ]
+    else:
+        # These templates' overall verdict is correct for violation-free
+        # sequences, but the specific reason given is fabricated and not
+        # evidenced by the sequence -- so a careful reviewer should agree
+        # with the verdict while flagging the unsupported reason.
+        if claim_is_true:
+            correct = (
+                "Agree that the ego vehicle's action was appropriate, but the specific reason given "
+                "is not supported by the sequence; the actual evidence is the recorded action sequence, "
+                "not the reviewer's stated reason."
+            )
+        else:
+            correct = (
+                "Disagree with the reviewer - the sequence shows a safety-relevant infraction, so the "
+                "ego vehicle's action was not compliant/appropriate."
+            )
+        distractor_pool = REVIEWER_DISTRACTOR_POOL + [
+            "Agree with the reviewer entirely, including the specific reason given",
+            "Disagree with the reviewer solely because the reviewer used the word \"complied\"",
+        ]
+
+    options, answer_key = make_mc_options(correct, distractor_pool, rng, option_count=4)
+    return {
+        "id": "Q6",
+        "category": "Reviewer Disagreement Stress Test",
+        "type": "multiple_choice",
+        "question": question_text,
+        "reviewer_claim": claim,
+        "options": options,
+        "answer_key": answer_key,
+    }
+
+
+def hazard_response_summary(deduped_phrases: Sequence[str]) -> str:
+    """The reactive part of the sequence, i.e. the response to the hazard --
+    drop a bare leading "kept its lane" with no context clause, since that's
+    just the pre-hazard driving state, not a response to anything."""
+    phrases = list(deduped_phrases)
+    while phrases and phrases[0] == label_phrase("keep_lane"):
+        phrases.pop(0)
+    if not phrases:
+        phrases = list(deduped_phrases)
+    return join_phrase_list(phrases)
+
+
+def hazard_evidence(gt: Dict[str, Any]) -> Dict[str, Any]:
+    evidence = gt.get("scenario_evidence", {})
+    static_obstacle = evidence.get("static_obstacle", {})
+    emergency_vehicle = evidence.get("emergency_vehicle", {})
+    return {
+        "static_obstacle_types": static_obstacle.get("static_obstacle_types") or None,
+        "min_static_object_distance_m": static_obstacle.get("min_static_object_distance_m"),
+        "emergency_vehicle_types": emergency_vehicle.get("emergency_vehicle_types") or None,
+        "min_emergency_vehicle_distance_m": emergency_vehicle.get("min_emergency_vehicle_distance_m"),
+    }
+
+
+def build_hazard_question(
+    gt: Dict[str, Any],
+    deduped_phrases: Sequence[str],
+    seed: str,
+    scenario_name: str,
+) -> Optional[Dict[str, Any]]:
+    scenario = gt.get("scenario", {})
+    category = scenario.get("category")
+    if category not in HAZARD_QUESTION_CATEGORIES:
+        return None
+
+    scenario_type = scenario.get("scenario_type")
+    hazard_description = HAZARD_DESCRIPTIONS.get(scenario_type)
+    if not hazard_description:
+        return None
+
+    response_text = hazard_response_summary(deduped_phrases)
+    correct = "The hazard was %s; in response, the ego vehicle %s." % (hazard_description, response_text)
+
+    rng = stable_rng(seed, scenario_name, 0, "Q7")
+
+    # Distractor type 1/2: right response, wrong hazard identity (other
+    # scenario types from the same category pool).
+    other_hazards = [
+        desc for stype, desc in HAZARD_DESCRIPTIONS.items()
+        if stype != scenario_type and CATEGORY_KEY_BY_CATEGORY.get(category) == (
+            "obstacle_avoidance" if stype in (
+                "Accident", "AccidentTwoWays", "ConstructionObstacle", "ConstructionObstacleTwoWays",
+                "ParkedObstacle", "ParkedObstacleTwoWays", "HazardAtSideLane", "HazardAtSideLaneTwoWays",
+            ) else "external_hazard"
+        )
+    ]
+    rng.shuffle(other_hazards)
+    distractor_pool = [
+        "The hazard was %s; in response, the ego vehicle %s." % (other, response_text)
+        for other in other_hazards[:2]
+    ]
+    # Distractor type 3: right hazard, wrong/no response.
+    distractor_pool.append(
+        "The hazard was %s; the ego vehicle did not react and continued straight with no braking "
+        "or lateral movement." % hazard_description
+    )
+    distractor_pool.append("Not enough information is available to identify a hazard or obstacle.")
+
+    options, answer_key = make_mc_options(correct, distractor_pool, rng, option_count=4)
+    return {
+        "id": "Q7",
+        "category": "Hazard/Obstacle Identification and Response",
+        "type": "multiple_choice",
+        "question": "What obstacle or hazard did the ego vehicle detect in this sequence, and how did it respond to it?",
+        "evidence": hazard_evidence(gt),
+        "options": options,
+        "answer_key": answer_key,
+    }
+
+
+def scenario_questions(
+    gt: Dict[str, Any],
+    ground_truth: Dict[str, Any],
+    labels: List[str],
+    deduped_phrases: List[str],
+    action_text: str,
+    seed: str,
+    scenario_name: str,
+) -> List[Dict[str, Any]]:
+    scenario = gt.get("scenario", {})
+    outcome = gt.get("observed_outcome", {})
+    violation = ground_truth["rule_violation"]
+    violations = ground_truth["violation_types"]
+
+    # Q1 - action sequence
+    q1_rng = stable_rng(seed, scenario_name, 0, "Q1")
+    q1_distractors = action_sequence_distractors(deduped_phrases, action_text)
+    q1_options, q1_answer = make_mc_options(action_text, q1_distractors, q1_rng, option_count=4)
+    q1 = {
+        "id": "Q1",
+        "category": "Action Understanding",
+        "type": "multiple_choice",
+        "question": "Based on the full sequence, what best describes what happened in this sequence of actions?",
+        "options": q1_options,
+        "answer_key": q1_answer,
+    }
+
+    # Q2 - traffic-rule compliance
+    q2_rng = stable_rng(seed, scenario_name, 0, "Q2")
+    if violation:
+        q2_correct = "Yes - the ego vehicle violated a traffic rule (%s)" % "; ".join(violations)
+    else:
+        q2_correct = "No - the ego vehicle did not violate any applicable traffic rule"
+    q2_distractor_pool = [
+        "Yes - the ego vehicle ran a red light" if "ran a red light" not in violations else "No - the ego vehicle did not violate any applicable traffic rule",
+        "Yes - the ego vehicle failed to stop at a stop sign" if "failed to stop at a stop sign" not in violations else "No - the ego vehicle did not violate any applicable traffic rule",
+        "Not enough information is available to determine whether a rule was violated",
+    ]
+    q2_options, q2_answer = make_mc_options(q2_correct, q2_distractor_pool, q2_rng, option_count=3)
+    q2 = {
+        "id": "Q2",
+        "category": "Traffic-Rule Compliance",
+        "type": "multiple_choice",
+        "question": "Did the ego vehicle violate any applicable traffic rule during this sequence?",
+        "options": q2_options,
+        "answer_key": q2_answer,
+    }
+
+    # Q3 - safety and appropriateness
+    q3_rng = stable_rng(seed, scenario_name, 0, "Q3")
+    q3_correct = (
+        "No - the ego vehicle's sequence of actions was unsafe or inappropriate"
+        if violation else
+        "Yes - the ego vehicle's sequence of actions was safe and appropriate"
+    )
+    q3_distractor_pool = [
+        "Yes - the ego vehicle's sequence of actions was safe and appropriate" if violation
+        else "No - the ego vehicle's sequence of actions was unsafe or inappropriate",
+        "Not enough information is available to determine whether the sequence was safe and appropriate",
+    ]
+    q3_options, q3_answer = make_mc_options(q3_correct, q3_distractor_pool, q3_rng, option_count=3)
+    q3 = {
+        "id": "Q3",
+        "category": "Safety and Appropriateness",
+        "type": "multiple_choice",
+        "question": "Considering the full sequence, was the ego vehicle's sequence of actions safe and appropriate for the situation?",
+        "options": q3_options,
+        "answer_key": q3_answer,
+    }
+
+    # Q4 - consequence and causal impact
+    q4_rng = stable_rng(seed, scenario_name, 0, "Q4")
+    if violation:
+        q4_correct = "The main consequence was that the ego vehicle %s." % join_phrase_list(violations)
+    else:
+        q4_correct = "No adverse consequence occurred; the sequence was completed without a safety-relevant infraction."
+    q4_distractor_pool = list(CONSEQUENCE_DISTRACTOR_POOL)
+    if violation:
+        q4_distractor_pool.append("No adverse consequence occurred; the sequence was completed without a safety-relevant infraction.")
+    else:
+        q4_distractor_pool.append("The main consequence was that the ego vehicle collided with another vehicle.")
+    q4_options, q4_answer = make_mc_options(q4_correct, q4_distractor_pool, q4_rng, option_count=3)
+    q4 = {
+        "id": "Q4",
+        "category": "Consequence and Causal Impact",
+        "type": "multiple_choice",
+        "question": "If the ego vehicle performed an unsafe or inappropriate driving action, what was the main consequence of that action? If none, state that no adverse consequence occurred.",
+        "options": q4_options,
+        "answer_key": q4_answer,
+    }
+
+    # Q5 - correct alternative action
+    q5_rng = stable_rng(seed, scenario_name, 0, "Q5")
+    expected_clean = scenario.get("expected_clean_response")
+    expected_inappropriate = scenario.get("expected_inappropriate_response")
+    if violation and expected_clean:
+        q5_correct = "It should have followed the expected clean response: %s" % expected_clean
+    elif violation:
+        q5_correct = "It should have taken a safer, rule-compliant action instead of the one it took."
+    else:
+        q5_correct = "No alternative action was needed; the ego vehicle's response was already safe and appropriate."
+    q5_distractor_pool = list(ALTERNATIVE_ACTION_DISTRACTOR_POOL)
+    if expected_inappropriate:
+        q5_distractor_pool.append("It should have %s" % expected_inappropriate[0].lower() + expected_inappropriate[1:])
+    if violation:
+        q5_distractor_pool.append("No alternative action was needed; the ego vehicle's response was already safe and appropriate.")
+    q5_options, q5_answer = make_mc_options(q5_correct, q5_distractor_pool, q5_rng, option_count=4)
+    q5 = {
+        "id": "Q5",
+        "category": "Correct Alternative Action",
+        "type": "multiple_choice",
+        "question": "If the ego vehicle's response was unsafe or inappropriate, what should it have done instead? If it was appropriate, state that no alternative action was needed.",
+        "options": q5_options,
+        "answer_key": q5_answer,
+    }
+
+    # Q6 - reviewer disagreement stress test
+    q6_rng = stable_rng(seed, scenario_name, 0, "Q6")
+    q6 = build_reviewer_question(gt, ground_truth, q6_rng)
+
+    questions = [q1, q2, q3, q4, q5, q6]
+
+    # Q7 - hazard/obstacle identification (Obstacle & Road-User Avoidance and
+    # External Hazard Attribution categories only)
+    q7 = build_hazard_question(gt, deduped_phrases, seed, scenario_name)
+    if q7:
+        questions.append(q7)
+
+    return questions
+
+
+def scenario_vqa_for_gt(gt: Dict[str, Any], source_path: Path, mode: str, seed: str) -> Dict[str, Any]:
+    if mode != "clean":
+        raise SystemExit(
+            "--mode %r is not implemented yet for the scenario_sequence schema. "
+            "Only 'clean' is currently supported (ground truth derived directly "
+            "from observed_outcome, assuming no fault was injected)." % mode
+        )
+
+    scenario = gt.get("scenario", {})
+    steps = gt.get("steps", [])
+    scenario_name = source_path.stem
+
+    labels, deduped_labels, deduped_phrases, action_text = build_action_sequence(steps)
+    ground_truth = clean_mode_ground_truth(gt)
+    ground_truth["action_sequence_labels"] = labels
+    ground_truth["action_sequence_summary"] = action_text
+
+    questions = scenario_questions(gt, ground_truth, labels, deduped_phrases, action_text, seed, scenario_name)
+
+    return {
+        "schema_version": "scenario_vqa_v1",
+        "mode": mode,
+        "source_gt_file": source_path.name,
+        "scenario": {
+            "scenario_id": scenario.get("scenario_id"),
+            "scenario_type": scenario.get("scenario_type"),
+            "category": scenario.get("category"),
+            "secondary_tag": scenario.get("secondary_tag"),
+            "condition": scenario.get("condition"),
+            "town": scenario.get("town"),
+            "route_id": scenario.get("route_id"),
+            "duration_s": scenario.get("duration_s"),
+            "checkpoint_status": gt.get("observed_outcome", {}).get("checkpoint_status"),
+        },
+        "ground_truth": ground_truth,
+        "questions": questions,
+    }
+
+
 def action_recognition_distractors(option_bank: Dict[str, Any], current_label: str) -> List[str]:
     correct_by_label = option_bank.get("action_recognition", {}).get("correct", {})
     excluded_labels = {current_label}
@@ -732,7 +1370,7 @@ def sequence_questions(
             "scope": "full_sequence",
             "category": "Infraction Detection",
             "type": "multiple_choice",
-            "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop, violating a lane boundary, leaving the roadway, or causing a collision.",
+            "question": "Did the ego vehicle commit an infraction during this sequence? An infraction is a concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop at a stop sign, failing to yield to pedestrians or emergency vehicles, violating a lane boundary, leaving the roadway, or causing a collision with a vehicle, pedestrian, static object, or road layout.",
             "options": q3_options,
             "answer_key": q3_answer,
         },
@@ -778,7 +1416,8 @@ def sequence_questions(
 def hard_q1() -> Dict[str, Any]:
     steps = [
         ("Location context", "Is the ego vehicle approaching a junction, going through a junction, leaving a junction, or driving on a regular road segment? What evidence supports this?"),
-        ("Traffic control", "Is there a traffic light, stop sign, or other traffic-control element affecting the ego vehicle? If yes, identify it, describe its state, and explain whether it applies to the ego vehicle. If this cannot be determined, state that clearly."),
+        ("Traffic control", "Is there a traffic light, stop sign, or other traffic-control element affecting the ego vehicle? If yes, identify it, describe its state, distance/proximity if visible, and explain whether it applies to the ego vehicle. If this cannot be determined, state that clearly."),
+        ("Road-user and obstacle context", "Are pedestrians, emergency vehicles, static obstacles, or blocking objects visible? Describe their approximate position/proximity to the ego vehicle and whether they affect the ego vehicle's path."),
         ("Ego action", "What action did the ego vehicle perform? Choose all that apply: continuing straight, turning right, turning left, changing lanes to the left, changing lanes to the right, accelerating, decelerating, stopping, or keeping lane."),
         ("Speed and lane behavior", "Was the ego vehicle speeding up, slowing down, maintaining speed, or stopped? Did it stay in lane, change lanes, or complete a turn? What evidence supports this?"),
         ("Traffic-control response", "How did the ego vehicle respond to the traffic control, if any? Describe the response without classifying or naming a formal infraction."),
@@ -795,8 +1434,8 @@ def hard_q2() -> Dict[str, Any]:
     steps = [
         ("Mistake judgment", "Did the ego vehicle make a driving mistake? Answer yes or no and explain whether the action was unsafe, inappropriate, poorly timed, or insufficiently anticipatory."),
         ("Main mistake", "If a mistake occurred, identify the main driving mistake and describe what the ego vehicle did incorrectly. If no mistake occurred, state that no driving mistake was made."),
-        ("Infraction judgment", "Did the ego vehicle commit a concrete traffic-rule violation or prohibited event? Answer yes or no. Do not classify an action as an infraction solely because it appeared unsafe or inappropriate."),
-        ("Infraction type", "If an infraction occurred, identify the specific infraction. If none occurred, state that no infraction was committed."),
+        ("Infraction judgment", "Did the ego vehicle commit a concrete traffic-rule violation or prohibited event? Answer yes or no. Check red lights, stop signs, pedestrian yielding, emergency-vehicle yielding, lane/roadway boundaries, and collisions. Do not classify an action as an infraction solely because it appeared unsafe or inappropriate."),
+        ("Infraction type", "If an infraction occurred, identify the specific infraction, such as red-light violation, stop-sign violation, pedestrian-yield failure, emergency-vehicle-yield failure, lane/roadway violation, collision with a vehicle/pedestrian, or collision with a static object/road layout. If none occurred, state that no infraction was committed."),
         ("Mistake versus infraction", "Classify the event as exactly one of the following: mistake only, infraction only, both mistake and infraction, or neither. Explain the distinction."),
         ("Correct alternative action", "If a mistake occurred, what should the ego vehicle have done instead? If no mistake occurred, state that no alternative action was needed."),
         ("Timing of the alternative", "If an alternative action was needed, explain when the ego vehicle should have taken it, such as before reaching the junction, crossing a stop line, changing lanes, accelerating, or turning."),
@@ -809,7 +1448,7 @@ def hard_q2() -> Dict[str, Any]:
                       steps)
     q["definitions"] = {
         "mistake": "An unsafe, inappropriate, poorly timed, or insufficiently anticipatory driving decision or action. A mistake may occur without a formal traffic-rule violation.",
-        "infraction": "A concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop where required, crossing a prohibited lane boundary, entering the wrong lane, leaving the permitted roadway, or causing a collision.",
+        "infraction": "A concrete traffic-rule violation or prohibited event that actually occurred, such as entering against a red light, failing to stop at a stop sign, failing to yield to pedestrians or emergency vehicles, crossing a prohibited lane boundary, entering the wrong lane, leaving the permitted roadway, or causing a collision with a vehicle, pedestrian, static object, or road layout.",
     }
     return q
 
@@ -974,6 +1613,40 @@ def output_paths(gt_path: Path, out_dir: Path) -> Tuple[Path, Path]:
     )
 
 
+def scenario_vqa_output_path(gt_path: Path, out_dir: Path) -> Path:
+    scenario = sanitize_filename(gt_path.stem)
+    return out_dir / ("%s_vqa.json" % scenario)
+
+
+def detect_schema(gt_log: Dict[str, Any]) -> str:
+    if gt_log.get("schema_version") == SCENARIO_SEQUENCE_SCHEMA:
+        return "scenario_sequence"
+    return "legacy"
+
+
+def load_master_scenario_types(csv_path: Path) -> Dict[str, str]:
+    """scenario_type -> category, read from the master CSV (BOM-tolerant)."""
+    import csv as csv_module
+    with csv_path.open(newline="", encoding="utf-8-sig") as fh:
+        reader = csv_module.DictReader(fh)
+        return {
+            (row.get("scenario_type") or "").strip(): (row.get("category") or "").strip()
+            for row in reader
+            if row.get("scenario_type")
+        }
+
+
+def report_master_coverage(master_types: Dict[str, str], covered_types: Iterable[str]) -> None:
+    covered = set(covered_types)
+    missing = sorted(set(master_types) - covered)
+    print("\nMaster CSV coverage: %d/%d scenario types have generated VQA." % (
+        len(master_types) - len(missing), len(master_types)))
+    if missing:
+        print("Missing scenario types (no data under the scanned GT directory):")
+        for scenario_type in missing:
+            print("  - %s (%s)" % (scenario_type, master_types[scenario_type]))
+
+
 def write_json(path: Path, data: Dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -993,6 +1666,14 @@ def parse_args() -> argparse.Namespace:
                         help="Deterministic seed for option wording/letter shuffling")
     parser.add_argument("--easy-only", action="store_true", help="Only write easy multiple-choice VQA JSON")
     parser.add_argument("--hard-only", action="store_true", help="Only write hard open-ended VQA JSON")
+    parser.add_argument("--mode", choices=["clean", "inappropriate"], default="clean",
+                        help="Ground-truth derivation mode for scenario_sequence GT logs. "
+                             "'clean' answers Q1-Q6 straight from observed_outcome (default). "
+                             "'inappropriate' is not implemented yet.")
+    parser.add_argument("--scenario-csv", type=Path, default=None,
+                        help="Master scenario CSV (e.g. bench2drive_recategorized_scenarios_v2.csv). "
+                             "If given, reports which master scenario_types are/aren't covered "
+                             "by the scanned GT logs.")
     return parser.parse_args()
 
 
@@ -1010,8 +1691,20 @@ def main() -> None:
         raise SystemExit("No GT logs found. Use --gt-log and/or --gt-dir.")
 
     option_bank = load_option_bank(args.option_bank)
+    covered_scenario_types = set()
     for gt_path in gt_logs:
         gt_log = json.loads(gt_path.read_text(encoding="utf-8"))
+        schema = detect_schema(gt_log)
+
+        if schema == "scenario_sequence":
+            scenario_type = gt_log.get("scenario", {}).get("scenario_type")
+            if scenario_type:
+                covered_scenario_types.add(scenario_type)
+            out_path = scenario_vqa_output_path(gt_path, args.out_dir)
+            write_json(out_path, scenario_vqa_for_gt(gt_log, gt_path, args.mode, args.seed))
+            print("Wrote %s" % out_path)
+            continue
+
         easy_path, hard_path = output_paths(gt_path, args.out_dir)
         if not args.hard_only:
             write_json(easy_path, easy_vqa_for_gt(gt_log, gt_path, option_bank, args.seed))
@@ -1019,6 +1712,10 @@ def main() -> None:
         if not args.easy_only:
             write_json(hard_path, hard_vqa_for_gt(gt_log, gt_path))
             print("Wrote %s" % hard_path)
+
+    if args.scenario_csv and covered_scenario_types:
+        master_types = load_master_scenario_types(args.scenario_csv)
+        report_master_coverage(master_types, covered_scenario_types)
 
 
 if __name__ == "__main__":

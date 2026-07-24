@@ -1,0 +1,51 @@
+{
+  "scenario": {
+    "name": "SignalizedJunctionRightTurn",
+    "route_contains": "routes_town10_signalized_right",
+    "town": "Town10HD"
+  },
+  "variants": {
+    "clean": {
+      "fault_type": "none",
+      "condition": "clean",
+      "expected_mistake": false,
+      "expected_infraction": false
+    },
+    "wrong_approach_lane": {
+      "fault_type": "delay_right_lane_entry",
+      "condition": "mistake_only",
+      "expected_mistake": true,
+      "expected_infraction": false,
+      "trigger": {
+        "before_junction": true,
+        "maximum_junction_distance_m": 35.0,
+        "minimum_junction_distance_m": 12.0
+      },
+      "override": {
+        "suppress_right_steering": true,
+        "maximum_throttle": 0.35
+      },
+      "release": {
+        "junction_distance_m": 12.0
+      }
+    },
+    "right_turn_on_red": {
+      "fault_type": "run_red_light",
+      "condition": "infraction",
+      "expected_mistake": true,
+      "expected_infraction": true,
+      "trigger": {
+        "traffic_light_state": "Red",
+        "affects_ego": true,
+        "maximum_light_distance_m": 15.0
+      },
+      "override": {
+        "brake": 0.0,
+        "minimum_throttle": 0.4
+      },
+      "release": {
+        "after_junction_entry": true
+      }
+    }
+  }
+}

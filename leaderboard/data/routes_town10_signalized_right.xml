@@ -6,15 +6,15 @@
          <weather route_percentage="100" cloudiness="5.0" precipitation="0.0" precipitation_deposits="0.0" wetness="0.0" wind_intensity="10.0" sun_azimuth_angle="-1.0" sun_altitude_angle="15.0" fog_density="2.0" />
       </weathers>
       <waypoints>
-         <position x="-20.169" y="133.587" z="0.0" />
+         <!-- <position x="-20.169" y="133.587" z="0.0" />
          <position x="-28.539" y="133.536" z="0.0" />
          <position x="-33.539" y="133.505" z="0.0" />
          <position x="-38.539" y="133.474" z="0.0" />
          <position x="-43.538" y="133.443" z="0.0" />
          <position x="-48.538" y="133.413" z="0.0" />
          <position x="-53.538" y="133.382" z="0.0" />
-         <position x="-58.538" y="133.351" z="0.0" />
-         <position x="-63.496" y="133.31" z="0.0" />
+         <position x="-58.538" y="133.351" z="0.0" /> -->
+         <!-- <position x="-63.496" y="133.31" z="0.0" /> -->
          <position x="-71.27" y="132.315" z="0.0" />
          <position x="-91.966" y="114.787" z="0.0" />
          <position x="-94.467" y="110.994" z="0.0" />
