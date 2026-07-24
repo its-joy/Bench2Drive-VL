@@ -222,3 +222,28 @@ configs/
 eval_v1/
 output/
 *docker.sh
+
+# Local editor and user configuration
+/.claude/
+/.config/
+/.local/
+/.vscode/
+
+# Downloaded models
+/Qwen2.5-VL-7B-Instruct/
+
+# Generated experiment data
+/generated_vqa/
+/gt_logs_scenario_sequence/
+/pdm_lite_runs/
+/post_action_data/
+/third_party/
+/Qwen2.5-VL-7B-Instruct/
+
+# Generated checkpoints and temporary state
+/my_checkpoint.json
+/processed_paths.txt
+
+# Temporary or accidentally created files
+/Loading
+/Setting
