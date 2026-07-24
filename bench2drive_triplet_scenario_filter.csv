@@ -1,0 +1,45 @@
+scenario_type,classification,route_count,route_ids,towns,reason
+Accident,core,5,2534;2539;3307;24240;24816,Town12;Town12;Town13;Town10HD;Town03,Ego chooses when and how to bypass a long blockage; late safe bypass vs collision/route deviation.
+AccidentTwoWays,core,5,1852;2643;3410;25845;25857,Town12;Town12;Town13;Town15;Town05,Ego-controlled overtaking window; poor timing without conflict vs unsafe entry/collision.
+BlockedIntersection,optional,5,2204;2215;2989;27494;27532,Town12;Town12;Town12;Town04;Town11,"Can support stop/late-stop/enter-blocked-junction variants, but infraction validation may require custom junction-occupancy logic."
+ConstructionObstacle,core,5,2509;2513;24367;24785;24795,Town12;Town12;Town06;Town04;Town04,Ego-controlled detour; late but recoverable deviation vs collision or route-lane violation.
+ConstructionObstacleTwoWays,core,5,1825;1833;2606;20920;25424,Town12;Town12;Town12;Town12;Town11,"Ego-controlled detour with opposing traffic; clear safe, poor-but-safe, and unsafe variants."
+ControlLoss,optional,5,3561;24340;24784;24841;26418,Town13;Town10HD;Town02;Town01;Town11,"Can form recovery-quality triplets, but the scenario already injects instability and makes clean/mistake boundaries harder."
+CrossingBicycleFlow,core,5,3086;3090;3093;3099;3100,Town12;Town12;Town12;Town12;Town12,Ego turn and yielding are central; late but successful yield vs failure-to-yield.
+DynamicObjectCrossing,exclude,5,17752;24211;24224;24252;24333,Town12;Town01;Town02;Town11;Town15,External walker/bicycle crossing dominates; mistake-only is mainly a subtle braking-timing difference.
+EnterActorFlow,exclude,5,2201;3749;11715;11755;27506,Town12;Town13;Town12;Town12;Town05,The actor flow runs a red light; the central violation belongs to NPCs rather than ego.
+HardBreakRoute,exclude,5,3540;24330;24781;26406;26456,Town13;Town10HD;Town01;Town04;Town03,Lead vehicle causes the event; ego variants are primarily brake timing and collision.
+HazardAtSideLane,core,5,1790;1792;25300;25381;25439,Town12;Town12;Town04;Town05;Town15,Ego can brake or maneuver around a slow hazard; late but safe response vs collision.
+HazardAtSideLaneTwoWays,core,5,3436;24258;25854;25951;25955,Town13;Town07;Town03;Town04;Town05,Ego controls pass timing against opposing traffic; poor but safe timing vs unsafe conflict.
+HighwayCutIn,exclude,5,2286;3072;3074;3080;3813,Town12;Town12;Town12;Town12;Town13,Another vehicle merges into ego lane; ego is primarily reacting to an NPC cut-in.
+HighwayExit,core,5,23658;23659;23670;23687;24041,Town12;Town12;Town13;Town12;Town13,Ego-controlled lane planning; late but successful exit vs unsafe lane crossing or missed route.
+InterurbanActorFlow,core,5,23901;23910;23918;23930;24098,Town13;Town12;Town13;Town12;Town12,"Although traffic is present, the central decision is ego crossing/turning across the flow, not an NPC violation."
+InterurbanAdvancedActorFlow,core,5,23695;23700;23708;24071;24078,Town13;Town12;Town12;Town13;Town12,Ego performs crossing plus merge; supports poor-but-safe gap choice and unsafe entry variants.
+InvadingTurn,exclude,5,2790;2802;3564;3572;3575,Town12;Town12;Town13;Town13;Town13,Opposing vehicle invades ego lane; the critical violation is external and ego only reacts.
+MergerIntoSlowTraffic,core,5,2273;2283;3048;3785;3800,Town12;Town12;Town12;Town13;Town13,Ego controls merge timing; abrupt but safe merge vs unsafe merge/collision.
+MergerIntoSlowTrafficV2,core,5,23771;24092;26394;26401;26408,Town12;Town13;Town06;Town06;Town06,Ego controls highway merge interaction; late but safe positioning vs unsafe lane entry.
+NonSignalizedJunctionLeftTurn,core,5,2084;2086;2091;2881;26990,Town12;Town12;Town12;Town12;Town03,Ego controls gap acceptance; hesitant/late but safe turn vs failure-to-yield or collision.
+NonSignalizedJunctionLeftTurnEnterFlow,core,5,28087;28093;28210;28219;28229,Town04;Town04;Town12;Town12;Town12,Ego controls merge into traffic; poor but safe gap selection vs unsafe merge.
+NonSignalizedJunctionRightTurn,core,5,2115;2903;3666;3670;3676,Town12;Town12;Town13;Town13;Town13,Ego controls right-turn merge; late positioning/hesitation vs failure-to-yield.
+OppositeVehicleRunningRedLight,exclude,5,2082;2844;2847;26944;26950,Town12;Town12;Town12;Town04;Town03,The crossing vehicle runs the red light; not useful for assessing ego's own infraction awareness.
+OppositeVehicleTakingPriority,exclude,5,2127;2129;2143;2913;3697,Town12;Town12;Town12;Town12;Town13,The opposing vehicle takes priority; the central problematic action is external.
+ParkedObstacle,core,5,1773;2554;24757;25318;25383,Town12;Town12;Town06;Town05;Town15,Ego chooses obstacle-avoidance timing and path; late safe pass vs collision/route-lane violation.
+ParkedObstacleTwoWays,core,5,2664;2668;3457;25865;25896,Town12;Town12;Town13;Town11;Town03,Ego controls overtaking into opposing lane; delayed but safe pass vs unsafe conflict/collision.
+ParkingCrossingPedestrian,exclude,5,3248;3255;18252;24206;24294,Town13;Town13;Town12;Town03;Town02,External pedestrian emergence dominates and clean/mistake separation is mostly late braking.
+ParkingCutIn,exclude,5,1711;18305;18311;18356;24759,Town12;Town12;Town12;Town12;Town05,"NPC cut-in is the main event; ego mostly has a brake/no-brake response, making mistake-only subtle."
+ParkingExit,core,5,1956;3514;3520;26393;26435,Town12;Town13;Town13;Town03;Town03,"Ego-controlled merge from parking; clean, late/awkward but safe merge, and unsafe merge/collision are separable."
+PedestrianCrossing,exclude,5,14194;25863;27515;27529;27582,Town12;Town07;Town03;Town04;Town11,Pedestrians ignore the signal; external actor behavior dominates the scenario.
+SequentialLaneChange,core,5,17563;17569;17598;17635;17655,Town12;Town12;Town12;Town12;Town12,Ego-controlled lane planning; late/abrupt but safe sequence vs unsafe lane departure/collision.
+SignalizedJunctionLeftTurn,core,5,3936;4183;4468;4669;4683,Town12;Town12;Town12;Town12;Town12,Ego turn/yield/signal compliance are central; lane-position mistake and red-light/failure-to-yield infraction are possible.
+SignalizedJunctionLeftTurnEnterFlow,core,5,28099;28198;28241;28243;28330,Town04;Town15;Town12;Town12;Town12,Ego controls left-turn merge; late/awkward but safe merge vs signal or priority violation.
+SignalizedJunctionRightTurn,core,5,2050;4937;26956;26966;27018,Town12;Town12;Town05;Town05;Town15,"Strongest first case: late lane positioning as mistake, turn on red as infraction."
+StaticCutIn,exclude,5,2709;2715;25358;26396;26405,Town12;Town12;Town06;Town05;Town15,"NPC initiates the critical behavior; the triplet would mostly reduce to timely brake, late brake, collision."
+T_Junction,core,5,26458;28035;28048;28111;28154,Town07;Town01;Town02;Town04;Town10HD,Ego-controlled turn/yield decision; late positioning or hesitation vs failure-to-yield/route violation.
+VanillaNonSignalizedTurn,core,5,2390;2397;2403;3178;3890,Town12;Town12;Town12;Town12;Town13,Simple ego turn suitable for lane/path mistake and rule/route violation variants.
+VanillaNonSignalizedTurnEncounterStopsign,core,5,2416;3184;3189;3904;3905,Town12;Town12;Town12;Town13;Town13,Clear ego duty; poor approach/stop placement vs stop-sign violation.
+VanillaSignalizedTurnEncounterGreenLight,core,5,14842;14862;14909;25968;25975,Town12;Town12;Town12;Town07;Town07,Ego turn execution is central; lane/path mistake vs improper lane use or collision.
+VanillaSignalizedTurnEncounterRedLight,core,5,2373;3144;3865;3869;3876,Town12;Town12;Town13;Town13;Town13,Clear signal-controlled ego action; poor lane positioning vs red-light violation.
+VehicleOpensDoorTwoWays,exclude,5,3464;3472;3476;3482;25928,Town13;Town13;Town13;Town13;Town11,External door-opening hazard dominates; triplet is mainly avoidance timing versus collision.
+VehicleTurningRoute,exclude,5,2144;2943;3708;3712;3717,Town12;Town12;Town13;Town13;Town13,External bicycle crossing dominates; ego triplet is mostly brake timing.
+VehicleTurningRoutePedestrian,exclude,5,2164;3731;3737;10857;11381,Town12;Town13;Town13;Town12;Town12,External pedestrian crossing dominates; triplet mainly becomes emergency-braking severity.
+YieldToEmergencyVehicle,optional,5,3364;3373;3378;3380;25378,Town13;Town13;Town13;Town13;Town03,"Ego duty is central, but failure-to-yield is not always directly captured by standard Leaderboard metrics."
