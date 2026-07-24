@@ -385,6 +385,24 @@ def _measurement_object_distance(measurement, object_type_prefix):
     return None
 
 
+def _route_lateral_delta(measurement):
+    """Signed lateral offset (meters) between the autopilot's actual planned
+    path and its original (pre-obstacle) path, read directly from the
+    `route`/`route_original` ego-local waypoint arrays (x=forward, y=right)
+    at the nearest lookahead point. This is the autopilot's own path plan,
+    so it's immune to the steering-wheel noise that made peak-steer
+    direction detection unreliable (see _steer_shift_directions and
+    _route_lateral_shift_directions)."""
+    route = measurement.get("route")
+    route_original = measurement.get("route_original")
+    if not route or not route_original:
+        return None
+    try:
+        return _safe_float(route[0][1]) - _safe_float(route_original[0][1])
+    except (TypeError, IndexError):
+        return None
+
+
 def _route_shift_context(measurement):
     route_obstacle = measurement.get("route_obstacle")
     if not isinstance(route_obstacle, dict):
@@ -410,6 +428,7 @@ def _route_shift_context(measurement):
         "route_index_delta_to_shift": route_obstacle.get("route_index_delta_to_shift"),
         "target_speed_mps": _round_float(route_obstacle.get("target_speed")),
         "distance_to_leading_actor_m": _round_float(route_obstacle.get("distance_to_leading_actor")),
+        "lateral_delta_m": _round_float(_route_lateral_delta(measurement)),
     }
 
 
@@ -648,12 +667,15 @@ def _route_shift_path_clear(summary):
     return bool(route_shift.get("path_clear") and route_shift.get("keep_driving"))
 
 
+_TWO_WAY_OBSTACLE_TYPES = {
+    "AccidentTwoWays", "ConstructionObstacleTwoWays",
+    "ParkedObstacleTwoWays", "VehicleOpensDoorTwoWays",
+}
+
+
 def _is_two_way_obstacle_route(summary):
     scenario_type = str(summary.get("route_shift_context", {}).get("scenario_type") or "")
-    return scenario_type in {
-        "AccidentTwoWays", "ConstructionObstacleTwoWays",
-        "ParkedObstacleTwoWays", "VehicleOpensDoorTwoWays",
-    }
+    return scenario_type in _TWO_WAY_OBSTACLE_TYPES
 
 
 # These scenario types shift the route around an obstacle exactly like the
@@ -676,6 +698,206 @@ _STEER_BASED_OBSTACLE_TYPES = {
 
 def _is_steer_based_obstacle_route(scenario_type):
     return scenario_type in _STEER_BASED_OBSTACLE_TYPES
+
+
+def _route_shift_windows(frames, summaries_by_frame):
+    """Contiguous runs of frames where _route_shift_active is True."""
+    windows = []
+    start = None
+    prev = None
+    for frame in frames:
+        active = _route_shift_active(summaries_by_frame[frame])
+        if active and start is None:
+            start = frame
+        elif not active and start is not None:
+            windows.append((start, prev))
+            start = None
+        prev = frame
+    if start is not None:
+        windows.append((start, prev))
+    return windows
+
+
+_STEER_SHIFT_DIRECTION_THRESHOLD = 0.15
+
+
+def _steer_shift_directions(frames, summaries_by_frame, scenario_type):
+    """The steer-based obstacle types (_STEER_BASED_OBSTACLE_TYPES) have no
+    persistent path_clear flag to hold a lane_shift label across the whole
+    bypass maneuver, so direction is inferred from the ego's own steering.
+    Raw steer only crosses the labeling threshold for a frame or two during
+    the initial turn-in before unwinding as the car settles into the new
+    lane -- checking it per-frame produced 1-2 frame lane_shift_* steps.
+    Instead, detect direction once from the peak steer angle in each
+    route-shift window and hold that direction for every frame in the
+    window (the merge_back check in _motion_phase_label still takes
+    precedence for the tail frames)."""
+    if not (_is_steer_based_obstacle_route(scenario_type) or scenario_type in _TWO_WAY_OBSTACLE_TYPES):
+        return {}
+    directions = {}
+    for start, end in _route_shift_windows(frames, summaries_by_frame):
+        window_frames = [frame for frame in frames if start <= frame <= end]
+        peak_frame = max(
+            window_frames,
+            key=lambda frame: abs(_safe_float(summaries_by_frame[frame].get("ego", {}).get("steer"))),
+        )
+        peak_steer = _safe_float(summaries_by_frame[peak_frame].get("ego", {}).get("steer"))
+        if abs(peak_steer) <= _STEER_SHIFT_DIRECTION_THRESHOLD:
+            continue
+        direction = "left" if peak_steer < 0 else "right"
+        for frame in window_frames:
+            directions[frame] = direction
+    return directions
+
+
+def _route_lateral_shift_directions(frames, summaries_by_frame, scenario_type):
+    """More reliable than _steer_shift_directions: steer sign during an
+    obstacle bypass isn't monotonic -- a quick pivot back toward the
+    original lane partway through the maneuver (confirmed on
+    ParkedObstacleTwoWays/VehicleOpensDoorTwoWays) can have a LARGER peak
+    magnitude than the initiating turn, flipping the detected direction.
+    Empirically, peak-steer disagreed with the route-plan signal below on
+    17/36 sampled obstacle-avoidance routes across all 9 scenario types,
+    always by misreporting "right" when the car actually went left. The
+    route_shift_context.lateral_delta_m field (route[0].y - route_original[0].y,
+    the autopilot's own planned path vs. its original path) is immune to
+    that noise, so it's used as the primary signal, with peak-steer
+    (_steer_shift_directions) only as a fallback for frames/windows where
+    route/route_original weren't available."""
+    if not (_is_steer_based_obstacle_route(scenario_type) or scenario_type in _TWO_WAY_OBSTACLE_TYPES):
+        return {}
+    directions = {}
+    for start, end in _route_shift_windows(frames, summaries_by_frame):
+        window_frames = [frame for frame in frames if start <= frame <= end]
+        best_frame = None
+        best_delta = None
+        for frame in window_frames:
+            delta = summaries_by_frame[frame].get("route_shift_context", {}).get("lateral_delta_m")
+            if delta is None:
+                continue
+            if best_delta is None or abs(delta) > abs(best_delta):
+                best_delta = delta
+                best_frame = frame
+        if best_delta is None or best_delta == 0:
+            continue
+        direction = "left" if best_delta < 0 else "right"
+        for frame in window_frames:
+            directions[frame] = direction
+    return directions
+
+
+def _obstacle_shift_directions(frames, summaries_by_frame, scenario_type):
+    """Combine the two direction signals for obstacle-avoidance lane shifts,
+    preferring the route-plan-based signal and filling any gaps (windows
+    where route/route_original data was missing) from the steer-peak
+    fallback."""
+    steer_directions = _steer_shift_directions(frames, summaries_by_frame, scenario_type)
+    route_directions = _route_lateral_shift_directions(frames, summaries_by_frame, scenario_type)
+    return {**steer_directions, **route_directions}
+
+
+# Proactive lane-change scenario types (merging into slow traffic, passing
+# slower interurban traffic, mandated sequential lane changes) have no
+# route_shift/path_clear signal at all -- `changed_route` stays False
+# throughout -- and the `command` nav-hint field (5/6 = change_lane_left/
+# right) is unreliable as a window marker: sometimes far shorter than the
+# real steering maneuver (a couple of frames before flipping to go_straight
+# while the car is still mid-maneuver), sometimes spanning many seconds
+# covering more than one real steer event (e.g. SequentialLaneChange). Raw
+# steering magnitude is the only signal that reliably tracks the actual
+# maneuver, so lane changes are windowed the same way as
+# _steer_shift_directions but keyed off steer magnitude directly.
+_LANE_CHANGE_SCENARIO_TYPES = {
+    "SequentialLaneChange", "InterurbanActorFlow", "InterurbanAdvancedActorFlow",
+    "MergerIntoSlowTrafficV2",
+}
+
+_LANE_CHANGE_STEER_THRESHOLD = 0.15
+# A single lane change is often two steer-active runs: an initial turn-in and
+# a later straightening correction, separated by a settle gap of near-zero
+# steer. Empirically (checked across SequentialLaneChange/MergerIntoSlowTrafficV2
+# samples) that settle gap is at most ~6 frames within one maneuver, while
+# genuinely separate sequential lane changes are separated by 12+ frames of
+# stable cruising -- 7 sits with margin on both sides.
+_LANE_CHANGE_STEER_GAP_TOLERANCE = 7
+
+# For InterurbanActorFlow/InterurbanAdvancedActorFlow/MergerIntoSlowTrafficV2,
+# the big-radius highway ramp/fork/merge geometry CARLA tags as a junction
+# isn't a real intersection turn (see the _junction_turn_label exclusion
+# below), and the lane-change maneuver itself can start or continue while
+# still inside that junction-tagged region: confirmed on
+# InterurbanAdvancedActorFlow, the real initiating steer (e.g. -0.29, -0.49)
+# happens with junction=True, immediately followed by a bigger corrective
+# swing in the opposite direction (e.g. +0.42, +0.70) right as junction flips
+# False; on MergerIntoSlowTrafficV2, net lateral displacement (computed from
+# pos_global/theta, immune to steer-sign noise) shows the merge is one
+# continuous rightward motion from before the junction through several
+# frames after entering it, even though instantaneous steer sign flips
+# several times in that span. Excluding junction frames from the window (as
+# done for SequentialLaneChange, where junction genuinely means a real turn)
+# cut off part of the same maneuver and left it to _junction_turn_label,
+# which mislabeled it as a discrete (and sometimes flip-flopping) turn. These
+# three types don't have that ambiguity since _junction_turn_label never
+# runs for them.
+_LANE_CHANGE_INCLUDE_JUNCTION_TYPES = {
+    "InterurbanActorFlow", "InterurbanAdvancedActorFlow", "MergerIntoSlowTrafficV2",
+}
+
+
+def _lane_change_windows(frames, summaries_by_frame, scenario_type=None):
+    """Contiguous runs of frames where steer magnitude is actively above
+    threshold, normally excluding junctions (real junction turns are handled
+    separately by _junction_turn_label) -- except for
+    _LANE_CHANGE_INCLUDE_JUNCTION_TYPES, see above. A small gap tolerance
+    bridges the brief dip near zero that often occurs mid-maneuver, between
+    an initial turn-in and a straightening correction, without splitting one
+    lane change into two."""
+    include_junction = scenario_type in _LANE_CHANGE_INCLUDE_JUNCTION_TYPES
+    windows = []
+    start = None
+    last_active = None
+    for frame in frames:
+        summary = summaries_by_frame[frame]
+        steer = _safe_float(summary.get("ego", {}).get("steer"))
+        junction = bool(summary.get("ego", {}).get("junction"))
+        active = (include_junction or not junction) and abs(steer) > _LANE_CHANGE_STEER_THRESHOLD
+        if active:
+            if start is None:
+                start = frame
+            last_active = frame
+        elif start is not None and (frame - last_active) > _LANE_CHANGE_STEER_GAP_TOLERANCE:
+            windows.append((start, last_active))
+            start = None
+            last_active = None
+    if start is not None:
+        windows.append((start, last_active))
+    return windows
+
+
+def _lane_change_directions(frames, summaries_by_frame, scenario_type):
+    """Direction is taken from the first frame in the window that crosses the
+    threshold (the initiating turn-in), not the peak-magnitude frame -- unlike
+    the obstacle-bypass case, a lane change's straightening correction at the
+    end can have a larger peak magnitude than the initiating turn (especially
+    right before/after a junction-tagged merge point), which would otherwise
+    flip the detected direction."""
+    if scenario_type not in _LANE_CHANGE_SCENARIO_TYPES:
+        return {}
+    directions = {}
+    for start, end in _lane_change_windows(frames, summaries_by_frame, scenario_type):
+        window_frames = [frame for frame in frames if start <= frame <= end]
+        first_steer = None
+        for frame in window_frames:
+            steer = _safe_float(summaries_by_frame[frame].get("ego", {}).get("steer"))
+            if abs(steer) > _LANE_CHANGE_STEER_THRESHOLD:
+                first_steer = steer
+                break
+        if first_steer is None:
+            continue
+        direction = "left" if first_steer < 0 else "right"
+        for frame in window_frames:
+            directions[frame] = direction
+    return directions
 
 
 def _junction_turn_label(measurement, summary):
@@ -722,7 +944,7 @@ def _parking_exit_steer_label(measurement, summary, scenario_type):
 
 
 def _motion_phase_label(frame, measurement, summary, prev_speed_kmh, route_shift_last_frame,
-                        scenario_type=None):
+                        scenario_type=None, obstacle_shift_direction=None, lane_change_direction=None):
     speed_kmh = _safe_float(summary.get("ego", {}).get("speed_kmh"))
     route_shift = summary.get("route_shift_context", {})
     route_shift_active = _route_shift_active(summary)
@@ -750,14 +972,19 @@ def _motion_phase_label(frame, measurement, summary, prev_speed_kmh, route_shift
 
     if route_shift_active and near_shift_point and speed_kmh >= 1.0:
         if two_way_obstacle and path_clear:
-            return "lane_shift_left_to_bypass_obstacle"
+            return (
+                f"lane_shift_{obstacle_shift_direction}_to_bypass_obstacle"
+                if obstacle_shift_direction else "lane_shift_left_to_bypass_obstacle"
+            )
         if steer_based_obstacle:
-            steer = _safe_float(summary.get("ego", {}).get("steer"))
-            if abs(steer) > 0.15:
-                return "lane_shift_left_to_bypass_obstacle" if steer < 0 else "lane_shift_right_to_bypass_obstacle"
+            if obstacle_shift_direction:
+                return f"lane_shift_{obstacle_shift_direction}_to_bypass_obstacle"
         elif path_clear:
             direction = route_shift.get("direction")
             return f"lane_shift_{direction}" if direction else "lane_shift"
+
+    if lane_change_direction and speed_kmh >= 1.0:
+        return f"lane_change_{lane_change_direction}"
 
     if speed_kmh < 0.8:
         if prev_speed_kmh is not None and prev_speed_kmh > 1.5:
@@ -784,9 +1011,16 @@ def _motion_phase_label(frame, measurement, summary, prev_speed_kmh, route_shift
     if route_shift_active and not path_clear:
         return "keep_lane"
 
-    junction_turn = _junction_turn_label(measurement, summary)
-    if junction_turn:
-        return junction_turn
+    # These scenario types (_LANE_CHANGE_INCLUDE_JUNCTION_TYPES) run on
+    # big-radius highway ramp/fork/merge geometry that CARLA's map tags as a
+    # junction even though there's no discrete intersection turn -- see the
+    # comment on that set above -- so _junction_turn_label was mislabeling
+    # plain curve-following/merge tails as a discrete (and sometimes
+    # flip-flopping) "turn".
+    if scenario_type not in _LANE_CHANGE_INCLUDE_JUNCTION_TYPES:
+        junction_turn = _junction_turn_label(measurement, summary)
+        if junction_turn:
+            return junction_turn
 
     reduced_by_bicycle = (
         str(measurement.get("speed_reduced_by_obj_type") or "") in _BICYCLE_TYPE_IDS
@@ -832,6 +1066,8 @@ def _motion_phase_description(label):
         "lane_shift_left": "Ego shifted left.",
         "lane_shift": "Ego shifted laterally according to the modified route.",
         "merge_back_to_original_lane": "Ego merged back toward the original lane/path after bypassing the obstacle.",
+        "lane_change_left": "Ego changed lanes to the left.",
+        "lane_change_right": "Ego changed lanes to the right.",
         "following_hazard_at_reduced_speed": "Ego followed a cyclist/hazard ahead at a reduced, stabilized speed.",
         "parked_preparing_to_exit": "Ego started parked in a parking spot/shoulder with wheels already turned toward the travel lane, preparing to exit.",
         "steering_out_of_parking_spot": "Ego steered out of the parking spot, creeping forward and straightening the wheel to merge into the lane.",
@@ -1077,6 +1313,7 @@ def _smooth_motion_phases(phases):
                         "parked_preparing_to_exit", "steering_out_of_parking_spot",
                         "lane_shift_left_to_bypass_obstacle", "lane_shift_right_to_bypass_obstacle",
                         "merge_back_to_original_lane",
+                        "lane_change_left", "lane_change_right",
                     )
                 ):
                     new_phases.append({
@@ -1151,6 +1388,26 @@ def _merge_zero_duration_phases(phases):
     return phases
 
 
+def _coalesce_adjacent_same_label_phases(phases):
+    """_merge_zero_duration_phases absorbs a single-frame phase into
+    whichever neighbor is available, inheriting that neighbor's label --
+    e.g. a real 1-frame stop sandwiched between two lane_change_left phases
+    (different label on each side, so _smooth_motion_phases' symmetric
+    left==right check never merges it) gets folded into the earlier one,
+    which can leave two now-identically-labeled phases adjacent but still
+    separate. Collapse those into one so the same maneuver isn't reported as
+    two consecutive steps."""
+    phases = list(phases)
+    idx = 0
+    while idx + 1 < len(phases):
+        if phases[idx]["label"] == phases[idx + 1]["label"]:
+            phases[idx]["end_frame"] = phases[idx + 1]["end_frame"]
+            del phases[idx + 1]
+            continue
+        idx += 1
+    return phases
+
+
 def _sample_step_evidence(phase_frames, summaries_by_frame, stride=4):
     if not phase_frames:
         return []
@@ -1170,6 +1427,8 @@ def _build_sequence_steps(pairs, summaries_by_frame, outcome, frame_rate, step_e
     measurements_by_frame = {frame: measurement for frame, measurement, _ in pairs}
     route_shift_frames = [frame for frame in frames if _route_shift_active(summaries_by_frame[frame])]
     route_shift_last_frame = max(route_shift_frames) if route_shift_frames else None
+    obstacle_shift_directions = _obstacle_shift_directions(frames, summaries_by_frame, scenario_type)
+    lane_change_directions = _lane_change_directions(frames, summaries_by_frame, scenario_type)
 
     labels_by_frame = {}
     prev_speed = None
@@ -1181,6 +1440,8 @@ def _build_sequence_steps(pairs, summaries_by_frame, outcome, frame_rate, step_e
             prev_speed,
             route_shift_last_frame,
             scenario_type=scenario_type,
+            obstacle_shift_direction=obstacle_shift_directions.get(frame),
+            lane_change_direction=lane_change_directions.get(frame),
         )
         labels_by_frame[frame] = label
         prev_speed = _safe_float(summaries_by_frame[frame].get("ego", {}).get("speed_kmh"))
@@ -1210,6 +1471,7 @@ def _build_sequence_steps(pairs, summaries_by_frame, outcome, frame_rate, step_e
     phases = _smooth_motion_phases(phases)
     phases = _extend_merge_back_tail(phases)
     phases = _merge_zero_duration_phases(phases)
+    phases = _coalesce_adjacent_same_label_phases(phases)
 
     steps = []
     for phase in phases:

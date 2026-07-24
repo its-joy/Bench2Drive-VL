@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "route_file": "leaderboard/data/bench2drive_opposite_vehicle_taking_priority.xml",
+  "scenario_type": "OppositeVehicleTakingPriority",
+  "scenario_count": 5,
+  "source_xml": "leaderboard/data/bench2drive220.xml",
+  "clean_scenarios": [
+    {
+      "route_id": "2127",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleTakingPriority_1",
+      "scenario_type": "OppositeVehicleTakingPriority",
+      "route_key": "route2127_rep0",
+      "trigger_point": {
+        "x": 3565.2,
+        "y": 2525.3,
+        "yaw": -0.2,
+        "z": 363.0
+      },
+      "subset_reason": "opposite_vehicle_taking_priority_subset"
+    },
+    {
+      "route_id": "2129",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleTakingPriority_1",
+      "scenario_type": "OppositeVehicleTakingPriority",
+      "route_key": "route2129_rep0",
+      "trigger_point": {
+        "x": 2420.5,
+        "y": 2408.9,
+        "yaw": 179.9,
+        "z": 366.2
+      },
+      "subset_reason": "opposite_vehicle_taking_priority_subset"
+    },
+    {
+      "route_id": "2143",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleTakingPriority_1",
+      "scenario_type": "OppositeVehicleTakingPriority",
+      "route_key": "route2143_rep0",
+      "trigger_point": {
+        "x": 256.6,
+        "y": 5946.7,
+        "yaw": 269.1,
+        "z": 360.5
+      },
+      "subset_reason": "opposite_vehicle_taking_priority_subset"
+    },
+    {
+      "route_id": "2913",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleTakingPriority_1",
+      "scenario_type": "OppositeVehicleTakingPriority",
+      "route_key": "route2913_rep0",
+      "trigger_point": {
+        "x": 2924.6,
+        "y": 2524.4,
+        "yaw": 179.8,
+        "z": 349.2
+      },
+      "subset_reason": "opposite_vehicle_taking_priority_subset"
+    },
+    {
+      "route_id": "3697",
+      "town": "Town13",
+      "scenario_name": "OppositeVehicleTakingPriority_1",
+      "scenario_type": "OppositeVehicleTakingPriority",
+      "route_key": "route3697_rep0",
+      "trigger_point": {
+        "x": -4160.9,
+        "y": 3361.4,
+        "yaw": 269.3,
+        "z": 185.9
+      },
+      "subset_reason": "opposite_vehicle_taking_priority_subset"
+    }
+  ]
+}

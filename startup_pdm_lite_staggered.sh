@@ -8,8 +8,8 @@ set -Eeuo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export WORKSPACE="${WORKSPACE:-${SCRIPT_DIR}}"
 
-export ROUTES="${ROUTES:-${WORKSPACE}/leaderboard/data/bench2drive220_vehicle_turning_route_pedestrian.xml}"
-export FAULT_CONFIG="${FAULT_CONFIG:-${WORKSPACE}/fault_injector/configs/signalized_right_turn/clean_bench2drive220_vehicle_turning_route_pedestrian_copy.json}"
+export ROUTES="${ROUTES:-${WORKSPACE}/leaderboard/data/bench2drive_opposite_vehicle_taking_priority.xml}"
+export FAULT_CONFIG="${FAULT_CONFIG:-${WORKSPACE}/fault_injector/configs/signalized_right_turn/bench2drive_opposite_vehicle_taking_priority.json}"
 export REPETITIONS="${REPETITIONS:-1}"
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
