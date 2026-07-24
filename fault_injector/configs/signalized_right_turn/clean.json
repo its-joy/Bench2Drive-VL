@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "config_id": "signalized_right_turn_clean_v1",
+  "base_scenario": "SignalizedJunctionRightTurn",
+  "condition": "clean",
+  "fault_type": "none",
+  "trigger": {},
+  "intervention": {},
+  "release": {},
+  "guards": {},
+  "expected": {
+    "mistake": false,
+    "infraction": false,
+    "infraction_type": null
+  }
+}

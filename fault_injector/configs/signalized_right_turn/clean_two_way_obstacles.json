@@ -1,0 +1,301 @@
+{
+  "schema_version": "1.0",
+  "config_id": "bench2drive_triplet_core_two_way_obstacles_clean_v1",
+  "base_scenario": "bench2drive_triplet_core_two_way_obstacles",
+  "condition": "clean",
+  "fault_type": "none",
+  "trigger": {},
+  "intervention": {},
+  "release": {},
+  "guards": {},
+  "expected": {
+    "mistake": false,
+    "infraction": false,
+    "infraction_type": null
+  },
+  "source_template": "fault_injector/configs/signalized_right_turn/clean_scenarios.json",
+  "route_file": "leaderboard/data/bench2drive_triplet_core_two_way_obstacles.xml",
+  "scenario_count": 10,
+  "scenario_type_counts": {
+    "AccidentTwoWays": 5,
+    "ConstructionObstacleTwoWays": 5
+  },
+  "clean_scenarios": [
+    {
+      "route_id": "1825",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route1825_rep0",
+      "trigger_point": {
+        "x": 1173.4,
+        "y": 5328.5,
+        "yaw": 89.9,
+        "z": 371.0
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_construction_static_obstacle_clean"
+      },
+      "subset_reason": "two_way_obstacle_subset_from_bench2drive_triplet_core_135"
+    },
+    {
+      "route_id": "1833",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route1833_rep0",
+      "trigger_point": {
+        "x": 2817.3,
+        "y": 4290.1,
+        "yaw": 99.4,
+        "z": 360.4
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_construction_static_obstacle_clean"
+      },
+      "subset_reason": "two_way_obstacle_subset_from_bench2drive_triplet_core_135"
+    },
+    {
+      "route_id": "1852",
+      "town": "Town12",
+      "scenario_name": "AccidentTwoWays_1",
+      "scenario_type": "AccidentTwoWays",
+      "route_key": "route1852_rep0",
+      "trigger_point": {
+        "x": 1362.2,
+        "y": 5330.5,
+        "yaw": 89.8,
+        "z": 370.5
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_accident_emergency_bypass_clean",
+        "traffic_gap_policy": "sparse_oncoming_220_360m",
+        "allow_solid_yellow_crossing": true,
+        "force_emergency_bypass_route_commit": true,
+        "emergency_bypass_commit_gap_m": 80.0,
+        "force_waypoint_bypass_after_route_shift": true
+      },
+      "subset_reason": "two_way_obstacle_subset_from_bench2drive_triplet_core_135"
+    },
+    {
+      "route_id": "20920",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route20920_rep0",
+      "trigger_point": {
+        "x": 3486.2,
+        "y": 4535.2,
+        "yaw": 278.3,
+        "z": 367.9
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_construction_static_obstacle_clean"
+      },
+      "subset_reason": "two_way_obstacle_subset_from_bench2drive_triplet_core_135"
+    },
+    {
+      "route_id": "25424",
+      "town": "Town11",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route25424_rep0",
+      "trigger_point": {
+        "x": 7451.9,
+        "y": -2131.8,
+        "yaw": 297.6,
+        "z": 54.1
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_construction_static_obstacle_clean"
+      },
+      "subset_reason": "two_way_obstacle_subset_from_bench2drive_triplet_core_135"
+    },
+    {
+      "route_id": "25845",
+      "town": "Town15",
+      "scenario_name": "AccidentTwoWays_1",
+      "scenario_type": "AccidentTwoWays",
+      "route_key": "route25845_rep0",
+      "trigger_point": {
+        "x": 149.1,
+        "y": -467.2,
+        "yaw": -139.3,
+        "z": 153.2
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_accident_emergency_bypass_clean",
+        "traffic_gap_policy": "sparse_oncoming_220_360m",
+        "allow_solid_yellow_crossing": true,
+        "force_emergency_bypass_route_commit": true,
+        "emergency_bypass_commit_gap_m": 80.0,
+        "force_waypoint_bypass_after_route_shift": true
+      },
+      "subset_reason": "two_way_obstacle_subset_from_bench2drive_triplet_core_135"
+    },
+    {
+      "route_id": "25857",
+      "town": "Town05",
+      "scenario_name": "AccidentTwoWays_1",
+      "scenario_type": "AccidentTwoWays",
+      "route_key": "route25857_rep0",
+      "trigger_point": {
+        "x": 80.8,
+        "y": -144.4,
+        "yaw": 6.1,
+        "z": 0.0
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_accident_emergency_bypass_clean",
+        "traffic_gap_policy": "sparse_oncoming_220_360m",
+        "allow_solid_yellow_crossing": true,
+        "force_emergency_bypass_route_commit": true,
+        "emergency_bypass_commit_gap_m": 80.0,
+        "force_waypoint_bypass_after_route_shift": true
+      },
+      "subset_reason": "two_way_obstacle_subset_from_bench2drive_triplet_core_135"
+    },
+    {
+      "route_id": "2606",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route2606_rep0",
+      "trigger_point": {
+        "x": 1176.3,
+        "y": 5241.4,
+        "yaw": 269.9,
+        "z": 371.2
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_construction_static_obstacle_clean"
+      },
+      "subset_reason": "two_way_obstacle_subset_from_bench2drive_triplet_core_135"
+    },
+    {
+      "route_id": "2643",
+      "town": "Town12",
+      "scenario_name": "AccidentTwoWays_1",
+      "scenario_type": "AccidentTwoWays",
+      "route_key": "route2643_rep0",
+      "trigger_point": {
+        "x": 2206.7,
+        "y": 4834.5,
+        "yaw": 270.7,
+        "z": 364.9
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_accident_emergency_bypass_clean",
+        "traffic_gap_policy": "sparse_oncoming_220_360m",
+        "allow_solid_yellow_crossing": true,
+        "force_emergency_bypass_route_commit": true,
+        "emergency_bypass_commit_gap_m": 80.0,
+        "force_waypoint_bypass_after_route_shift": true
+      },
+      "subset_reason": "two_way_obstacle_subset_from_bench2drive_triplet_core_135"
+    },
+    {
+      "route_id": "3410",
+      "town": "Town13",
+      "scenario_name": "AccidentTwoWays_1",
+      "scenario_type": "AccidentTwoWays",
+      "route_key": "route3410_rep0",
+      "trigger_point": {
+        "x": 4336.6,
+        "y": 557.9,
+        "yaw": 146.9,
+        "z": 174.9
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_accident_emergency_bypass_clean",
+        "traffic_gap_policy": "sparse_oncoming_220_360m",
+        "allow_solid_yellow_crossing": true,
+        "force_emergency_bypass_route_commit": true,
+        "emergency_bypass_commit_gap_m": 80.0,
+        "force_waypoint_bypass_after_route_shift": true
+      },
+      "subset_reason": "two_way_obstacle_subset_from_bench2drive_triplet_core_135"
+    }
+  ],
+  "clean_control_defaults": {
+    "AccidentTwoWays": {
+      "enabled": true,
+      "profile": "two_way_accident_emergency_bypass_clean",
+      "purpose": "Treat the stopped accident vehicle as a blocked-lane emergency bypass: prepare the opposite-lane route shift early, wait for a usable oncoming gap, cross the solid yellow only for the bypass, then merge back cleanly before timeout.",
+      "pdm_config_overrides": {
+        "default_max_distance_to_process_scenario_m": 85.0,
+        "max_distance_to_overtake_two_way_scenarios_m": 28.0,
+        "default_overtake_speed_kmh": 32.0,
+        "check_path_free_safety_distance_m": 5.0,
+        "check_path_free_safety_time_s": 0.05,
+        "idm_two_way_scenarios_minimum_distance_m": 4.0,
+        "idm_two_way_scenarios_time_headway_s": 0.4,
+        "transition_length_accident_two_ways_m": 6.0,
+        "add_before_accident_two_ways_m": 12.0,
+        "add_after_accident_two_ways_m": 14.0,
+        "factor_accident_two_ways": 1.0,
+        "max_blocked_ticks": 360,
+        "force_accident_two_ways_emergency_bypass": true,
+        "accident_two_ways_emergency_bypass_min_oncoming_gap_m": 80.0,
+        "accident_two_ways_emergency_bypass_extra_clearance_m": 40.0
+      },
+      "traffic_gap_policy": {
+        "requires_oncoming_gap": true,
+        "prefer_sparse_oncoming_flow": true,
+        "oncoming_spawn_distance_interval_m": {
+          "from": 220.0,
+          "to": 360.0
+        },
+        "prefer_moderate_oncoming_speed": true,
+        "emergency_bypass_commit_gap_m": 80.0,
+        "force_commit_when_native_time_check_is_too_conservative": true,
+        "force_waypoint_bypass_after_route_shift": true,
+        "note": "When enabled, the shifted two-way bypass route is treated as drivable immediately; ego performs lane change out and merge-back using PDM waypoints."
+      },
+      "legal_exception_policy": {
+        "allow_solid_yellow_crossing": true,
+        "only_for_blocked_lane_emergency_bypass": true,
+        "must_merge_back_after_obstacle": true,
+        "note": "AccidentTwoWays disables OutsideRouteLanesTest while route-mode bypass is active."
+      }
+    },
+    "ConstructionObstacleTwoWays": {
+      "enabled": true,
+      "profile": "two_way_construction_static_obstacle_clean",
+      "purpose": "Make ego recognize the construction obstacle earlier, wait if the opposite lane is occupied, then pass and return cleanly.",
+      "pdm_config_overrides": {
+        "default_max_distance_to_process_scenario_m": 70.0,
+        "max_distance_to_overtake_two_way_scenarios_m": 18.0,
+        "default_overtake_speed_kmh": 30.0,
+        "check_path_free_safety_distance_m": 8.0,
+        "check_path_free_safety_time_s": 0.2,
+        "idm_two_way_scenarios_minimum_distance_m": 5.0,
+        "idm_two_way_scenarios_time_headway_s": 0.6,
+        "transition_length_construction_obstacle_two_ways_m": 6.0,
+        "add_before_construction_obstacle_two_ways_m": 8.0,
+        "add_after_construction_obstacle_two_ways_m": 8.0,
+        "factor_construction_obstacle_two_ways": 1.0,
+        "max_blocked_ticks": 260
+      },
+      "static_obstacle_policy": {
+        "force_route_obstacle_reaction": true,
+        "stop_before_obstacle_until_overtake_path_clear": true
+      },
+      "traffic_gap_policy": {
+        "requires_oncoming_gap": true,
+        "prefer_lower_oncoming_frequency": true,
+        "prefer_moderate_oncoming_speed": true
+      }
+    }
+  }
+}

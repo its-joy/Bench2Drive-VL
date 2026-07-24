@@ -1,0 +1,307 @@
+{
+  "schema_version": "1.0",
+  "config_id": "extra_scenarios_clean_v1",
+  "base_scenario": "extra_scenarios",
+  "condition": "clean",
+  "fault_type": "none",
+  "trigger": {},
+  "intervention": {},
+  "release": {},
+  "guards": {},
+  "expected": {
+    "mistake": false,
+    "infraction": false,
+    "infraction_type": null
+  },
+  "source_template": "generated from bench2drive_external_hazard_attribution_30.xml",
+  "route_file": "leaderboard/data/extra_scenarios.xml",
+  "scenario_count": 20,
+  "scenario_type_counts": {
+    "HighwayCutIn": 5,
+    "OppositeVehicleRunningRedLight": 5,
+    "OppositeVehicleTakingPriority": 5,
+    "VehicleOpensDoorTwoWays": 5
+  },
+  "clean_scenarios": [
+    {
+      "route_id": "2286",
+      "town": "Town12",
+      "scenario_name": "HighwayCutIn_1",
+      "scenario_type": "HighwayCutIn",
+      "route_key": "route2286_rep0",
+      "trigger_point": {
+        "x": 4086.0,
+        "y": 4082.5,
+        "yaw": 98.8,
+        "z": 369.2
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "3072",
+      "town": "Town12",
+      "scenario_name": "HighwayCutIn_1",
+      "scenario_type": "HighwayCutIn",
+      "route_key": "route3072_rep0",
+      "trigger_point": {
+        "x": 725.3,
+        "y": 3078.7,
+        "yaw": 179.9,
+        "z": 361.8
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "3074",
+      "town": "Town12",
+      "scenario_name": "HighwayCutIn_1",
+      "scenario_type": "HighwayCutIn",
+      "route_key": "route3074_rep0",
+      "trigger_point": {
+        "x": -819.5,
+        "y": 4735.5,
+        "yaw": 269.9,
+        "z": 369.4
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "3080",
+      "town": "Town12",
+      "scenario_name": "HighwayCutIn_1",
+      "scenario_type": "HighwayCutIn",
+      "route_key": "route3080_rep0",
+      "trigger_point": {
+        "x": 727.3,
+        "y": 3078.7,
+        "yaw": 179.9,
+        "z": 361.8
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "3813",
+      "town": "Town13",
+      "scenario_name": "HighwayCutIn_1",
+      "scenario_type": "HighwayCutIn",
+      "route_key": "route3813_rep0",
+      "trigger_point": {
+        "x": -3770.1,
+        "y": -2851.2,
+        "yaw": -0.0,
+        "z": 163.0
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "2082",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleRunningRedLight_1",
+      "scenario_type": "OppositeVehicleRunningRedLight",
+      "route_key": "route2082_rep0",
+      "trigger_point": {
+        "x": 1500.8,
+        "y": 4065.4,
+        "yaw": 279.4,
+        "z": 361.0
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "26944",
+      "town": "Town04",
+      "scenario_name": "OppositeVehicleRunningRedLight_1",
+      "scenario_type": "OppositeVehicleRunningRedLight",
+      "route_key": "route26944_rep0",
+      "trigger_point": {
+        "x": 169.3,
+        "y": -169.7,
+        "yaw": 0.3,
+        "z": 0.2
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "26950",
+      "town": "Town03",
+      "scenario_name": "OppositeVehicleRunningRedLight_1",
+      "scenario_type": "OppositeVehicleRunningRedLight",
+      "route_key": "route26950_rep0",
+      "trigger_point": {
+        "x": 9.0,
+        "y": -98.8,
+        "yaw": -88.6,
+        "z": 0.0
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "2844",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleRunningRedLight_1",
+      "scenario_type": "OppositeVehicleRunningRedLight",
+      "route_key": "route2844_rep0",
+      "trigger_point": {
+        "x": 1727.1,
+        "y": 3909.5,
+        "yaw": 99.3,
+        "z": 357.4
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "2847",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleRunningRedLight_1",
+      "scenario_type": "OppositeVehicleRunningRedLight",
+      "route_key": "route2847_rep0",
+      "trigger_point": {
+        "x": 2996.5,
+        "y": 4650.7,
+        "yaw": 279.6,
+        "z": 365.6
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "2127",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleTakingPriority_1",
+      "scenario_type": "OppositeVehicleTakingPriority",
+      "route_key": "route2127_rep0",
+      "trigger_point": {
+        "x": 3565.2,
+        "y": 2525.3,
+        "yaw": -0.2,
+        "z": 363.0
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "2129",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleTakingPriority_1",
+      "scenario_type": "OppositeVehicleTakingPriority",
+      "route_key": "route2129_rep0",
+      "trigger_point": {
+        "x": 2420.5,
+        "y": 2408.9,
+        "yaw": 179.9,
+        "z": 366.2
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "2143",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleTakingPriority_1",
+      "scenario_type": "OppositeVehicleTakingPriority",
+      "route_key": "route2143_rep0",
+      "trigger_point": {
+        "x": 256.6,
+        "y": 5946.7,
+        "yaw": 269.1,
+        "z": 360.5
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "2913",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleTakingPriority_1",
+      "scenario_type": "OppositeVehicleTakingPriority",
+      "route_key": "route2913_rep0",
+      "trigger_point": {
+        "x": 2924.6,
+        "y": 2524.4,
+        "yaw": 179.8,
+        "z": 349.2
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "3697",
+      "town": "Town13",
+      "scenario_name": "OppositeVehicleTakingPriority_1",
+      "scenario_type": "OppositeVehicleTakingPriority",
+      "route_key": "route3697_rep0",
+      "trigger_point": {
+        "x": -4160.9,
+        "y": 3361.4,
+        "yaw": 269.3,
+        "z": 185.9
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "25928",
+      "town": "Town11",
+      "scenario_name": "VehicleOpensDoorTwoWays_1",
+      "scenario_type": "VehicleOpensDoorTwoWays",
+      "route_key": "route25928_rep0",
+      "trigger_point": {
+        "x": 7623.4,
+        "y": -2394.1,
+        "yaw": 306.4,
+        "z": 53.0
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "3464",
+      "town": "Town13",
+      "scenario_name": "VehicleOpensDoorTwoWays_1",
+      "scenario_type": "VehicleOpensDoorTwoWays",
+      "route_key": "route3464_rep0",
+      "trigger_point": {
+        "x": 4968.6,
+        "y": 3610.9,
+        "yaw": 89.5,
+        "z": 159.3
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "3472",
+      "town": "Town13",
+      "scenario_name": "VehicleOpensDoorTwoWays_1",
+      "scenario_type": "VehicleOpensDoorTwoWays",
+      "route_key": "route3472_rep0",
+      "trigger_point": {
+        "x": 4541.0,
+        "y": 5967.6,
+        "yaw": -3.9,
+        "z": 147.2
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "3476",
+      "town": "Town13",
+      "scenario_name": "VehicleOpensDoorTwoWays_1",
+      "scenario_type": "VehicleOpensDoorTwoWays",
+      "route_key": "route3476_rep0",
+      "trigger_point": {
+        "x": 1256.9,
+        "y": 1804.1,
+        "yaw": 91.0,
+        "z": 148.6
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    },
+    {
+      "route_id": "3482",
+      "town": "Town13",
+      "scenario_name": "VehicleOpensDoorTwoWays_1",
+      "scenario_type": "VehicleOpensDoorTwoWays",
+      "route_key": "route3482_rep0",
+      "trigger_point": {
+        "x": 2369.7,
+        "y": 6192.7,
+        "yaw": 91.8,
+        "z": 165.8
+      },
+      "subset_reason": "extra_scenarios_requested_subset"
+    }
+  ]
+}

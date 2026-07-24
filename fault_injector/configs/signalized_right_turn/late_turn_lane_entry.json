@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "config_id": "signalized_right_turn_late_lane_entry_v1",
+  "base_scenario": "SignalizedJunctionRightTurn",
+  "condition": "mistake_only",
+  "fault_type": "late_turn_lane_entry",
+  "trigger": {
+    "route_command": "turn_right",
+    "require_not_in_junction": true,
+    "maximum_junction_distance_m": 105.0,
+    "minimum_junction_distance_m": 5.0,
+    "require_right_lane_available": true,
+    "confirmation_ticks": 3
+  },
+  "intervention": {
+    "strategy": "hold_current_lane_route",
+    "preserve_longitudinal_control": true,
+    "maximum_active_duration_s": 20.0,
+    "maximum_speed_mps": 12.0,
+    "max_adjacent_lane_search_steps": 3,
+    "right_steer_sign": -1,
+    "maximum_right_steer": 0.05,
+    "maximum_steer_suppression": 0.35
+  },
+  "release": {
+    "release_at_junction_distance_m": 2.5,
+    "require_correct_turn_lane_before_junction": true,
+    "transition_ticks": 5
+  },
+  "guards": {
+    "abort_on_vehicle_hazard": false,
+    "abort_on_walker_hazard": true,
+    "abort_on_solid_lane_crossing_risk": true,
+    "abort_on_route_deviation_risk": true,
+    "abort_on_junction_entry_before_correction": true,
+    "maximum_lateral_offset_m": 2.5
+  },
+  "expected": {
+    "mistake": true,
+    "mistake_type": "late_lane_positioning",
+    "infraction": false,
+    "infraction_type": null
+  },
+  "actor_spawn_control": {
+    "mode": "near_ego",
+    "clear_radius_m": 5.0,
+    "clear_vehicles": true,
+    "clear_walkers": true,
+    "repeat": true
+  }
+}

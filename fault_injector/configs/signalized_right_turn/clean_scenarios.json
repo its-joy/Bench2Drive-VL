@@ -1,0 +1,2082 @@
+{
+  "schema_version": "1.0",
+  "config_id": "bench2drive_triplet_core_135_clean_scenarios_v1",
+  "base_scenario": "bench2drive_triplet_core_135",
+  "condition": "clean",
+  "fault_type": "none",
+  "trigger": {},
+  "intervention": {},
+  "release": {},
+  "guards": {},
+  "expected": {
+    "mistake": false,
+    "infraction": false,
+    "infraction_type": null
+  },
+  "source_template": "fault_injector/configs/signalized_right_turn/clean.json",
+  "route_file": "leaderboard/data/bench2drive_triplet_core_135.xml",
+  "scenario_count": 118,
+  "scenario_type_counts": {
+    "Accident": 5,
+    "ConstructionObstacle": 5,
+    "CrossingBicycleFlow": 5,
+    "HazardAtSideLane": 3,
+    "HazardAtSideLaneTwoWays": 5,
+    "HighwayExit": 5,
+    "InterurbanActorFlow": 5,
+    "InterurbanAdvancedActorFlow": 5,
+    "MergerIntoSlowTraffic": 4,
+    "MergerIntoSlowTrafficV2": 5,
+    "NonSignalizedJunctionLeftTurn": 2,
+    "NonSignalizedJunctionLeftTurnEnterFlow": 5,
+    "NonSignalizedJunctionRightTurn": 4,
+    "ParkedObstacle": 4,
+    "ParkedObstacleTwoWays": 5,
+    "ParkingExit": 4,
+    "PedestrianCrossing": 5,
+    "SequentialLaneChange": 5,
+    "SignalizedJunctionLeftTurn": 5,
+    "SignalizedJunctionLeftTurnEnterFlow": 5,
+    "SignalizedJunctionRightTurn": 4,
+    "T_Junction": 5,
+    "VanillaNonSignalizedTurn": 4,
+    "VanillaNonSignalizedTurnEncounterStopsign": 5,
+    "VanillaSignalizedTurnEncounterGreenLight": 5,
+    "VanillaSignalizedTurnEncounterRedLight": 4
+  },
+  "clean_scenarios": [
+    {
+      "route_id": "2273",
+      "town": "Town12",
+      "scenario_name": "MergerIntoSlowTraffic_1",
+      "scenario_type": "MergerIntoSlowTraffic",
+      "route_key": "route2273_rep0",
+      "trigger_point": {
+        "x": 3943.6,
+        "y": 2748.0,
+        "yaw": 89.9,
+        "z": 369.6
+      }
+    },
+    {
+      "route_id": "2397",
+      "town": "Town12",
+      "scenario_name": "VanillaNonSignalizedTurn_1",
+      "scenario_type": "VanillaNonSignalizedTurn",
+      "route_key": "route2397_rep0",
+      "trigger_point": {
+        "x": 2540.0,
+        "y": 1618.3,
+        "yaw": 269.9,
+        "z": 351.4
+      }
+    },
+    {
+      "route_id": "2403",
+      "town": "Town12",
+      "scenario_name": "VanillaNonSignalizedTurn_1",
+      "scenario_type": "VanillaNonSignalizedTurn",
+      "route_key": "route2403_rep0",
+      "trigger_point": {
+        "x": -3420.5,
+        "y": 1181.4,
+        "yaw": 103.9,
+        "z": 345.4
+      }
+    },
+    {
+      "route_id": "2416",
+      "town": "Town12",
+      "scenario_name": "VanillaNonSignalizedTurnEncounterStopsign_1",
+      "scenario_type": "VanillaNonSignalizedTurnEncounterStopsign",
+      "route_key": "route2416_rep0",
+      "trigger_point": {
+        "x": -1389.0,
+        "y": 5323.2,
+        "yaw": -0.0,
+        "z": 376.7
+      }
+    },
+    {
+      "route_id": "2509",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacle_1",
+      "scenario_type": "ConstructionObstacle",
+      "route_key": "route2509_rep0",
+      "trigger_point": {
+        "x": -1487.4,
+        "y": 6455.6,
+        "yaw": -182.1,
+        "z": 373.6
+      }
+    },
+    {
+      "route_id": "2513",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacle_1",
+      "scenario_type": "ConstructionObstacle",
+      "route_key": "route2513_rep0",
+      "trigger_point": {
+        "x": -829.9,
+        "y": 4346.3,
+        "yaw": 89.9,
+        "z": 368.1
+      }
+    },
+    {
+      "route_id": "2534",
+      "town": "Town12",
+      "scenario_name": "Accident_1",
+      "scenario_type": "Accident",
+      "route_key": "route2534_rep0",
+      "trigger_point": {
+        "x": 2024.9,
+        "y": 3077.6,
+        "yaw": 180.6,
+        "z": 357.0
+      }
+    },
+    {
+      "route_id": "2539",
+      "town": "Town12",
+      "scenario_name": "Accident_1",
+      "scenario_type": "Accident",
+      "route_key": "route2539_rep0",
+      "trigger_point": {
+        "x": 423.5,
+        "y": 6089.8,
+        "yaw": 146.1,
+        "z": 358.8
+      }
+    },
+    {
+      "route_id": "2554",
+      "town": "Town12",
+      "scenario_name": "ParkedObstacle_1",
+      "scenario_type": "ParkedObstacle",
+      "route_key": "route2554_rep0",
+      "trigger_point": {
+        "x": 1702.8,
+        "y": 3077.6,
+        "yaw": 179.9,
+        "z": 361.5
+      }
+    },
+    {
+      "route_id": "2664",
+      "town": "Town12",
+      "scenario_name": "ParkedObstacleTwoWays_1",
+      "scenario_type": "ParkedObstacleTwoWays",
+      "route_key": "route2664_rep0",
+      "trigger_point": {
+        "x": 3256.1,
+        "y": 4500.2,
+        "yaw": 279.2,
+        "z": 365.9
+      }
+    },
+    {
+      "route_id": "2668",
+      "town": "Town12",
+      "scenario_name": "ParkedObstacleTwoWays_1",
+      "scenario_type": "ParkedObstacleTwoWays",
+      "route_key": "route2668_rep0",
+      "trigger_point": {
+        "x": -3702.1,
+        "y": 1055.3,
+        "yaw": 68.2,
+        "z": 345.8
+      }
+    },
+    {
+      "route_id": "2881",
+      "town": "Town12",
+      "scenario_name": "NonSignalizedJunctionLeftTurn_1",
+      "scenario_type": "NonSignalizedJunctionLeftTurn",
+      "route_key": "route2881_rep0",
+      "trigger_point": {
+        "x": 39.6,
+        "y": 4867.9,
+        "yaw": 269.8,
+        "z": 372.1
+      }
+    },
+    {
+      "route_id": "2903",
+      "town": "Town12",
+      "scenario_name": "NonSignalizedJunctionRightTurn_1",
+      "scenario_type": "NonSignalizedJunctionRightTurn",
+      "route_key": "route2903_rep0",
+      "trigger_point": {
+        "x": 2225.4,
+        "y": 2294.7,
+        "yaw": 180.0,
+        "z": 363.0
+      }
+    },
+    {
+      "route_id": "3048",
+      "town": "Town12",
+      "scenario_name": "MergerIntoSlowTraffic_1",
+      "scenario_type": "MergerIntoSlowTraffic",
+      "route_key": "route3048_rep0",
+      "trigger_point": {
+        "x": 777.6,
+        "y": 3099.7,
+        "yaw": -0.1,
+        "z": 361.6
+      }
+    },
+    {
+      "route_id": "3086",
+      "town": "Town12",
+      "scenario_name": "CrossingBicycleFlow_1",
+      "scenario_type": "CrossingBicycleFlow",
+      "route_key": "route3086_rep0",
+      "trigger_point": {
+        "x": 1022.1,
+        "y": 4993.4,
+        "yaw": 179.9,
+        "z": 371.4
+      }
+    },
+    {
+      "route_id": "3090",
+      "town": "Town12",
+      "scenario_name": "CrossingBicycleFlow_1",
+      "scenario_type": "CrossingBicycleFlow",
+      "route_key": "route3090_rep0",
+      "trigger_point": {
+        "x": 1781.2,
+        "y": 4991.5,
+        "yaw": 179.9,
+        "z": 367.3
+      }
+    },
+    {
+      "route_id": "3093",
+      "town": "Town12",
+      "scenario_name": "CrossingBicycleFlow_1",
+      "scenario_type": "CrossingBicycleFlow",
+      "route_key": "route3093_rep0",
+      "trigger_point": {
+        "x": -158.6,
+        "y": 5306.4,
+        "yaw": 156.7,
+        "z": 372.2
+      }
+    },
+    {
+      "route_id": "3099",
+      "town": "Town12",
+      "scenario_name": "CrossingBicycleFlow_1",
+      "scenario_type": "CrossingBicycleFlow",
+      "route_key": "route3099_rep0",
+      "trigger_point": {
+        "x": 281.4,
+        "y": 3915.4,
+        "yaw": 179.7,
+        "z": 365.6
+      }
+    },
+    {
+      "route_id": "3100",
+      "town": "Town12",
+      "scenario_name": "CrossingBicycleFlow_1",
+      "scenario_type": "CrossingBicycleFlow",
+      "route_key": "route3100_rep0",
+      "trigger_point": {
+        "x": 217.4,
+        "y": 3918.9,
+        "yaw": -0.3,
+        "z": 365.8
+      }
+    },
+    {
+      "route_id": "3144",
+      "town": "Town12",
+      "scenario_name": "VanillaSignalizedTurnEncounterRedLight_1",
+      "scenario_type": "VanillaSignalizedTurnEncounterRedLight",
+      "route_key": "route3144_rep0",
+      "trigger_point": {
+        "x": 1649.3,
+        "y": 4384.5,
+        "yaw": 99.3,
+        "z": 363.7
+      }
+    },
+    {
+      "route_id": "3178",
+      "town": "Town12",
+      "scenario_name": "VanillaNonSignalizedTurn_1",
+      "scenario_type": "VanillaNonSignalizedTurn",
+      "route_key": "route3178_rep0",
+      "trigger_point": {
+        "x": 2540.5,
+        "y": 1966.6,
+        "yaw": 269.9,
+        "z": 356.0
+      }
+    },
+    {
+      "route_id": "3184",
+      "town": "Town12",
+      "scenario_name": "VanillaNonSignalizedTurnEncounterStopsign_1",
+      "scenario_type": "VanillaNonSignalizedTurnEncounterStopsign",
+      "route_key": "route3184_rep0",
+      "trigger_point": {
+        "x": 2171.8,
+        "y": 2179.8,
+        "yaw": -0.2,
+        "z": 359.1
+      }
+    },
+    {
+      "route_id": "3189",
+      "town": "Town12",
+      "scenario_name": "VanillaNonSignalizedTurnEncounterStopsign_1",
+      "scenario_type": "VanillaNonSignalizedTurnEncounterStopsign",
+      "route_key": "route3189_rep0",
+      "trigger_point": {
+        "x": 2652.3,
+        "y": 1817.6,
+        "yaw": 89.9,
+        "z": 351.1
+      }
+    },
+    {
+      "route_id": "3307",
+      "town": "Town13",
+      "scenario_name": "Accident_1",
+      "scenario_type": "Accident",
+      "route_key": "route3307_rep0",
+      "trigger_point": {
+        "x": -1050.4,
+        "y": 5978.5,
+        "yaw": -170.4,
+        "z": 146.2
+      }
+    },
+    {
+      "route_id": "3436",
+      "town": "Town13",
+      "scenario_name": "HazardAtSideLaneTwoWays_1",
+      "scenario_type": "HazardAtSideLaneTwoWays",
+      "route_key": "route3436_rep0",
+      "trigger_point": {
+        "x": -4144.2,
+        "y": 4556.1,
+        "yaw": 180.0,
+        "z": 170.7
+      }
+    },
+    {
+      "route_id": "3457",
+      "town": "Town13",
+      "scenario_name": "ParkedObstacleTwoWays_1",
+      "scenario_type": "ParkedObstacleTwoWays",
+      "route_key": "route3457_rep0",
+      "trigger_point": {
+        "x": 2931.3,
+        "y": 1721.2,
+        "yaw": 0.5,
+        "z": 173.3
+      }
+    },
+    {
+      "route_id": "3514",
+      "town": "Town13",
+      "scenario_name": "ParkingExit_1",
+      "scenario_type": "ParkingExit",
+      "route_key": "route3514_rep0",
+      "trigger_point": {
+        "x": 4745.3,
+        "y": 3984.1,
+        "yaw": 179.7,
+        "z": 156.4
+      }
+    },
+    {
+      "route_id": "3520",
+      "town": "Town13",
+      "scenario_name": "ParkingExit_1",
+      "scenario_type": "ParkingExit",
+      "route_key": "route3520_rep0",
+      "trigger_point": {
+        "x": 5611.8,
+        "y": 3787.5,
+        "yaw": 359.4,
+        "z": 158.4
+      }
+    },
+    {
+      "route_id": "3666",
+      "town": "Town13",
+      "scenario_name": "NonSignalizedJunctionRightTurn_1",
+      "scenario_type": "NonSignalizedJunctionRightTurn",
+      "route_key": "route3666_rep0",
+      "trigger_point": {
+        "x": -2563.5,
+        "y": -61.0,
+        "yaw": 213.1,
+        "z": 173.2
+      }
+    },
+    {
+      "route_id": "3670",
+      "town": "Town13",
+      "scenario_name": "NonSignalizedJunctionRightTurn_1",
+      "scenario_type": "NonSignalizedJunctionRightTurn",
+      "route_key": "route3670_rep0",
+      "trigger_point": {
+        "x": -4262.4,
+        "y": 5612.7,
+        "yaw": 180.8,
+        "z": 174.8
+      }
+    },
+    {
+      "route_id": "3676",
+      "town": "Town13",
+      "scenario_name": "NonSignalizedJunctionRightTurn_1",
+      "scenario_type": "NonSignalizedJunctionRightTurn",
+      "route_key": "route3676_rep0",
+      "trigger_point": {
+        "x": 3230.1,
+        "y": 3143.3,
+        "yaw": 181.1,
+        "z": 182.1
+      }
+    },
+    {
+      "route_id": "3785",
+      "town": "Town13",
+      "scenario_name": "MergerIntoSlowTraffic_1",
+      "scenario_type": "MergerIntoSlowTraffic",
+      "route_key": "route3785_rep0",
+      "trigger_point": {
+        "x": 2759.4,
+        "y": 6045.8,
+        "yaw": 1.3,
+        "z": 155.1
+      }
+    },
+    {
+      "route_id": "3800",
+      "town": "Town13",
+      "scenario_name": "MergerIntoSlowTraffic_1",
+      "scenario_type": "MergerIntoSlowTraffic",
+      "route_key": "route3800_rep0",
+      "trigger_point": {
+        "x": -2431.6,
+        "y": 5902.9,
+        "yaw": -179.7,
+        "z": 155.8
+      }
+    },
+    {
+      "route_id": "3865",
+      "town": "Town13",
+      "scenario_name": "VanillaSignalizedTurnEncounterRedLight_1",
+      "scenario_type": "VanillaSignalizedTurnEncounterRedLight",
+      "route_key": "route3865_rep0",
+      "trigger_point": {
+        "x": -3247.4,
+        "y": 4750.6,
+        "yaw": -95.2,
+        "z": 175.9
+      }
+    },
+    {
+      "route_id": "3869",
+      "town": "Town13",
+      "scenario_name": "VanillaSignalizedTurnEncounterRedLight_1",
+      "scenario_type": "VanillaSignalizedTurnEncounterRedLight",
+      "route_key": "route3869_rep0",
+      "trigger_point": {
+        "x": 2652.1,
+        "y": 2298.1,
+        "yaw": 270.6,
+        "z": 175.2
+      }
+    },
+    {
+      "route_id": "3876",
+      "town": "Town13",
+      "scenario_name": "VanillaSignalizedTurnEncounterRedLight_1",
+      "scenario_type": "VanillaSignalizedTurnEncounterRedLight",
+      "route_key": "route3876_rep0",
+      "trigger_point": {
+        "x": 2504.7,
+        "y": 1915.5,
+        "yaw": 180.5,
+        "z": 169.5
+      }
+    },
+    {
+      "route_id": "3890",
+      "town": "Town13",
+      "scenario_name": "VanillaNonSignalizedTurn_1",
+      "scenario_type": "VanillaNonSignalizedTurn",
+      "route_key": "route3890_rep0",
+      "trigger_point": {
+        "x": -2394.5,
+        "y": -107.0,
+        "yaw": 33.5,
+        "z": 171.3
+      }
+    },
+    {
+      "route_id": "3904",
+      "town": "Town13",
+      "scenario_name": "VanillaNonSignalizedTurnEncounterStopsign_1",
+      "scenario_type": "VanillaNonSignalizedTurnEncounterStopsign",
+      "route_key": "route3904_rep0",
+      "trigger_point": {
+        "x": 2623.1,
+        "y": 5529.6,
+        "yaw": 0.7,
+        "z": 158.6
+      }
+    },
+    {
+      "route_id": "3905",
+      "town": "Town13",
+      "scenario_name": "VanillaNonSignalizedTurnEncounterStopsign_1",
+      "scenario_type": "VanillaNonSignalizedTurnEncounterStopsign",
+      "route_key": "route3905_rep0",
+      "trigger_point": {
+        "x": -4082.7,
+        "y": 4556.1,
+        "yaw": 180.0,
+        "z": 171.2
+      }
+    },
+    {
+      "route_id": "3936",
+      "town": "Town12",
+      "scenario_name": "SignalizedJunctionLeftTurn_1",
+      "scenario_type": "SignalizedJunctionLeftTurn",
+      "route_key": "route3936_rep0",
+      "trigger_point": {
+        "x": 2519.0,
+        "y": 4892.8,
+        "yaw": 189.2,
+        "z": 367.4
+      }
+    },
+    {
+      "route_id": "4183",
+      "town": "Town12",
+      "scenario_name": "SignalizedJunctionLeftTurn_1",
+      "scenario_type": "SignalizedJunctionLeftTurn",
+      "route_key": "route4183_rep0",
+      "trigger_point": {
+        "x": 1327.6,
+        "y": 3848.3,
+        "yaw": 99.2,
+        "z": 363.2
+      }
+    },
+    {
+      "route_id": "4468",
+      "town": "Town12",
+      "scenario_name": "SignalizedJunctionLeftTurn_1",
+      "scenario_type": "SignalizedJunctionLeftTurn",
+      "route_key": "route4468_rep0",
+      "trigger_point": {
+        "x": 3625.6,
+        "y": 5105.4,
+        "yaw": 279.4,
+        "z": 367.9
+      }
+    },
+    {
+      "route_id": "4669",
+      "town": "Town12",
+      "scenario_name": "SignalizedJunctionLeftTurn_1",
+      "scenario_type": "SignalizedJunctionLeftTurn",
+      "route_key": "route4669_rep0",
+      "trigger_point": {
+        "x": 1330.9,
+        "y": 5581.8,
+        "yaw": -0.0,
+        "z": 369.7
+      }
+    },
+    {
+      "route_id": "4683",
+      "town": "Town12",
+      "scenario_name": "SignalizedJunctionLeftTurn_1",
+      "scenario_type": "SignalizedJunctionLeftTurn",
+      "route_key": "route4683_rep0",
+      "trigger_point": {
+        "x": 2170.1,
+        "y": 4877.2,
+        "yaw": -0.1,
+        "z": 364.9
+      }
+    },
+    {
+      "route_id": "4937",
+      "town": "Town12",
+      "scenario_name": "SignalizedJunctionRightTurn_1",
+      "scenario_type": "SignalizedJunctionRightTurn",
+      "route_key": "route4937_rep0",
+      "trigger_point": {
+        "x": 3101.9,
+        "y": 5224.7,
+        "yaw": 9.1,
+        "z": 368.3
+      }
+    },
+    {
+      "route_id": "14842",
+      "town": "Town12",
+      "scenario_name": "VanillaSignalizedTurnEncounterGreenLight_1",
+      "scenario_type": "VanillaSignalizedTurnEncounterGreenLight",
+      "route_key": "route14842_rep0",
+      "trigger_point": {
+        "x": -174.3,
+        "y": 4630.6,
+        "yaw": 269.9,
+        "z": 373.3
+      }
+    },
+    {
+      "route_id": "14862",
+      "town": "Town12",
+      "scenario_name": "VanillaSignalizedTurnEncounterGreenLight_1",
+      "scenario_type": "VanillaSignalizedTurnEncounterGreenLight",
+      "route_key": "route14862_rep0",
+      "trigger_point": {
+        "x": 2999.6,
+        "y": 4632.6,
+        "yaw": 279.6,
+        "z": 365.4
+      }
+    },
+    {
+      "route_id": "14909",
+      "town": "Town12",
+      "scenario_name": "VanillaSignalizedTurnEncounterGreenLight_1",
+      "scenario_type": "VanillaSignalizedTurnEncounterGreenLight",
+      "route_key": "route14909_rep0",
+      "trigger_point": {
+        "x": 3647.4,
+        "y": 4973.5,
+        "yaw": 279.4,
+        "z": 367.9
+      }
+    },
+    {
+      "route_id": "17563",
+      "town": "Town12",
+      "scenario_name": "SequentialLaneChange_1",
+      "scenario_type": "SequentialLaneChange",
+      "route_key": "route17563_rep0",
+      "trigger_point": {
+        "x": 3796.3,
+        "y": 5847.6,
+        "yaw": 99.7,
+        "z": 367.1
+      }
+    },
+    {
+      "route_id": "17569",
+      "town": "Town12",
+      "scenario_name": "SequentialLaneChange_1",
+      "scenario_type": "SequentialLaneChange",
+      "route_key": "route17569_rep0",
+      "trigger_point": {
+        "x": 3122.9,
+        "y": 6267.1,
+        "yaw": -170.7,
+        "z": 371.8
+      }
+    },
+    {
+      "route_id": "17598",
+      "town": "Town12",
+      "scenario_name": "SequentialLaneChange_1",
+      "scenario_type": "SequentialLaneChange",
+      "route_key": "route17598_rep0",
+      "trigger_point": {
+        "x": -1281.8,
+        "y": 3107.4,
+        "yaw": 1.7,
+        "z": 347.1
+      }
+    },
+    {
+      "route_id": "17635",
+      "town": "Town12",
+      "scenario_name": "SequentialLaneChange_1",
+      "scenario_type": "SequentialLaneChange",
+      "route_key": "route17635_rep0",
+      "trigger_point": {
+        "x": 2048.0,
+        "y": 3077.9,
+        "yaw": 180.9,
+        "z": 356.9
+      }
+    },
+    {
+      "route_id": "17655",
+      "town": "Town12",
+      "scenario_name": "SequentialLaneChange_1",
+      "scenario_type": "SequentialLaneChange",
+      "route_key": "route17655_rep0",
+      "trigger_point": {
+        "x": -418.6,
+        "y": 6489.9,
+        "yaw": -179.6,
+        "z": 357.4
+      }
+    },
+    {
+      "route_id": "23658",
+      "town": "Town12",
+      "scenario_name": "HighwayExit_1",
+      "scenario_type": "HighwayExit",
+      "route_key": "route23658_rep0",
+      "trigger_point": {
+        "x": -822.6,
+        "y": 4825.7,
+        "yaw": 269.9,
+        "z": 372.1
+      }
+    },
+    {
+      "route_id": "23659",
+      "town": "Town12",
+      "scenario_name": "HighwayExit_1",
+      "scenario_type": "HighwayExit",
+      "route_key": "route23659_rep0",
+      "trigger_point": {
+        "x": 2587.1,
+        "y": 3200.5,
+        "yaw": -24.6,
+        "z": 366.0
+      }
+    },
+    {
+      "route_id": "23670",
+      "town": "Town13",
+      "scenario_name": "HighwayExit_1",
+      "scenario_type": "HighwayExit",
+      "route_key": "route23670_rep0",
+      "trigger_point": {
+        "x": 641.7,
+        "y": 5999.8,
+        "yaw": -178.0,
+        "z": 164.9
+      }
+    },
+    {
+      "route_id": "23687",
+      "town": "Town12",
+      "scenario_name": "HighwayExit_1",
+      "scenario_type": "HighwayExit",
+      "route_key": "route23687_rep0",
+      "trigger_point": {
+        "x": -2500.5,
+        "y": 4239.9,
+        "yaw": -81.4,
+        "z": 365.0
+      }
+    },
+    {
+      "route_id": "23695",
+      "town": "Town13",
+      "scenario_name": "InterurbanAdvancedActorFlow_1",
+      "scenario_type": "InterurbanAdvancedActorFlow",
+      "route_key": "route23695_rep0",
+      "trigger_point": {
+        "x": -3767.2,
+        "y": -2831.2,
+        "yaw": 336.3,
+        "z": 163.1
+      }
+    },
+    {
+      "route_id": "23700",
+      "town": "Town12",
+      "scenario_name": "InterurbanAdvancedActorFlow_1",
+      "scenario_type": "InterurbanAdvancedActorFlow",
+      "route_key": "route23700_rep0",
+      "trigger_point": {
+        "x": -791.5,
+        "y": 4716.7,
+        "yaw": -152.4,
+        "z": 369.7
+      }
+    },
+    {
+      "route_id": "23708",
+      "town": "Town12",
+      "scenario_name": "InterurbanAdvancedActorFlow_1",
+      "scenario_type": "InterurbanAdvancedActorFlow",
+      "route_key": "route23708_rep0",
+      "trigger_point": {
+        "x": 722.5,
+        "y": 3058.0,
+        "yaw": 153.3,
+        "z": 361.6
+      }
+    },
+    {
+      "route_id": "23771",
+      "town": "Town12",
+      "scenario_name": "MergerIntoSlowTrafficV2_1",
+      "scenario_type": "MergerIntoSlowTrafficV2",
+      "route_key": "route23771_rep0",
+      "trigger_point": {
+        "x": 1032.2,
+        "y": 3099.4,
+        "yaw": -0.1,
+        "z": 363.3
+      }
+    },
+    {
+      "route_id": "23901",
+      "town": "Town13",
+      "scenario_name": "InterurbanActorFlow_1",
+      "scenario_type": "InterurbanActorFlow",
+      "route_key": "route23901_rep0",
+      "trigger_point": {
+        "x": -2455.3,
+        "y": 5902.8,
+        "yaw": -179.7,
+        "z": 156.0
+      }
+    },
+    {
+      "route_id": "23910",
+      "town": "Town12",
+      "scenario_name": "InterurbanActorFlow_1",
+      "scenario_type": "InterurbanActorFlow",
+      "route_key": "route23910_rep0",
+      "trigger_point": {
+        "x": 4041.6,
+        "y": 3976.7,
+        "yaw": 99.0,
+        "z": 369.2
+      }
+    },
+    {
+      "route_id": "23918",
+      "town": "Town13",
+      "scenario_name": "InterurbanActorFlow_1",
+      "scenario_type": "InterurbanActorFlow",
+      "route_key": "route23918_rep0",
+      "trigger_point": {
+        "x": -5743.4,
+        "y": 4415.2,
+        "yaw": -88.9,
+        "z": 181.8
+      }
+    },
+    {
+      "route_id": "23930",
+      "town": "Town12",
+      "scenario_name": "InterurbanActorFlow_1",
+      "scenario_type": "InterurbanActorFlow",
+      "route_key": "route23930_rep0",
+      "trigger_point": {
+        "x": 3912.3,
+        "y": 4789.4,
+        "yaw": 99.0,
+        "z": 367.6
+      }
+    },
+    {
+      "route_id": "24041",
+      "town": "Town13",
+      "scenario_name": "HighwayExit_1",
+      "scenario_type": "HighwayExit",
+      "route_key": "route24041_rep0",
+      "trigger_point": {
+        "x": -2451.3,
+        "y": 5902.8,
+        "yaw": -179.7,
+        "z": 156.0
+      }
+    },
+    {
+      "route_id": "24071",
+      "town": "Town13",
+      "scenario_name": "InterurbanAdvancedActorFlow_1",
+      "scenario_type": "InterurbanAdvancedActorFlow",
+      "route_key": "route24071_rep0",
+      "trigger_point": {
+        "x": -3767.2,
+        "y": -2831.2,
+        "yaw": 336.3,
+        "z": 163.1
+      }
+    },
+    {
+      "route_id": "24078",
+      "town": "Town12",
+      "scenario_name": "InterurbanAdvancedActorFlow_1",
+      "scenario_type": "InterurbanAdvancedActorFlow",
+      "route_key": "route24078_rep0",
+      "trigger_point": {
+        "x": -791.5,
+        "y": 4716.7,
+        "yaw": -152.4,
+        "z": 369.7
+      }
+    },
+    {
+      "route_id": "24092",
+      "town": "Town13",
+      "scenario_name": "MergerIntoSlowTrafficV2_1",
+      "scenario_type": "MergerIntoSlowTrafficV2",
+      "route_key": "route24092_rep0",
+      "trigger_point": {
+        "x": -5751.9,
+        "y": 4830.0,
+        "yaw": -88.2,
+        "z": 188.2
+      }
+    },
+    {
+      "route_id": "24098",
+      "town": "Town12",
+      "scenario_name": "InterurbanActorFlow_1",
+      "scenario_type": "InterurbanActorFlow",
+      "route_key": "route24098_rep0",
+      "trigger_point": {
+        "x": 4041.6,
+        "y": 3976.7,
+        "yaw": 99.0,
+        "z": 369.2
+      }
+    },
+    {
+      "route_id": "24240",
+      "town": "Town10HD",
+      "scenario_name": "Accident_1",
+      "scenario_type": "Accident",
+      "route_key": "route24240_rep0",
+      "trigger_point": {
+        "x": 55.3,
+        "y": 141.2,
+        "yaw": 0.3,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "24258",
+      "town": "Town07",
+      "scenario_name": "HazardAtSideLaneTwoWays_1",
+      "scenario_type": "HazardAtSideLaneTwoWays",
+      "route_key": "route24258_rep0",
+      "trigger_point": {
+        "x": 56.8,
+        "y": 98.1,
+        "yaw": 140.4,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "24367",
+      "town": "Town06",
+      "scenario_name": "ConstructionObstacle_1",
+      "scenario_type": "ConstructionObstacle",
+      "route_key": "route24367_rep0",
+      "trigger_point": {
+        "x": 168.3,
+        "y": 251.6,
+        "yaw": 0.0,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "24757",
+      "town": "Town06",
+      "scenario_name": "ParkedObstacle_1",
+      "scenario_type": "ParkedObstacle",
+      "route_key": "route24757_rep0",
+      "trigger_point": {
+        "x": 455.8,
+        "y": -24.5,
+        "yaw": -179.9,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "24785",
+      "town": "Town04",
+      "scenario_name": "ConstructionObstacle_1",
+      "scenario_type": "ConstructionObstacle",
+      "route_key": "route24785_rep0",
+      "trigger_point": {
+        "x": -510.5,
+        "y": 283.2,
+        "yaw": 77.4,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "24795",
+      "town": "Town04",
+      "scenario_name": "ConstructionObstacle_1",
+      "scenario_type": "ConstructionObstacle",
+      "route_key": "route24795_rep0",
+      "trigger_point": {
+        "x": -408.7,
+        "y": 414.6,
+        "yaw": 27.1,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "24816",
+      "town": "Town03",
+      "scenario_name": "Accident_1",
+      "scenario_type": "Accident",
+      "route_key": "route24816_rep0",
+      "trigger_point": {
+        "x": 130.9,
+        "y": 193.2,
+        "yaw": 179.9,
+        "z": 2.0
+      }
+    },
+    {
+      "route_id": "25300",
+      "town": "Town04",
+      "scenario_name": "HazardAtSideLane_1",
+      "scenario_type": "HazardAtSideLane",
+      "route_key": "route25300_rep0",
+      "trigger_point": {
+        "x": -457.8,
+        "y": 12.7,
+        "yaw": -202.3,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "25318",
+      "town": "Town05",
+      "scenario_name": "ParkedObstacle_1",
+      "scenario_type": "ParkedObstacle",
+      "route_key": "route25318_rep0",
+      "trigger_point": {
+        "x": 80.2,
+        "y": 209.0,
+        "yaw": 0.3,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "25381",
+      "town": "Town05",
+      "scenario_name": "HazardAtSideLane_1",
+      "scenario_type": "HazardAtSideLane",
+      "route_key": "route25381_rep0",
+      "trigger_point": {
+        "x": -27.9,
+        "y": -207.5,
+        "yaw": -179.9,
+        "z": 2.9
+      }
+    },
+    {
+      "route_id": "25383",
+      "town": "Town15",
+      "scenario_name": "ParkedObstacle_1",
+      "scenario_type": "ParkedObstacle",
+      "route_key": "route25383_rep0",
+      "trigger_point": {
+        "x": 1026.5,
+        "y": 663.1,
+        "yaw": -46.2,
+        "z": 120.3
+      }
+    },
+    {
+      "route_id": "25439",
+      "town": "Town15",
+      "scenario_name": "HazardAtSideLane_1",
+      "scenario_type": "HazardAtSideLane",
+      "route_key": "route25439_rep0",
+      "trigger_point": {
+        "x": 1009.5,
+        "y": 486.7,
+        "yaw": 48.9,
+        "z": 121.7
+      }
+    },
+    {
+      "route_id": "25854",
+      "town": "Town03",
+      "scenario_name": "HazardAtSideLaneTwoWays_1",
+      "scenario_type": "HazardAtSideLaneTwoWays",
+      "route_key": "route25854_rep0",
+      "trigger_point": {
+        "x": 153.8,
+        "y": 120.5,
+        "yaw": 139.8,
+        "z": 0.4
+      }
+    },
+    {
+      "route_id": "25865",
+      "town": "Town11",
+      "scenario_name": "ParkedObstacleTwoWays_1",
+      "scenario_type": "ParkedObstacleTwoWays",
+      "route_key": "route25865_rep0",
+      "trigger_point": {
+        "x": 7556.2,
+        "y": -2308.7,
+        "yaw": 126.4,
+        "z": 53.5
+      }
+    },
+    {
+      "route_id": "25896",
+      "town": "Town03",
+      "scenario_name": "ParkedObstacleTwoWays_1",
+      "scenario_type": "ParkedObstacleTwoWays",
+      "route_key": "route25896_rep0",
+      "trigger_point": {
+        "x": 151.6,
+        "y": 122.3,
+        "yaw": 144.3,
+        "z": 0.4
+      }
+    },
+    {
+      "route_id": "25951",
+      "town": "Town04",
+      "scenario_name": "HazardAtSideLaneTwoWays_1",
+      "scenario_type": "HazardAtSideLaneTwoWays",
+      "route_key": "route25951_rep0",
+      "trigger_point": {
+        "x": 152.7,
+        "y": -310.8,
+        "yaw": -185.6,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "25955",
+      "town": "Town05",
+      "scenario_name": "HazardAtSideLaneTwoWays_1",
+      "scenario_type": "HazardAtSideLaneTwoWays",
+      "route_key": "route25955_rep0",
+      "trigger_point": {
+        "x": 155.0,
+        "y": -47.0,
+        "yaw": 269.9,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "25968",
+      "town": "Town07",
+      "scenario_name": "VanillaSignalizedTurnEncounterGreenLight_1",
+      "scenario_type": "VanillaSignalizedTurnEncounterGreenLight",
+      "route_key": "route25968_rep0",
+      "trigger_point": {
+        "x": -2.1,
+        "y": 10.8,
+        "yaw": 270.5,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "25975",
+      "town": "Town07",
+      "scenario_name": "VanillaSignalizedTurnEncounterGreenLight_1",
+      "scenario_type": "VanillaSignalizedTurnEncounterGreenLight",
+      "route_key": "route25975_rep0",
+      "trigger_point": {
+        "x": -100.9,
+        "y": 65.6,
+        "yaw": 275.2,
+        "z": 0.1
+      }
+    },
+    {
+      "route_id": "26393",
+      "town": "Town03",
+      "scenario_name": "ParkingExit_1",
+      "scenario_type": "ParkingExit",
+      "route_key": "route26393_rep0",
+      "trigger_point": {
+        "x": 46.1,
+        "y": 133.9,
+        "yaw": -0.8,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "26394",
+      "town": "Town06",
+      "scenario_name": "MergerIntoSlowTrafficV2_1",
+      "scenario_type": "MergerIntoSlowTrafficV2",
+      "route_key": "route26394_rep0",
+      "trigger_point": {
+        "x": 550.7,
+        "y": -24.3,
+        "yaw": -179.6,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "26401",
+      "town": "Town06",
+      "scenario_name": "MergerIntoSlowTrafficV2_1",
+      "scenario_type": "MergerIntoSlowTrafficV2",
+      "route_key": "route26401_rep0",
+      "trigger_point": {
+        "x": -59.8,
+        "y": 142.5,
+        "yaw": 180.1,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "26408",
+      "town": "Town06",
+      "scenario_name": "MergerIntoSlowTrafficV2_1",
+      "scenario_type": "MergerIntoSlowTrafficV2",
+      "route_key": "route26408_rep0",
+      "trigger_point": {
+        "x": 547.6,
+        "y": -24.3,
+        "yaw": -179.9,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "26435",
+      "town": "Town03",
+      "scenario_name": "ParkingExit_1",
+      "scenario_type": "ParkingExit",
+      "route_key": "route26435_rep0",
+      "trigger_point": {
+        "x": 160.8,
+        "y": 112.7,
+        "yaw": 123.7,
+        "z": 0.4
+      }
+    },
+    {
+      "route_id": "26458",
+      "town": "Town07",
+      "scenario_name": "T_Junction_1",
+      "scenario_type": "T_Junction",
+      "route_key": "route26458_rep0",
+      "trigger_point": {
+        "x": -0.7,
+        "y": -150.1,
+        "yaw": 270.5,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "26956",
+      "town": "Town05",
+      "scenario_name": "SignalizedJunctionRightTurn_1",
+      "scenario_type": "SignalizedJunctionRightTurn",
+      "route_key": "route26956_rep0",
+      "trigger_point": {
+        "x": 24.8,
+        "y": -34.2,
+        "yaw": 91.5,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "26966",
+      "town": "Town05",
+      "scenario_name": "SignalizedJunctionRightTurn_1",
+      "scenario_type": "SignalizedJunctionRightTurn",
+      "route_key": "route26966_rep0",
+      "trigger_point": {
+        "x": -120.1,
+        "y": 125.6,
+        "yaw": -90.5,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "26990",
+      "town": "Town03",
+      "scenario_name": "NonSignalizedJunctionLeftTurn_1",
+      "scenario_type": "NonSignalizedJunctionLeftTurn",
+      "route_key": "route26990_rep0",
+      "trigger_point": {
+        "x": 83.9,
+        "y": -97.5,
+        "yaw": 272.0,
+        "z": 8.0
+      }
+    },
+    {
+      "route_id": "27018",
+      "town": "Town15",
+      "scenario_name": "SignalizedJunctionRightTurn_1",
+      "scenario_type": "SignalizedJunctionRightTurn",
+      "route_key": "route27018_rep0",
+      "trigger_point": {
+        "x": 674.2,
+        "y": 712.8,
+        "yaw": 34.4,
+        "z": 118.0
+      }
+    },
+    {
+      "route_id": "28035",
+      "town": "Town01",
+      "scenario_name": "T_Junction_1",
+      "scenario_type": "T_Junction",
+      "route_key": "route28035_rep0",
+      "trigger_point": {
+        "x": 152.7,
+        "y": 326.6,
+        "yaw": 180.0,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "28048",
+      "town": "Town02",
+      "scenario_name": "T_Junction_1",
+      "scenario_type": "T_Junction",
+      "route_key": "route28048_rep0",
+      "trigger_point": {
+        "x": 41.9,
+        "y": 227.2,
+        "yaw": 90.0,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "28087",
+      "town": "Town04",
+      "scenario_name": "NonSignalizedJunctionLeftTurnEnterFlow_1",
+      "scenario_type": "NonSignalizedJunctionLeftTurnEnterFlow",
+      "route_key": "route28087_rep0",
+      "trigger_point": {
+        "x": 222.8,
+        "y": -246.0,
+        "yaw": 359.6,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "28093",
+      "town": "Town04",
+      "scenario_name": "NonSignalizedJunctionLeftTurnEnterFlow_1",
+      "scenario_type": "NonSignalizedJunctionLeftTurnEnterFlow",
+      "route_key": "route28093_rep0",
+      "trigger_point": {
+        "x": 255.3,
+        "y": -279.1,
+        "yaw": 90.2,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "28099",
+      "town": "Town04",
+      "scenario_name": "SignalizedJunctionLeftTurnEnterFlow_1",
+      "scenario_type": "SignalizedJunctionLeftTurnEnterFlow",
+      "route_key": "route28099_rep0",
+      "trigger_point": {
+        "x": 204.5,
+        "y": -274.4,
+        "yaw": 271.3,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "28111",
+      "town": "Town04",
+      "scenario_name": "T_Junction_1",
+      "scenario_type": "T_Junction",
+      "route_key": "route28111_rep0",
+      "trigger_point": {
+        "x": 247.3,
+        "y": -307.5,
+        "yaw": 0.6,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "28154",
+      "town": "Town10HD",
+      "scenario_name": "T_Junction_1",
+      "scenario_type": "T_Junction",
+      "route_key": "route28154_rep0",
+      "trigger_point": {
+        "x": 22.8,
+        "y": 134.0,
+        "yaw": 180.3,
+        "z": 0.0
+      }
+    },
+    {
+      "route_id": "28198",
+      "town": "Town15",
+      "scenario_name": "SignalizedJunctionLeftTurnEnterFlow_1",
+      "scenario_type": "SignalizedJunctionLeftTurnEnterFlow",
+      "route_key": "route28198_rep0",
+      "trigger_point": {
+        "x": 961.9,
+        "y": 407.2,
+        "yaw": 74.9,
+        "z": 122.6
+      }
+    },
+    {
+      "route_id": "28210",
+      "town": "Town12",
+      "scenario_name": "NonSignalizedJunctionLeftTurnEnterFlow_1",
+      "scenario_type": "NonSignalizedJunctionLeftTurnEnterFlow",
+      "route_key": "route28210_rep0",
+      "trigger_point": {
+        "x": 2385.7,
+        "y": 2376.7,
+        "yaw": 89.7,
+        "z": 365.8
+      }
+    },
+    {
+      "route_id": "28219",
+      "town": "Town12",
+      "scenario_name": "NonSignalizedJunctionLeftTurnEnterFlow_1",
+      "scenario_type": "NonSignalizedJunctionLeftTurnEnterFlow",
+      "route_key": "route28219_rep0",
+      "trigger_point": {
+        "x": 2773.9,
+        "y": 1862.2,
+        "yaw": 269.8,
+        "z": 348.2
+      }
+    },
+    {
+      "route_id": "28229",
+      "town": "Town12",
+      "scenario_name": "NonSignalizedJunctionLeftTurnEnterFlow_1",
+      "scenario_type": "NonSignalizedJunctionLeftTurnEnterFlow",
+      "route_key": "route28229_rep0",
+      "trigger_point": {
+        "x": 2374.3,
+        "y": -133.8,
+        "yaw": 88.0,
+        "z": 335.8
+      }
+    },
+    {
+      "route_id": "28241",
+      "town": "Town12",
+      "scenario_name": "SignalizedJunctionLeftTurnEnterFlow_1",
+      "scenario_type": "SignalizedJunctionLeftTurnEnterFlow",
+      "route_key": "route28241_rep0",
+      "trigger_point": {
+        "x": 2754.9,
+        "y": 4668.7,
+        "yaw": 99.4,
+        "z": 364.9
+      }
+    },
+    {
+      "route_id": "28243",
+      "town": "Town12",
+      "scenario_name": "SignalizedJunctionLeftTurnEnterFlow_1",
+      "scenario_type": "SignalizedJunctionLeftTurnEnterFlow",
+      "route_key": "route28243_rep0",
+      "trigger_point": {
+        "x": 1331.1,
+        "y": 4995.9,
+        "yaw": -0.1,
+        "z": 370.9
+      }
+    },
+    {
+      "route_id": "28330",
+      "town": "Town12",
+      "scenario_name": "SignalizedJunctionLeftTurnEnterFlow_1",
+      "scenario_type": "SignalizedJunctionLeftTurnEnterFlow",
+      "route_key": "route28330_rep0",
+      "trigger_point": {
+        "x": 2415.6,
+        "y": -96.5,
+        "yaw": -179.6,
+        "z": 334.9
+      }
+    },
+    {
+      "route_id": "14194",
+      "town": "Town12",
+      "scenario_name": "PedestrianCrossing_1",
+      "scenario_type": "PedestrianCrossing",
+      "route_key": "route14194_rep0",
+      "trigger_point": {
+        "x": -1130.5,
+        "y": 3770.3,
+        "yaw": 90.0,
+        "z": 353.7
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "wait_for_pedestrian_fully_clear_before_crossing_event"
+      }
+    },
+    {
+      "route_id": "25863",
+      "town": "Town07",
+      "scenario_name": "PedestrianCrossing_1",
+      "scenario_type": "PedestrianCrossing",
+      "route_key": "route25863_rep0",
+      "trigger_point": {
+        "x": -2.2,
+        "y": 30.8,
+        "yaw": 270.5,
+        "z": 0.0
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "wait_for_pedestrian_fully_clear_before_crossing_event"
+      }
+    },
+    {
+      "route_id": "27515",
+      "town": "Town03",
+      "scenario_name": "PedestrianCrossing_1",
+      "scenario_type": "PedestrianCrossing",
+      "route_key": "route27515_rep0",
+      "trigger_point": {
+        "x": -73.6,
+        "y": 165.9,
+        "yaw": 257.2,
+        "z": 0.0
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "wait_for_pedestrian_fully_clear_before_crossing_event"
+      }
+    },
+    {
+      "route_id": "27529",
+      "town": "Town04",
+      "scenario_name": "PedestrianCrossing_1",
+      "scenario_type": "PedestrianCrossing",
+      "route_key": "route27529_rep0",
+      "trigger_point": {
+        "x": 286.3,
+        "y": -249.9,
+        "yaw": 179.6,
+        "z": 0.0
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "wait_for_pedestrian_fully_clear_before_crossing_event"
+      }
+    },
+    {
+      "route_id": "27582",
+      "town": "Town11",
+      "scenario_name": "PedestrianCrossing_1",
+      "scenario_type": "PedestrianCrossing",
+      "route_key": "route27582_rep0",
+      "trigger_point": {
+        "x": 6736.2,
+        "y": -1276.2,
+        "yaw": 118.6,
+        "z": 58.4
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "wait_for_pedestrian_fully_clear_before_crossing_event"
+      }
+    }
+  ],
+  "excluded_scenario_count": 22,
+  "excluded_scenario_type_counts": {
+    "AccidentTwoWays": 5,
+    "ConstructionObstacleTwoWays": 5,
+    "HazardAtSideLane": 2,
+    "MergerIntoSlowTraffic": 1,
+    "NonSignalizedJunctionLeftTurn": 3,
+    "NonSignalizedJunctionRightTurn": 1,
+    "ParkedObstacle": 1,
+    "ParkingExit": 1,
+    "SignalizedJunctionRightTurn": 1,
+    "VanillaNonSignalizedTurn": 1,
+    "VanillaSignalizedTurnEncounterRedLight": 1
+  },
+  "excluded_clean_scenarios": [
+    {
+      "route_id": "1773",
+      "town": "Town12",
+      "scenario_name": "ParkedObstacle_1",
+      "scenario_type": "ParkedObstacle",
+      "route_key": "route1773_rep0",
+      "trigger_point": {
+        "x": -818.5,
+        "y": 5278.0,
+        "yaw": 269.9,
+        "z": 376.3
+      },
+      "excluded_reason": "already_present_in_pdm_lite_runs/clean_run"
+    },
+    {
+      "route_id": "1790",
+      "town": "Town12",
+      "scenario_name": "HazardAtSideLane_1",
+      "scenario_type": "HazardAtSideLane",
+      "route_key": "route1790_rep0",
+      "trigger_point": {
+        "x": 581.3,
+        "y": 3910.7,
+        "yaw": 179.7,
+        "z": 371.3
+      },
+      "excluded_reason": "already_present_in_pdm_lite_runs/clean_run"
+    },
+    {
+      "route_id": "1792",
+      "town": "Town12",
+      "scenario_name": "HazardAtSideLane_1",
+      "scenario_type": "HazardAtSideLane",
+      "route_key": "route1792_rep0",
+      "trigger_point": {
+        "x": 3118.0,
+        "y": 6266.3,
+        "yaw": -170.7,
+        "z": 371.6
+      },
+      "excluded_reason": "already_present_in_pdm_lite_runs/clean_run"
+    },
+    {
+      "route_id": "1956",
+      "town": "Town12",
+      "scenario_name": "ParkingExit_1",
+      "scenario_type": "ParkingExit",
+      "route_key": "route1956_rep0",
+      "trigger_point": {
+        "x": -393.5,
+        "y": 3522.9,
+        "yaw": 89.6,
+        "z": 365.8
+      },
+      "excluded_reason": "already_present_in_pdm_lite_runs/clean_run"
+    },
+    {
+      "route_id": "2050",
+      "town": "Town12",
+      "scenario_name": "SignalizedJunctionRightTurn_1",
+      "scenario_type": "SignalizedJunctionRightTurn",
+      "route_key": "route2050_rep0",
+      "trigger_point": {
+        "x": 2502.3,
+        "y": 2063.5,
+        "yaw": -0.2,
+        "z": 357.9
+      },
+      "excluded_reason": "already_present_in_pdm_lite_runs/clean_run"
+    },
+    {
+      "route_id": "2084",
+      "town": "Town12",
+      "scenario_name": "NonSignalizedJunctionLeftTurn_1",
+      "scenario_type": "NonSignalizedJunctionLeftTurn",
+      "route_key": "route2084_rep0",
+      "trigger_point": {
+        "x": -1409.0,
+        "y": 5323.2,
+        "yaw": -0.0,
+        "z": 376.7
+      },
+      "excluded_reason": "already_present_in_pdm_lite_runs/clean_run"
+    },
+    {
+      "route_id": "2086",
+      "town": "Town12",
+      "scenario_name": "NonSignalizedJunctionLeftTurn_1",
+      "scenario_type": "NonSignalizedJunctionLeftTurn",
+      "route_key": "route2086_rep0",
+      "trigger_point": {
+        "x": 522.7,
+        "y": 5831.0,
+        "yaw": 167.9,
+        "z": 365.5
+      },
+      "excluded_reason": "already_present_in_pdm_lite_runs/clean_run"
+    },
+    {
+      "route_id": "2091",
+      "town": "Town12",
+      "scenario_name": "NonSignalizedJunctionLeftTurn_1",
+      "scenario_type": "NonSignalizedJunctionLeftTurn",
+      "route_key": "route2091_rep0",
+      "trigger_point": {
+        "x": 2773.3,
+        "y": 1632.8,
+        "yaw": 269.8,
+        "z": 343.6
+      },
+      "excluded_reason": "already_present_in_pdm_lite_runs/clean_run"
+    },
+    {
+      "route_id": "2115",
+      "town": "Town12",
+      "scenario_name": "NonSignalizedJunctionRightTurn_1",
+      "scenario_type": "NonSignalizedJunctionRightTurn",
+      "route_key": "route2115_rep0",
+      "trigger_point": {
+        "x": 2018.7,
+        "y": 2177.5,
+        "yaw": 179.8,
+        "z": 361.5
+      },
+      "excluded_reason": "already_present_in_pdm_lite_runs/clean_run"
+    },
+    {
+      "route_id": "2283",
+      "town": "Town12",
+      "scenario_name": "MergerIntoSlowTraffic_1",
+      "scenario_type": "MergerIntoSlowTraffic",
+      "route_key": "route2283_rep0",
+      "trigger_point": {
+        "x": -2209.5,
+        "y": 6394.3,
+        "yaw": 226.9,
+        "z": 378.0
+      },
+      "excluded_reason": "already_present_in_pdm_lite_runs/clean_run"
+    },
+    {
+      "route_id": "2373",
+      "town": "Town12",
+      "scenario_name": "VanillaSignalizedTurnEncounterRedLight_1",
+      "scenario_type": "VanillaSignalizedTurnEncounterRedLight",
+      "route_key": "route2373_rep0",
+      "trigger_point": {
+        "x": -185.9,
+        "y": 5338.5,
+        "yaw": 246.3,
+        "z": 372.1
+      },
+      "excluded_reason": "already_present_in_pdm_lite_runs/clean_run"
+    },
+    {
+      "route_id": "2390",
+      "town": "Town12",
+      "scenario_name": "VanillaNonSignalizedTurn_1",
+      "scenario_type": "VanillaNonSignalizedTurn",
+      "route_key": "route2390_rep0",
+      "trigger_point": {
+        "x": 2367.9,
+        "y": 2298.1,
+        "yaw": 360.0,
+        "z": 364.0
+      },
+      "excluded_reason": "already_present_in_pdm_lite_runs/clean_run"
+    },
+    {
+      "route_id": "1825",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route1825_rep0",
+      "trigger_point": {
+        "x": 1173.4,
+        "y": 5328.5,
+        "yaw": 89.9,
+        "z": 371.0
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_construction_static_obstacle_clean"
+      },
+      "excluded_reason": "temporarily_disabled_unstable_clean_behavior"
+    },
+    {
+      "route_id": "1833",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route1833_rep0",
+      "trigger_point": {
+        "x": 2817.3,
+        "y": 4290.1,
+        "yaw": 99.4,
+        "z": 360.4
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_construction_static_obstacle_clean"
+      },
+      "excluded_reason": "temporarily_disabled_unstable_clean_behavior"
+    },
+    {
+      "route_id": "1852",
+      "town": "Town12",
+      "scenario_name": "AccidentTwoWays_1",
+      "scenario_type": "AccidentTwoWays",
+      "route_key": "route1852_rep0",
+      "trigger_point": {
+        "x": 1362.2,
+        "y": 5330.5,
+        "yaw": 89.8,
+        "z": 370.5
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_accident_emergency_bypass_clean",
+        "traffic_gap_policy": "sparse_oncoming_220_360m",
+        "allow_solid_yellow_crossing": true,
+        "force_emergency_bypass_route_commit": true,
+        "emergency_bypass_commit_gap_m": 80.0,
+        "force_waypoint_bypass_after_route_shift": true
+      },
+      "excluded_reason": "temporarily_disabled_unstable_clean_behavior"
+    },
+    {
+      "route_id": "2606",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route2606_rep0",
+      "trigger_point": {
+        "x": 1176.3,
+        "y": 5241.4,
+        "yaw": 269.9,
+        "z": 371.2
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_construction_static_obstacle_clean"
+      },
+      "excluded_reason": "temporarily_disabled_unstable_clean_behavior"
+    },
+    {
+      "route_id": "2643",
+      "town": "Town12",
+      "scenario_name": "AccidentTwoWays_1",
+      "scenario_type": "AccidentTwoWays",
+      "route_key": "route2643_rep0",
+      "trigger_point": {
+        "x": 2206.7,
+        "y": 4834.5,
+        "yaw": 270.7,
+        "z": 364.9
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_accident_emergency_bypass_clean",
+        "traffic_gap_policy": "sparse_oncoming_220_360m",
+        "allow_solid_yellow_crossing": true,
+        "force_emergency_bypass_route_commit": true,
+        "emergency_bypass_commit_gap_m": 80.0,
+        "force_waypoint_bypass_after_route_shift": true
+      },
+      "excluded_reason": "temporarily_disabled_unstable_clean_behavior"
+    },
+    {
+      "route_id": "3410",
+      "town": "Town13",
+      "scenario_name": "AccidentTwoWays_1",
+      "scenario_type": "AccidentTwoWays",
+      "route_key": "route3410_rep0",
+      "trigger_point": {
+        "x": 4336.6,
+        "y": 557.9,
+        "yaw": 146.9,
+        "z": 174.9
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_accident_emergency_bypass_clean",
+        "traffic_gap_policy": "sparse_oncoming_220_360m",
+        "allow_solid_yellow_crossing": true,
+        "force_emergency_bypass_route_commit": true,
+        "emergency_bypass_commit_gap_m": 80.0,
+        "force_waypoint_bypass_after_route_shift": true
+      },
+      "excluded_reason": "temporarily_disabled_unstable_clean_behavior"
+    },
+    {
+      "route_id": "20920",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route20920_rep0",
+      "trigger_point": {
+        "x": 3486.2,
+        "y": 4535.2,
+        "yaw": 278.3,
+        "z": 367.9
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_construction_static_obstacle_clean"
+      },
+      "excluded_reason": "temporarily_disabled_unstable_clean_behavior"
+    },
+    {
+      "route_id": "25424",
+      "town": "Town11",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route25424_rep0",
+      "trigger_point": {
+        "x": 7451.9,
+        "y": -2131.8,
+        "yaw": 297.6,
+        "z": 54.1
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_construction_static_obstacle_clean"
+      },
+      "excluded_reason": "temporarily_disabled_unstable_clean_behavior"
+    },
+    {
+      "route_id": "25845",
+      "town": "Town15",
+      "scenario_name": "AccidentTwoWays_1",
+      "scenario_type": "AccidentTwoWays",
+      "route_key": "route25845_rep0",
+      "trigger_point": {
+        "x": 149.1,
+        "y": -467.2,
+        "yaw": -139.3,
+        "z": 153.2
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_accident_emergency_bypass_clean",
+        "traffic_gap_policy": "sparse_oncoming_220_360m",
+        "allow_solid_yellow_crossing": true,
+        "force_emergency_bypass_route_commit": true,
+        "emergency_bypass_commit_gap_m": 80.0,
+        "force_waypoint_bypass_after_route_shift": true
+      },
+      "excluded_reason": "temporarily_disabled_unstable_clean_behavior"
+    },
+    {
+      "route_id": "25857",
+      "town": "Town05",
+      "scenario_name": "AccidentTwoWays_1",
+      "scenario_type": "AccidentTwoWays",
+      "route_key": "route25857_rep0",
+      "trigger_point": {
+        "x": 80.8,
+        "y": -144.4,
+        "yaw": 6.1,
+        "z": 0.0
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_accident_emergency_bypass_clean",
+        "traffic_gap_policy": "sparse_oncoming_220_360m",
+        "allow_solid_yellow_crossing": true,
+        "force_emergency_bypass_route_commit": true,
+        "emergency_bypass_commit_gap_m": 80.0,
+        "force_waypoint_bypass_after_route_shift": true
+      },
+      "excluded_reason": "temporarily_disabled_unstable_clean_behavior"
+    }
+  ],
+  "clean_control_defaults": {
+    "AccidentTwoWays": {
+      "enabled": true,
+      "profile": "two_way_accident_emergency_bypass_clean",
+      "purpose": "Treat the stopped accident vehicle as a blocked-lane emergency bypass: prepare the opposite-lane route shift early, wait for a usable oncoming gap, cross the solid yellow only for the bypass, then merge back cleanly before timeout.",
+      "pdm_config_overrides": {
+        "default_max_distance_to_process_scenario_m": 85.0,
+        "max_distance_to_overtake_two_way_scenarios_m": 28.0,
+        "default_overtake_speed_kmh": 32.0,
+        "check_path_free_safety_distance_m": 5.0,
+        "check_path_free_safety_time_s": 0.05,
+        "idm_two_way_scenarios_minimum_distance_m": 4.0,
+        "idm_two_way_scenarios_time_headway_s": 0.4,
+        "transition_length_accident_two_ways_m": 6.0,
+        "add_before_accident_two_ways_m": 12.0,
+        "add_after_accident_two_ways_m": 14.0,
+        "factor_accident_two_ways": 1.0,
+        "max_blocked_ticks": 360,
+        "force_accident_two_ways_emergency_bypass": true,
+        "accident_two_ways_emergency_bypass_min_oncoming_gap_m": 80.0,
+        "accident_two_ways_emergency_bypass_extra_clearance_m": 40.0
+      },
+      "traffic_gap_policy": {
+        "requires_oncoming_gap": true,
+        "prefer_sparse_oncoming_flow": true,
+        "oncoming_spawn_distance_interval_m": {
+          "from": 220.0,
+          "to": 360.0
+        },
+        "prefer_moderate_oncoming_speed": true,
+        "emergency_bypass_commit_gap_m": 80.0,
+        "force_commit_when_native_time_check_is_too_conservative": true,
+        "force_waypoint_bypass_after_route_shift": true,
+        "note": "When enabled, the shifted two-way bypass route is treated as drivable immediately; ego performs lane change out and merge-back using PDM waypoints."
+      },
+      "legal_exception_policy": {
+        "allow_solid_yellow_crossing": true,
+        "only_for_blocked_lane_emergency_bypass": true,
+        "must_merge_back_after_obstacle": true,
+        "note": "AccidentTwoWays disables OutsideRouteLanesTest while route-mode bypass is active."
+      }
+    },
+    "ConstructionObstacleTwoWays": {
+      "enabled": true,
+      "profile": "two_way_construction_static_obstacle_clean",
+      "purpose": "Make ego recognize the construction obstacle earlier, wait if the opposite lane is occupied, then pass and return cleanly.",
+      "pdm_config_overrides": {
+        "default_max_distance_to_process_scenario_m": 70.0,
+        "max_distance_to_overtake_two_way_scenarios_m": 18.0,
+        "default_overtake_speed_kmh": 30.0,
+        "check_path_free_safety_distance_m": 8.0,
+        "check_path_free_safety_time_s": 0.2,
+        "idm_two_way_scenarios_minimum_distance_m": 5.0,
+        "idm_two_way_scenarios_time_headway_s": 0.6,
+        "transition_length_construction_obstacle_two_ways_m": 6.0,
+        "add_before_construction_obstacle_two_ways_m": 8.0,
+        "add_after_construction_obstacle_two_ways_m": 8.0,
+        "factor_construction_obstacle_two_ways": 1.0,
+        "max_blocked_ticks": 260
+      },
+      "static_obstacle_policy": {
+        "force_route_obstacle_reaction": true,
+        "stop_before_obstacle_until_overtake_path_clear": true
+      },
+      "traffic_gap_policy": {
+        "requires_oncoming_gap": true,
+        "prefer_lower_oncoming_frequency": true,
+        "prefer_moderate_oncoming_speed": true
+      }
+    },
+    "PedestrianCrossing": {
+      "enabled": true,
+      "profile": "wait_for_pedestrian_fully_clear_before_crossing_event",
+      "purpose": "Make clean pedestrian-crossing cases yield until the pedestrian is fully clear of the ego path.",
+      "pdm_config_overrides": {
+        "idm_pedestrian_minimum_distance_m": 8.0,
+        "idm_pedestrian_desired_time_headway_s": 0.8,
+        "pedestrian_minimum_extent_m": 3.0,
+        "default_forecast_length_s": 4.0,
+        "forecast_length_lane_change_s": 3.0,
+        "min_walker_speed_mps": 0.6,
+        "max_blocked_ticks": 260
+      },
+      "policy": {
+        "wait_for_pedestrian_clearance": true,
+        "minimum_clear_distance_m": 8.0,
+        "do_not_enter_crossing_while_pedestrian_is_entering_or_inside_crosswalk": true
+      }
+    }
+  }
+}

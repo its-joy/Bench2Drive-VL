@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "config_id": "bench2drive220_vehicle_turning_route_pedestrian_clean_v1",
+  "base_scenario": "bench2drive220_vehicle_turning_route_pedestrian",
+  "condition": "clean",
+  "fault_type": "none",
+  "trigger": {},
+  "intervention": {},
+  "release": {},
+  "guards": {},
+  "expected": {
+    "mistake": false,
+    "infraction": false,
+    "infraction_type": null
+  },
+  "source_template": "fault_injector/configs/signalized_right_turn/clean_vehicle_turning_route_pedestrian.json",
+  "source_route_file": "leaderboard/data/bench2drive220.xml",
+  "route_file": "leaderboard/data/bench2drive220_vehicle_turning_route_pedestrian.xml",
+  "scenario_count": 5,
+  "scenario_type_counts": {
+    "VehicleTurningRoutePedestrian": 5
+  },
+  "clean_scenarios": [
+    {
+      "route_id": "2164",
+      "town": "Town12",
+      "scenario_name": "VehicleTurningRoutePedestrian_1",
+      "scenario_type": "VehicleTurningRoutePedestrian",
+      "route_key": "route2164_rep0",
+      "trigger_point": {
+        "x": -1466.9,
+        "y": 3947.5,
+        "yaw": 269.7,
+        "z": 364.1
+      }
+    },
+    {
+      "route_id": "3731",
+      "town": "Town13",
+      "scenario_name": "VehicleTurningRoutePedestrian_1",
+      "scenario_type": "VehicleTurningRoutePedestrian",
+      "route_key": "route3731_rep0",
+      "trigger_point": {
+        "x": 3803.5,
+        "y": 1975.4,
+        "yaw": 0.2,
+        "z": 170.9
+      }
+    },
+    {
+      "route_id": "3737",
+      "town": "Town13",
+      "scenario_name": "VehicleTurningRoutePedestrian_1",
+      "scenario_type": "VehicleTurningRoutePedestrian",
+      "route_key": "route3737_rep0",
+      "trigger_point": {
+        "x": 3237.5,
+        "y": 1925.3,
+        "yaw": 0.5,
+        "z": 176.2
+      }
+    },
+    {
+      "route_id": "10857",
+      "town": "Town12",
+      "scenario_name": "VehicleTurningRoutePedestrian_1",
+      "scenario_type": "VehicleTurningRoutePedestrian",
+      "route_key": "route10857_rep0",
+      "trigger_point": {
+        "x": 1697.1,
+        "y": 4287.3,
+        "yaw": 189.2,
+        "z": 362.1
+      }
+    },
+    {
+      "route_id": "11381",
+      "town": "Town12",
+      "scenario_name": "VehicleTurningRoutePedestrian_1",
+      "scenario_type": "VehicleTurningRoutePedestrian",
+      "route_key": "route11381_rep0",
+      "trigger_point": {
+        "x": 1751.8,
+        "y": 5791.2,
+        "yaw": 89.9,
+        "z": 367.4
+      }
+    }
+  ]
+}

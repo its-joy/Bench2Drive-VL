@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "config_id": "construction_obstacle_two_ways_route1825_clean_test_v1",
+  "base_scenario": "ConstructionObstacleTwoWays",
+  "condition": "clean",
+  "fault_type": "none",
+  "trigger": {},
+  "intervention": {},
+  "release": {},
+  "guards": {},
+  "expected": {
+    "mistake": false,
+    "infraction": false,
+    "infraction_type": null
+  },
+  "source_template": "fault_injector/configs/signalized_right_turn/clean_scenarios.json",
+  "route_file": "leaderboard/data/bench2drive_construction_obstacle_two_ways_clean_test.xml",
+  "scenario_count": 1,
+  "scenario_type_counts": {
+    "ConstructionObstacleTwoWays": 1
+  },
+  "clean_scenarios": [
+    {
+      "route_id": "1825",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route1825_rep0",
+      "trigger_point": {
+        "x": 1173.4,
+        "y": 5328.5,
+        "yaw": 89.9,
+        "z": 371.0
+      },
+      "clean_control": {
+        "enabled": true,
+        "profile": "two_way_construction_static_obstacle_clean"
+      }
+    }
+  ],
+  "clean_control_defaults": {
+    "ConstructionObstacleTwoWays": {
+      "enabled": true,
+      "profile": "two_way_construction_static_obstacle_clean",
+      "purpose": "Make ego recognize the construction obstacle earlier, wait if the opposite lane is occupied, then pass and return cleanly.",
+      "pdm_config_overrides": {
+        "default_max_distance_to_process_scenario_m": 70.0,
+        "max_distance_to_overtake_two_way_scenarios_m": 18.0,
+        "default_overtake_speed_kmh": 30.0,
+        "check_path_free_safety_distance_m": 8.0,
+        "check_path_free_safety_time_s": 0.2,
+        "idm_two_way_scenarios_minimum_distance_m": 5.0,
+        "idm_two_way_scenarios_time_headway_s": 0.6,
+        "transition_length_construction_obstacle_two_ways_m": 6.0,
+        "add_before_construction_obstacle_two_ways_m": 8.0,
+        "add_after_construction_obstacle_two_ways_m": 8.0,
+        "factor_construction_obstacle_two_ways": 1.0,
+        "max_blocked_ticks": 260
+      },
+      "static_obstacle_policy": {
+        "force_route_obstacle_reaction": true,
+        "stop_before_obstacle_until_overtake_path_clear": true
+      },
+      "traffic_gap_policy": {
+        "requires_oncoming_gap": true,
+        "prefer_lower_oncoming_frequency": true,
+        "prefer_moderate_oncoming_speed": true
+      }
+    }
+  }
+}

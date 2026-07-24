@@ -1,0 +1,135 @@
+{
+  "schema_version": "1.0",
+  "config_id": "missing_appropriate_responses_clean_v1",
+  "base_scenario": "missing_appropriate_responses",
+  "condition": "clean",
+  "fault_type": "none",
+  "trigger": {},
+  "intervention": {},
+  "release": {},
+  "guards": {},
+  "expected": {
+    "mistake": false,
+    "infraction": false,
+    "infraction_type": null
+  },
+  "source_template": "fault_injector/configs/signalized_right_turn/clean.json",
+  "source_pairing_csv": "pdm_lite_runs/clean_inappropriate_pairings.csv",
+  "route_file": "leaderboard/data/missing_appropriate_responses.xml",
+  "source_route_file": "leaderboard/data/bench2drive220.xml",
+  "scenario_count": 7,
+  "scenario_type_counts": {
+    "HazardAtSideLane": 1,
+    "HighwayExit": 4,
+    "ParkedObstacle": 1,
+    "SequentialLaneChange": 1
+  },
+  "clean_scenarios": [
+    {
+      "route_id": "23658",
+      "town": "Town12",
+      "category": "Maneuver Appropriateness",
+      "scenario_name": "HighwayExit_1",
+      "scenario_type": "HighwayExit",
+      "route_key": "route23658_rep0",
+      "trigger_point": {
+        "x": -822.6,
+        "y": 4825.7,
+        "yaw": 269.9,
+        "z": 372.1
+      },
+      "source_inappropriate_response_folder_path": "pdm_lite_runs/inappropriate_response/Maneuver Appropriateness/HighwayExit/multi_town_Rep0_Town12_HighwayExit_1_route23658_rep0_07_21_19_47_22"
+    },
+    {
+      "route_id": "23659",
+      "town": "Town12",
+      "category": "Maneuver Appropriateness",
+      "scenario_name": "HighwayExit_1",
+      "scenario_type": "HighwayExit",
+      "route_key": "route23659_rep0",
+      "trigger_point": {
+        "x": 2587.1,
+        "y": 3200.5,
+        "yaw": -24.6,
+        "z": 366.0
+      },
+      "source_inappropriate_response_folder_path": "pdm_lite_runs/inappropriate_response/Maneuver Appropriateness/HighwayExit/multi_town_Rep0_Town12_HighwayExit_1_route23659_rep0_07_21_19_52_05"
+    },
+    {
+      "route_id": "23670",
+      "town": "Town13",
+      "category": "Maneuver Appropriateness",
+      "scenario_name": "HighwayExit_1",
+      "scenario_type": "HighwayExit",
+      "route_key": "route23670_rep0",
+      "trigger_point": {
+        "x": 641.7,
+        "y": 5999.8,
+        "yaw": -178.0,
+        "z": 164.9
+      },
+      "source_inappropriate_response_folder_path": "pdm_lite_runs/inappropriate_response/Maneuver Appropriateness/HighwayExit/multi_town_Rep0_Town13_HighwayExit_1_route23670_rep0_07_21_19_56_03"
+    },
+    {
+      "route_id": "23687",
+      "town": "Town12",
+      "category": "Maneuver Appropriateness",
+      "scenario_name": "HighwayExit_1",
+      "scenario_type": "HighwayExit",
+      "route_key": "route23687_rep0",
+      "trigger_point": {
+        "x": -2500.5,
+        "y": 4239.9,
+        "yaw": -81.4,
+        "z": 365.0
+      },
+      "source_inappropriate_response_folder_path": "pdm_lite_runs/inappropriate_response/Maneuver Appropriateness/HighwayExit/multi_town_Rep0_Town12_HighwayExit_1_route23687_rep0_07_21_20_00_42"
+    },
+    {
+      "route_id": "17635",
+      "town": "Town12",
+      "category": "Maneuver Appropriateness",
+      "scenario_name": "SequentialLaneChange_1",
+      "scenario_type": "SequentialLaneChange",
+      "route_key": "route17635_rep0",
+      "trigger_point": {
+        "x": 2048.0,
+        "y": 3077.9,
+        "yaw": 180.9,
+        "z": 356.9
+      },
+      "source_inappropriate_response_folder_path": "pdm_lite_runs/inappropriate_response/Maneuver Appropriateness/SequentialLaneChange/Town12_Rep0_Town12_SequentialLaneChange_1_route17635_rep0_07_21_19_36_39"
+    },
+    {
+      "route_id": "25300",
+      "town": "Town04",
+      "category": "Obstacle & Road-User Avoidance",
+      "scenario_name": "HazardAtSideLane_1",
+      "scenario_type": "HazardAtSideLane",
+      "route_key": "route25300_rep0",
+      "trigger_point": {
+        "x": -457.8,
+        "y": 12.7,
+        "yaw": -202.3,
+        "z": 0.0
+      },
+      "source_inappropriate_response_folder_path": "pdm_lite_runs/inappropriate_response/Obstacle & Road-User Avoidance/HazardAtSideLane/multi_town_Rep0_Town04_HazardAtSideLane_1_route25300_rep0_07_21_21_03_08"
+    },
+    {
+      "route_id": "1773",
+      "town": "Town12",
+      "category": "Obstacle & Road-User Avoidance",
+      "scenario_name": "ParkedObstacle_1",
+      "scenario_type": "ParkedObstacle",
+      "route_key": "route1773_rep0",
+      "trigger_point": {
+        "x": -818.5,
+        "y": 5278.0,
+        "yaw": 269.9,
+        "z": 376.3
+      },
+      "source_inappropriate_response_folder_path": "pdm_lite_runs/inappropriate_response/Obstacle & Road-User Avoidance/ParkedObstacle/multi_town_Rep0_Town12_ParkedObstacle_1_route1773_rep0_07_20_14_25_56"
+    }
+  ],
+  "clean_control_defaults": {}
+}

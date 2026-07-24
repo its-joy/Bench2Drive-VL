@@ -1,0 +1,1390 @@
+{
+  "schema_version": "1.0",
+  "config_id": "post_action_available_inappropriate_responses_v1",
+  "base_scenario": "post_action_available_inappropriate",
+  "condition": "inappropriate_response",
+  "fault_type": "inappropriate_response",
+  "trigger": {},
+  "intervention": {},
+  "release": {},
+  "guards": {},
+  "expected": {
+    "mistake": true,
+    "infraction": null,
+    "infraction_type": "scenario_dependent"
+  },
+  "actor_spawn_control": {},
+  "random_seed": 20260722,
+  "source_csv": "/data2/joy/Research/Bench2Drive-VL/bench2drive_recategorized_scenarios_v2.csv",
+  "route_file": "leaderboard/data/post_action_available_inappropriate.xml",
+  "scenario_count": 7,
+  "scenario_type_counts": {
+    "AccidentTwoWays": 1,
+    "ConstructionObstacleTwoWays": 2,
+    "OppositeVehicleRunningRedLight": 1,
+    "OppositeVehicleTakingPriority": 2,
+    "ParkedObstacle": 1
+  },
+  "missing_scenario_types_from_csv": [],
+  "inappropriate_response_defaults": {
+    "Accident": {
+      "enabled": true,
+      "category": "Obstacle & Road-User Avoidance",
+      "source_inappropriate_response": "React late, stop for an extended time in the active lane, pass with poor clearance, or collide with the scene.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "Accident_1_react_late_stop_for_an_extended_time_in_the_",
+          "response": "React late, stop for an extended time in the active lane, pass with poor clearance",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        },
+        {
+          "id": "Accident_2_collide_with_the_scene",
+          "response": "Collide with the scene",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        }
+      ]
+    },
+    "AccidentTwoWays": {
+      "enabled": true,
+      "category": "Obstacle & Road-User Avoidance",
+      "source_inappropriate_response": "Attempt the bypass with an insufficient opposing-traffic gap, stop in a position that obstructs both directions, pass too closely, or collide with the accident scene or another vehicle.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "AccidentTwoWays_1_attempt_the_bypass_with_an_insufficient_oppo",
+          "response": "Attempt the bypass with an insufficient opposing-traffic gap, stop in a position that obstructs both directions, pass too closely",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        },
+        {
+          "id": "AccidentTwoWays_2_collide_with_the_accident_scene",
+          "response": "Collide with the accident scene",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        },
+        {
+          "id": "AccidentTwoWays_3_another_vehicle",
+          "response": "Another vehicle",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        }
+      ]
+    },
+    "ConstructionObstacle": {
+      "enabled": true,
+      "category": "Obstacle & Road-User Avoidance",
+      "source_inappropriate_response": "React late, stop and block the lane, pass too close, or strike a construction sign or barrier.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "ConstructionObstacle_1_react_late_stop_and_block_the_lane_pass_too_",
+          "response": "React late, stop and block the lane, pass too close",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        },
+        {
+          "id": "ConstructionObstacle_2_strike_a_construction_sign",
+          "response": "Strike a construction sign",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        },
+        {
+          "id": "ConstructionObstacle_3_barrier",
+          "response": "Barrier",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        }
+      ]
+    },
+    "ConstructionObstacleTwoWays": {
+      "enabled": true,
+      "category": "Obstacle & Road-User Avoidance",
+      "source_inappropriate_response": "Enter the opposing lane with a poor gap, stop and block both directions, pass too close to the construction layout, or strike a sign, barrier, or vehicle.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "ConstructionObstacleTwoWays_1_enter_the_opposing_lane_with_a_poor_gap_stop",
+          "response": "Enter the opposing lane with a poor gap, stop and block both directions, pass too close to the construction layout",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        },
+        {
+          "id": "ConstructionObstacleTwoWays_2_strike_a_sign_barrier",
+          "response": "Strike a sign, barrier",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        },
+        {
+          "id": "ConstructionObstacleTwoWays_3_vehicle",
+          "response": "Vehicle",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        }
+      ]
+    },
+    "HazardAtSideLane": {
+      "enabled": true,
+      "category": "Obstacle & Road-User Avoidance",
+      "source_inappropriate_response": "otherwise reduce speed and follow the cyclist with adequate spacing.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "HazardAtSideLane_1_otherwise_reduce_speed_and_follow_the_cyclis",
+          "response": "Otherwise reduce speed and follow the cyclist with adequate spacing",
+          "behavior": {
+            "ignore_red_light": true,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": true,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "HazardAtSideLaneTwoWays": {
+      "enabled": true,
+      "category": "Obstacle & Road-User Avoidance",
+      "source_inappropriate_response": "Enter the opposing lane at a poor time, stop and obstruct traffic, or pass without sufficient clearance.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "HazardAtSideLaneTwoWays_1_enter_the_opposing_lane_at_a_poor_time_stop_",
+          "response": "Enter the opposing lane at a poor time, stop and obstruct traffic",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": true,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "HazardAtSideLaneTwoWays_2_pass_without_sufficient_clearance",
+          "response": "Pass without sufficient clearance",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": true,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "HighwayCutIn": {
+      "enabled": true,
+      "category": "External Hazard Attribution",
+      "source_inappropriate_response": "React late, accelerate into the closing gap, or make an abrupt evasive maneuver that creates another conflict.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "HighwayCutIn_1_react_late_accelerate_into_the_closing_gap",
+          "response": "React late, accelerate into the closing gap",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "HighwayCutIn_2_make_an_abrupt_evasive_maneuver_that_creates",
+          "response": "Make an abrupt evasive maneuver that creates another conflict",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "HighwayExit": {
+      "enabled": true,
+      "category": "Maneuver Appropriateness",
+      "source_inappropriate_response": "Wait too long, make an abrupt late merge, stop unnecessarily in a live highway lane, or force another vehicle to brake.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "HighwayExit_1_wait_too_long_make_an_abrupt_late_merge_stop",
+          "response": "Wait too long, make an abrupt late merge, stop unnecessarily in a live highway lane",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": true,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "HighwayExit_2_force_another_vehicle_to_brake",
+          "response": "Force another vehicle to brake",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "InterurbanActorFlow": {
+      "enabled": true,
+      "category": "Maneuver Appropriateness",
+      "source_inappropriate_response": "Change lanes with poor timing, hesitate or stop in the travel lane, or force another vehicle to brake.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "InterurbanActorFlow_1_change_lanes_with_poor_timing_hesitate",
+          "response": "Change lanes with poor timing, hesitate",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "InterurbanActorFlow_2_stop_in_the_travel_lane",
+          "response": "Stop in the travel lane",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "InterurbanActorFlow_3_force_another_vehicle_to_brake",
+          "response": "Force another vehicle to brake",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "InterurbanAdvancedActorFlow": {
+      "enabled": true,
+      "category": "Maneuver Appropriateness",
+      "source_inappropriate_response": "Poorly time either stage, stop while trying to merge, or create a conflict that requires evasive action.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "InterurbanAdvancedActorFlow_1_poorly_time_either_stage_stop_while_trying_t",
+          "response": "Poorly time either stage, stop while trying to merge",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "InterurbanAdvancedActorFlow_2_create_a_conflict_that_requires_evasive_acti",
+          "response": "Create a conflict that requires evasive action",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "MergerIntoSlowTrafficV2": {
+      "enabled": true,
+      "category": "Maneuver Appropriateness",
+      "source_inappropriate_response": "Choose a poor gap, merge abruptly, or stop unnecessarily and block the travel lane.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "MergerIntoSlowTrafficV2_1_choose_a_poor_gap_merge_abruptly",
+          "response": "Choose a poor gap, merge abruptly",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "MergerIntoSlowTrafficV2_2_stop_unnecessarily_and_block_the_travel_lane",
+          "response": "Stop unnecessarily and block the travel lane",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "NonSignalizedJunctionLeftTurnEnterFlow": {
+      "enabled": true,
+      "category": "Legal Compliance",
+      "source_inappropriate_response": "Enter the junction before the ego's turn or without a safe gap, forcing priority traffic to brake or evade.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "NonSignalizedJunctionLeftTurnEnterFlow_1_enter_the_junction_before_the_ego_s_turn",
+          "response": "Enter the junction before the ego's turn",
+          "behavior": {
+            "ignore_red_light": true,
+            "ignore_stop_sign": true,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "NonSignalizedJunctionLeftTurnEnterFlow_2_without_a_safe_gap_forcing_priority_traffic_",
+          "response": "Without a safe gap, forcing priority traffic to brake",
+          "behavior": {
+            "ignore_red_light": true,
+            "ignore_stop_sign": true,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "NonSignalizedJunctionLeftTurnEnterFlow_3_evade",
+          "response": "Evade",
+          "behavior": {
+            "ignore_red_light": true,
+            "ignore_stop_sign": true,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "NonSignalizedJunctionRightTurn": {
+      "enabled": true,
+      "category": "Legal Compliance",
+      "source_inappropriate_response": "Turn before the priority vehicle passes or enter the conflict area without yielding.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "NonSignalizedJunctionRightTurn_1_turn_before_the_priority_vehicle_passes",
+          "response": "Turn before the priority vehicle passes",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": true,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "NonSignalizedJunctionRightTurn_2_enter_the_conflict_area_without_yielding",
+          "response": "Enter the conflict area without yielding",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": true,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "OppositeVehicleRunningRedLight": {
+      "enabled": true,
+      "category": "External Hazard Attribution",
+      "source_inappropriate_response": "Continue into the conflict area or react too late despite the visible opposing hazard.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "OppositeVehicleRunningRedLight_1_continue_into_the_conflict_area",
+          "response": "Continue into the conflict area",
+          "behavior": {
+            "ignore_red_light": true,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "OppositeVehicleRunningRedLight_2_react_too_late_despite_the_visible_opposing_",
+          "response": "React too late despite the visible opposing hazard",
+          "behavior": {
+            "ignore_red_light": true,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "OppositeVehicleTakingPriority": {
+      "enabled": true,
+      "category": "External Hazard Attribution",
+      "source_inappropriate_response": "Continue because the ego expects priority, producing a near conflict or collision.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "OppositeVehicleTakingPriority_1_continue_because_the_ego_expects_priority_pr",
+          "response": "Continue because the ego expects priority, producing a near conflict",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "OppositeVehicleTakingPriority_2_collision",
+          "response": "Collision",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "ParkedObstacle": {
+      "enabled": true,
+      "category": "Obstacle & Road-User Avoidance",
+      "source_inappropriate_response": "React late, stop and block the lane, pass too closely, or collide with the obstacle or nearby traffic.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "ParkedObstacle_1_react_late_stop_and_block_the_lane_pass_too_",
+          "response": "React late, stop and block the lane, pass too closely",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        },
+        {
+          "id": "ParkedObstacle_2_collide_with_the_obstacle",
+          "response": "Collide with the obstacle",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        },
+        {
+          "id": "ParkedObstacle_3_nearby_traffic",
+          "response": "Nearby traffic",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        }
+      ]
+    },
+    "ParkedObstacleTwoWays": {
+      "enabled": true,
+      "category": "Obstacle & Road-User Avoidance",
+      "source_inappropriate_response": "Attempt the bypass with an unsafe opposing gap, stop and block the road, or collide during the maneuver.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "ParkedObstacleTwoWays_1_attempt_the_bypass_with_an_unsafe_opposing_g",
+          "response": "Attempt the bypass with an unsafe opposing gap, stop and block the road",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        },
+        {
+          "id": "ParkedObstacleTwoWays_2_collide_during_the_maneuver",
+          "response": "Collide during the maneuver",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        }
+      ]
+    },
+    "ParkingExit": {
+      "enabled": true,
+      "category": "Maneuver Appropriateness",
+      "source_inappropriate_response": "Pull out with poor timing, stop halfway into the active lane, or force through traffic to brake.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "ParkingExit_1_pull_out_with_poor_timing_stop_halfway_into_",
+          "response": "Pull out with poor timing, stop halfway into the active lane",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "ParkingExit_2_force_through_traffic_to_brake",
+          "response": "Force through traffic to brake",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "PedestrianCrossing": {
+      "enabled": true,
+      "category": "Legal Compliance",
+      "source_inappropriate_response": "Enter the occupied pedestrian crossing or continue without yielding, causing a near conflict or contact.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "PedestrianCrossing_1_enter_the_occupied_pedestrian_crossing",
+          "response": "Enter the occupied pedestrian crossing",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": true,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "PedestrianCrossing_2_continue_without_yielding_causing_a_near_con",
+          "response": "Continue without yielding, causing a near conflict",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": true,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "PedestrianCrossing_3_contact",
+          "response": "Contact",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": true,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "SequentialLaneChange": {
+      "enabled": true,
+      "category": "Maneuver Appropriateness",
+      "source_inappropriate_response": "Perform late or abrupt lane changes, use insufficient gaps, or stop during the sequence and block traffic.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "SequentialLaneChange_1_perform_late",
+          "response": "Perform late",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "SequentialLaneChange_2_abrupt_lane_changes_use_insufficient_gaps",
+          "response": "Abrupt lane changes, use insufficient gaps",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "SequentialLaneChange_3_stop_during_the_sequence_and_block_traffic",
+          "response": "Stop during the sequence and block traffic",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "SignalizedJunctionLeftTurn": {
+      "enabled": true,
+      "category": "Legal Compliance",
+      "source_inappropriate_response": "Enter on red or turn across oncoming traffic that has priority, forcing braking or evasion.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "SignalizedJunctionLeftTurn_1_enter_on_red",
+          "response": "Enter on red",
+          "behavior": {
+            "ignore_red_light": true,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "SignalizedJunctionLeftTurn_2_turn_across_oncoming_traffic_that_has_priori",
+          "response": "Turn across oncoming traffic that has priority, forcing braking",
+          "behavior": {
+            "ignore_red_light": true,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "SignalizedJunctionLeftTurn_3_evasion",
+          "response": "Evasion",
+          "behavior": {
+            "ignore_red_light": true,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "VanillaNonSignalizedTurnEncounterStopsign": {
+      "enabled": true,
+      "category": "Legal Compliance",
+      "source_inappropriate_response": "Roll through, stop after the line, or take the turn before a vehicle that arrived first.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "VanillaNonSignalizedTurnEncounterStopsign_1_roll_through_stop_after_the_line",
+          "response": "Roll through, stop after the line",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": true,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "VanillaNonSignalizedTurnEncounterStopsign_2_take_the_turn_before_a_vehicle_that_arrived_",
+          "response": "Take the turn before a vehicle that arrived first",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": true,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "VanillaSignalizedTurnEncounterGreenLight": {
+      "enabled": true,
+      "category": "Legal Compliance",
+      "source_inappropriate_response": "Turn into an occupied conflict path and force another actor to brake or evade.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "VanillaSignalizedTurnEncounterGreenLight_1_turn_into_an_occupied_conflict_path_and_forc",
+          "response": "Turn into an occupied conflict path and force another actor to brake",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "VanillaSignalizedTurnEncounterGreenLight_2_evade",
+          "response": "Evade",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "VanillaSignalizedTurnEncounterRedLight": {
+      "enabled": true,
+      "category": "Legal Compliance",
+      "source_inappropriate_response": "Cross the stop line or enter the junction while the signal is red.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "VanillaSignalizedTurnEncounterRedLight_1_cross_the_stop_line",
+          "response": "Cross the stop line",
+          "behavior": {
+            "ignore_red_light": true,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        },
+        {
+          "id": "VanillaSignalizedTurnEncounterRedLight_2_enter_the_junction_while_the_signal_is_red",
+          "response": "Enter the junction while the signal is red",
+          "behavior": {
+            "ignore_red_light": true,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": false,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": false
+          }
+        }
+      ]
+    },
+    "VehicleOpensDoorTwoWays": {
+      "enabled": true,
+      "category": "External Hazard Attribution",
+      "source_inappropriate_response": "Continue too close to the door or swerve abruptly into opposing traffic, creating a conflict or collision.",
+      "selection_policy": "random_per_route",
+      "response_options": [
+        {
+          "id": "VehicleOpensDoorTwoWays_1_continue_too_close_to_the_door",
+          "response": "Continue too close to the door",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        },
+        {
+          "id": "VehicleOpensDoorTwoWays_2_swerve_abruptly_into_opposing_traffic_creati",
+          "response": "Swerve abruptly into opposing traffic, creating a conflict",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        },
+        {
+          "id": "VehicleOpensDoorTwoWays_3_collision",
+          "response": "Collision",
+          "behavior": {
+            "ignore_red_light": false,
+            "ignore_stop_sign": false,
+            "ignore_walker_hazard": false,
+            "ignore_vehicle_hazard": true,
+            "ignore_bicycle_hazard": false,
+            "ignore_leading_vehicle": false,
+            "suppress_route_obstacle_handling": true
+          }
+        }
+      ]
+    }
+  },
+  "inappropriate_response_scenarios": [
+    {
+      "route_id": "1773",
+      "town": "Town12",
+      "scenario_name": "ParkedObstacle_1",
+      "scenario_type": "ParkedObstacle",
+      "route_key": "route1773_rep0",
+      "trigger_point": {
+        "x": -818.5,
+        "y": 5278.0,
+        "yaw": 269.9,
+        "z": 376.3
+      },
+      "category": "Obstacle & Road-User Avoidance",
+      "inappropriate_response_control": {
+        "enabled": true,
+        "category": "Obstacle & Road-User Avoidance",
+        "source_inappropriate_response": "React late, stop and block the lane, pass too closely, or collide with the obstacle or nearby traffic.",
+        "selection_policy": "random_per_route",
+        "response_options": [
+          {
+            "id": "ParkedObstacle_1_react_late_stop_and_block_the_lane_pass_too_",
+            "response": "React late, stop and block the lane, pass too closely",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": false,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": true
+            }
+          },
+          {
+            "id": "ParkedObstacle_2_collide_with_the_obstacle",
+            "response": "Collide with the obstacle",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": false,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": true
+            }
+          },
+          {
+            "id": "ParkedObstacle_3_nearby_traffic",
+            "response": "Nearby traffic",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "1825",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route1825_rep0",
+      "trigger_point": {
+        "x": 1173.4,
+        "y": 5328.5,
+        "yaw": 89.9,
+        "z": 371.0
+      },
+      "category": "Obstacle & Road-User Avoidance",
+      "inappropriate_response_control": {
+        "enabled": true,
+        "category": "Obstacle & Road-User Avoidance",
+        "source_inappropriate_response": "Enter the opposing lane with a poor gap, stop and block both directions, pass too close to the construction layout, or strike a sign, barrier, or vehicle.",
+        "selection_policy": "random_per_route",
+        "response_options": [
+          {
+            "id": "ConstructionObstacleTwoWays_1_enter_the_opposing_lane_with_a_poor_gap_stop",
+            "response": "Enter the opposing lane with a poor gap, stop and block both directions, pass too close to the construction layout",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": true
+            }
+          },
+          {
+            "id": "ConstructionObstacleTwoWays_2_strike_a_sign_barrier",
+            "response": "Strike a sign, barrier",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": false,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": true
+            }
+          },
+          {
+            "id": "ConstructionObstacleTwoWays_3_vehicle",
+            "response": "Vehicle",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "1833",
+      "town": "Town12",
+      "scenario_name": "ConstructionObstacleTwoWays_1",
+      "scenario_type": "ConstructionObstacleTwoWays",
+      "route_key": "route1833_rep0",
+      "trigger_point": {
+        "x": 2817.3,
+        "y": 4290.1,
+        "yaw": 99.4,
+        "z": 360.4
+      },
+      "category": "Obstacle & Road-User Avoidance",
+      "inappropriate_response_control": {
+        "enabled": true,
+        "category": "Obstacle & Road-User Avoidance",
+        "source_inappropriate_response": "Enter the opposing lane with a poor gap, stop and block both directions, pass too close to the construction layout, or strike a sign, barrier, or vehicle.",
+        "selection_policy": "random_per_route",
+        "response_options": [
+          {
+            "id": "ConstructionObstacleTwoWays_1_enter_the_opposing_lane_with_a_poor_gap_stop",
+            "response": "Enter the opposing lane with a poor gap, stop and block both directions, pass too close to the construction layout",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": true
+            }
+          },
+          {
+            "id": "ConstructionObstacleTwoWays_2_strike_a_sign_barrier",
+            "response": "Strike a sign, barrier",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": false,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": true
+            }
+          },
+          {
+            "id": "ConstructionObstacleTwoWays_3_vehicle",
+            "response": "Vehicle",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "1852",
+      "town": "Town12",
+      "scenario_name": "AccidentTwoWays_1",
+      "scenario_type": "AccidentTwoWays",
+      "route_key": "route1852_rep0",
+      "trigger_point": {
+        "x": 1362.2,
+        "y": 5330.5,
+        "yaw": 89.8,
+        "z": 370.5
+      },
+      "category": "Obstacle & Road-User Avoidance",
+      "inappropriate_response_control": {
+        "enabled": true,
+        "category": "Obstacle & Road-User Avoidance",
+        "source_inappropriate_response": "Attempt the bypass with an insufficient opposing-traffic gap, stop in a position that obstructs both directions, pass too closely, or collide with the accident scene or another vehicle.",
+        "selection_policy": "random_per_route",
+        "response_options": [
+          {
+            "id": "AccidentTwoWays_1_attempt_the_bypass_with_an_insufficient_oppo",
+            "response": "Attempt the bypass with an insufficient opposing-traffic gap, stop in a position that obstructs both directions, pass too closely",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": true
+            }
+          },
+          {
+            "id": "AccidentTwoWays_2_collide_with_the_accident_scene",
+            "response": "Collide with the accident scene",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": false,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": true
+            }
+          },
+          {
+            "id": "AccidentTwoWays_3_another_vehicle",
+            "response": "Another vehicle",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "2143",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleTakingPriority_1",
+      "scenario_type": "OppositeVehicleTakingPriority",
+      "route_key": "route2143_rep0",
+      "trigger_point": {
+        "x": 256.6,
+        "y": 5946.7,
+        "yaw": 269.1,
+        "z": 360.5
+      },
+      "category": "External Hazard Attribution",
+      "inappropriate_response_control": {
+        "enabled": true,
+        "category": "External Hazard Attribution",
+        "source_inappropriate_response": "Continue because the ego expects priority, producing a near conflict or collision.",
+        "selection_policy": "random_per_route",
+        "response_options": [
+          {
+            "id": "OppositeVehicleTakingPriority_1_continue_because_the_ego_expects_priority_pr",
+            "response": "Continue because the ego expects priority, producing a near conflict",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": false
+            }
+          },
+          {
+            "id": "OppositeVehicleTakingPriority_2_collision",
+            "response": "Collision",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "2913",
+      "town": "Town12",
+      "scenario_name": "OppositeVehicleTakingPriority_1",
+      "scenario_type": "OppositeVehicleTakingPriority",
+      "route_key": "route2913_rep0",
+      "trigger_point": {
+        "x": 2924.6,
+        "y": 2524.4,
+        "yaw": 179.8,
+        "z": 349.2
+      },
+      "category": "External Hazard Attribution",
+      "inappropriate_response_control": {
+        "enabled": true,
+        "category": "External Hazard Attribution",
+        "source_inappropriate_response": "Continue because the ego expects priority, producing a near conflict or collision.",
+        "selection_policy": "random_per_route",
+        "response_options": [
+          {
+            "id": "OppositeVehicleTakingPriority_1_continue_because_the_ego_expects_priority_pr",
+            "response": "Continue because the ego expects priority, producing a near conflict",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": false
+            }
+          },
+          {
+            "id": "OppositeVehicleTakingPriority_2_collision",
+            "response": "Collision",
+            "behavior": {
+              "ignore_red_light": false,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "route_id": "26950",
+      "town": "Town03",
+      "scenario_name": "OppositeVehicleRunningRedLight_1",
+      "scenario_type": "OppositeVehicleRunningRedLight",
+      "route_key": "route26950_rep0",
+      "trigger_point": {
+        "x": 9.0,
+        "y": -98.8,
+        "yaw": -88.6,
+        "z": 0.0
+      },
+      "category": "External Hazard Attribution",
+      "inappropriate_response_control": {
+        "enabled": true,
+        "category": "External Hazard Attribution",
+        "source_inappropriate_response": "Continue into the conflict area or react too late despite the visible opposing hazard.",
+        "selection_policy": "random_per_route",
+        "response_options": [
+          {
+            "id": "OppositeVehicleRunningRedLight_1_continue_into_the_conflict_area",
+            "response": "Continue into the conflict area",
+            "behavior": {
+              "ignore_red_light": true,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": false
+            }
+          },
+          {
+            "id": "OppositeVehicleRunningRedLight_2_react_too_late_despite_the_visible_opposing_",
+            "response": "React too late despite the visible opposing hazard",
+            "behavior": {
+              "ignore_red_light": true,
+              "ignore_stop_sign": false,
+              "ignore_walker_hazard": false,
+              "ignore_vehicle_hazard": true,
+              "ignore_bicycle_hazard": false,
+              "ignore_leading_vehicle": false,
+              "suppress_route_obstacle_handling": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "source_dataset": "post_action_data/inappropriate_response",
+  "source_config": "fault_injector/configs/signalized_right_turn/inappropriate_responses.json"
+}

@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "config_id": "signalized_right_turn_red_light_v1",
+  "base_scenario": "SignalizedJunctionRightTurn",
+  "condition": "infraction",
+  "fault_type": "red_light_entry",
+  "trigger": {
+    "traffic_light_state": "Red",
+    "traffic_light_affects_ego": true,
+    "ignore_traffic_light_affects_ego": true,
+    "require_traffic_light_hazard": true,
+    "trigger_on_first_red_light": true,
+    "maximum_traffic_light_distance_m": 70.0,
+    "require_not_in_junction": true,
+    "confirmation_ticks": 1
+  },
+  "intervention": {
+    "ignore_red_light": true,
+    "preserve_steering": true
+  },
+  "release": {
+    "release_after_junction_entry": true,
+    "maximum_active_duration_s": 20.0,
+    "transition_ticks": 5
+  },
+  "guards": {
+    "abort_on_vehicle_hazard": true,
+    "abort_on_walker_hazard": false,
+    "abort_if_light_not_red_before_activation": false,
+    "maximum_speed_mps": 20.0
+  },
+  "expected": {
+    "mistake": true,
+    "infraction": true,
+    "infraction_type": "ran_red_light"
+  },
+  "actor_spawn_control": {
+    "mode": "near_ego",
+    "clear_radius_m": 50.0,
+    "clear_vehicles": true,
+    "clear_walkers": true,
+    "repeat": true
+  }
+}
